@@ -20,3 +20,9 @@ _cgo_export.*
 _testmain.go
 
 *.exe
+
+#main compiled app
+ponydownloader
+
+#here lies my poniboo.ru key, I do not want to share
+config.ini
