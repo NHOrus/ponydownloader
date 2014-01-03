@@ -1,0 +1,49 @@
+Roadmap
+=======
+
+What needs to be done with this project? What I want from this project?
+
+Summapy:
+--------
+
+Ponydownloader is to get images from derpiboo.ru by imageid or by iterating search/lists. It should remember what imageids it already downloaded and not to query them again.
+Program should be controlled by flags and support '--version' and '--help' with default response to erroneous flags being same as --help.
+Flags should allow filtering on server-side or on client-side, if server-side query filtering does not provide all needed filtering options.
+Program behavior should be manipulated by human-readable confuguration file config.ini
+Ability to work anonimously or with key login.
+
+Behavior:
+---------
+
+If no flags or arguments given, os.Exit(0) as there is nothing to do. (possibly, interactive mode?)
+If argument is a number, attempt to interpret it as imageid.
+If argument is not a number, --help
+If --version, print version and exit
+if --tag, search by tag in argument. Download all filtered images
+
+Filters, work only with --tag:
+	--created {<,=<,>,=>}date
+	--updated {<,=<,>,=>}date
+	--reverse - sort and download in reverse order
+
+	--startpage =page
+	--stoppage =page
+derpibo.ru is 1-indexed, default stoppage is 0, equivalent to go through all
+	--maxdl =number - limit number of downloaded images, default 0 - download them all
+	
+Todo:
+-----
+
+- get image json from derpiboo.ru
+- download image by imageid
+- add flags (rudimentary) and args(only imageid)
+- add search by tag json
+- iterage and extract imageid from pages of search json
+- implement database
+- implement default config.ini writing / validity checking
+- implement directory of saving change
+- implement directory creation according to search query
+- throw extracted imageids at downloading function (possibly one function to download json, extract name, format according to config.ini and pass formatted name and url to downloading function in async to prevent lock due to lack of response and cdn availability on derpiboo.ru side?)
+- implement simultaneous downloads restrictions
+- revise todo
+

@@ -8,4 +8,5 @@ config.ini
 ==========
 
 Secion [main]
+
 key => your derpiboo.ru key
