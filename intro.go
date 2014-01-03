@@ -2,7 +2,9 @@ package main
 
 import ("fmt"
 //	"net"
-//	"os"
+	"os"
+//	"errors"
+	"log"
 //	"io"
 	"github.com/vaughan0/go-ini"
 	)	
@@ -11,8 +13,8 @@ import ("fmt"
 func main(){
 	fmt.Println("Check one")
 	config, err := ini.LoadFile("config.ini")
-
-	if err != nil { panic(err) }
+	if os.IsNotExist(err) { panic("config.ini does not exist, create it")}
+	if err != nil { log.Fatal(err) }
 
 	key, ok := config.Get("main", "key")
 	if !ok {
