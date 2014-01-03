@@ -19,9 +19,9 @@ _cgo_export.*
 
 _testmain.go
 
-*.exe
+#*.exe
 
-#main compiled app
+#main compiled app for testing
 ponydownloader
 
 #here lies my poniboo.ru key, I do not want to share
