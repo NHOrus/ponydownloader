@@ -7,6 +7,9 @@ import ("fmt"
 	"log"
 //	"io"
 	"github.com/vaughan0/go-ini"
+	"encoding/json"
+	"net/http"
+	"io/ioutil"
 	)	
 
 
@@ -20,7 +23,39 @@ func main(){
 	if !ok {
 		panic("'key' variable missing from 'main' section")
 		}
-
+	length := len(os.Args)
+	imgid := os.Args[length - 1] //temporally, because later would do with flags.
+	
 	fmt.Println(key)
-//	config.Close()
+	
+	fmt.Println(imgid)
+	
+	parse (imgid, key)
 }
+
+func parse(imgid string, key string) (url string) {
+	source := "http://derpiboo.ru/" + imgid + ".json?key=" + key
+	fmt.Println(source)
+	
+	resp, err := http.Get(source)
+		if err != nil {
+			panic(err)
+		}
+	
+	defer resp.Body.Close()
+	
+	var dat map[string]interface{}
+	
+	body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			panic(err)
+		}
+	
+	if err := json.Unmarshal(body, &dat); err != nil {
+        panic(err)
+    }
+	url = "http:" + dat["image"].(string)
+	fmt.Println(url)
+	return
+	}
+	
