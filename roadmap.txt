@@ -34,9 +34,9 @@ derpibo.ru is 1-indexed, default stoppage is 0, equivalent to go through all
 Todo:
 -----
 
-- get image json from derpiboo.ru
+- get image json from derpiboo.ru - done
 - download image by imageid
-- add flags (rudimentary) and args(only imageid)
+- add flags (rudimentary) and args(only imageid) - partially
 - add search by tag json
 - iterage and extract imageid from pages of search json
 - implement database
