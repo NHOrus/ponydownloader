@@ -61,7 +61,7 @@ func parse(imgid string, key string) (imgdata Image) {
         panic(err)
     }
 	imgdata.url = "http:" + dat["image"].(string)
-	fmt.Pringln(dat)
+	fmt.Println(dat)
 //	fmt.Println(url)
 	return
 	}
