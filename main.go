@@ -11,7 +11,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"io/ioutil"
-	"strconv"
+//	"strconv"
 	)	
 
 
@@ -80,9 +80,11 @@ func parse(imgid string, key string) (imgdata Image) {
 
 	imgdata.url = "http:" + dat["image"].(string)
 	imgdata.hash = dat["sha512_hash"].(string)  //for the future and checking that we got file right
-	imgdata.filename = strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string)
+	imgdata.filename = dat["file_name"].(string)
+	
+//	fmt.Println(strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64))
 
-//	fmt.Println(dat)
+	fmt.Println(dat)
 
 // for now and troubleshooting
 	fmt.Println(imgdata.url)
