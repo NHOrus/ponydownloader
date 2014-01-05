@@ -33,7 +33,13 @@ func main(){
 	parse (imgid, key)
 }
 
-func parse(imgid string, key string) (url string) {
+type Image struct {
+	url		string
+	filename	string
+	hash		string
+	}
+
+func parse(imgid string, key string) (imgdata Image) {
 	source := "http://derpiboo.ru/" + imgid + ".json?key=" + key
 	fmt.Println(source)
 	
@@ -54,8 +60,9 @@ func parse(imgid string, key string) (url string) {
 	if err := json.Unmarshal(body, &dat); err != nil {
         panic(err)
     }
-	url = "http:" + dat["image"].(string)
-	fmt.Println(url)
+	imgdata.url = "http:" + dat["image"].(string)
+	fmt.Pringln(dat)
+//	fmt.Println(url)
 	return
 	}
 	
