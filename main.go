@@ -10,6 +10,7 @@ import ("fmt"
 	"encoding/json"
 	"net/http"
 	"io/ioutil"
+	"strconv"
 	)	
 
 
@@ -26,11 +27,14 @@ func main(){
 	length := len(os.Args)
 	imgid := os.Args[length - 1] //temporally, because later would do with flags.
 	
-	fmt.Println(key)
+//	fmt.Println(key)
 	
-	fmt.Println(imgid)
+	fmt.Println("Processing image No " + imgid)
 	
-	parse (imgid, key)
+	imgdat := parse (imgid, key)
+
+	go dlimage(imgdat)
+
 }
 
 type Image struct {
@@ -40,8 +44,9 @@ type Image struct {
 	}
 
 func parse(imgid string, key string) (imgdata Image) {
-	source := "http://derpiboo.ru/" + imgid + ".json?key=" + key
-	fmt.Println(source)
+
+	source := "http://derpiboo.ru/" + imgid + ".json?nofav=&nocomments=?key=" + key
+//	fmt.Println(source)
 	
 	resp, err := http.Get(source)
 		if err != nil {
@@ -60,9 +65,19 @@ func parse(imgid string, key string) (imgdata Image) {
 	if err := json.Unmarshal(body, &dat); err != nil {
         panic(err)
     }
+
 	imgdata.url = "http:" + dat["image"].(string)
-	fmt.Println(dat)
-//	fmt.Println(url)
+	imgdata.hash = dat["sha512_hash"].(string)
+	imgdata.filename = strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string)
+
+//	fmt.Println(dat)
+
+	fmt.Println(imgdata.url)
+	fmt.Println(imgdata.hash)
+	fmt.Println(imgdata.filename)
+
 	return
 	}
 	
+
+func dlimage(imgdata Image) {}
