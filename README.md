@@ -3,6 +3,10 @@ ponydownloader
 
 Attempt to learn go and exploit derpiboo.ru public api to batch download files concurrently.
 
+Current version gets a number of image and saves it in current directory
+
+There are ways to go, but it provides minimal functionality as of now
+
 
 config.ini
 ----------
