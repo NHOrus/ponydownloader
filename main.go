@@ -6,19 +6,19 @@ import (
 	"os"
 //	"errors"
 //	"log"
-//	"io"
+	"io"
 	"github.com/vaughan0/go-ini"
 	"encoding/json"
 	"net/http"
 	"io/ioutil"
-//	"strconv"
+	"strconv"
 	)	
 
 
 func main(){
 
 	fmt.Println("Derpiboo.ru Downloader version 0.0.2 \nWorking")
-	fmt.Println("Working")
+//	fmt.Println("Working")
 
 	config, err := ini.LoadFile("config.ini") // Loading default config file and checking for various errors.
 
@@ -35,6 +35,11 @@ func main(){
 		}
 
 	length := len(os.Args)
+	if length == 1 {
+		fmt.Println("Nothing to download, bye!")
+		os.Exit(0)
+	}
+	
 	imgid := os.Args[length - 1] //Last argument given presumed to be number of image on site. Temporally, because later would do with flags.
 	
 //	fmt.Println(key) //Just checking that I am not wrong
@@ -43,7 +48,7 @@ func main(){
 	
 	imgdat := parse (imgid, key)
 
-	go dlimage(imgdat)
+	dlimage(imgdat)
 
 }
 
@@ -80,19 +85,33 @@ func parse(imgid string, key string) (imgdata Image) {
 
 	imgdata.url = "http:" + dat["image"].(string)
 	imgdata.hash = dat["sha512_hash"].(string)  //for the future and checking that we got file right
-	imgdata.filename = dat["file_name"].(string)
+	imgdata.filename = strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string)
 	
 //	fmt.Println(strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64))
 
-	fmt.Println(dat)
+//	fmt.Println(dat)
 
 // for now and troubleshooting
-	fmt.Println(imgdata.url)
-	fmt.Println(imgdata.hash)
-	fmt.Println(imgdata.filename)
+//	fmt.Println(imgdata.url)
+//	fmt.Println(imgdata.hash)
+//	fmt.Println(imgdata.filename)
 
 	return
 	}
 	
 
-func dlimage(imgdata Image) {}
+func dlimage(imgdata Image) {
+	fmt.Println("Saving as ", imgdata.filename)
+	output, err := os.Create(imgdata.filename)
+	defer output.Close()
+	
+	response, err := http.Get(imgdata.url)
+    if err != nil {
+		fmt.Println("Error while downloading", imgdata.url, "-", err)
+		return
+    }
+    defer response.Body.Close()
+    
+    io.Copy(output, response.Body)
+	
+	}
