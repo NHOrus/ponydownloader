@@ -1,10 +1,11 @@
 package main
 
-import ("fmt"
+import (
+"fmt"
 //	"net"
 	"os"
 //	"errors"
-	"log"
+//	"log"
 //	"io"
 	"github.com/vaughan0/go-ini"
 	"encoding/json"
@@ -15,19 +16,28 @@ import ("fmt"
 
 
 func main(){
-	fmt.Println("Check one")
-	config, err := ini.LoadFile("config.ini")
-	if os.IsNotExist(err) { panic("config.ini does not exist, create it")}
-	if err != nil { log.Fatal(err) }
 
-	key, ok := config.Get("main", "key")
+	fmt.Println("Derpiboo.ru Downloader version 0.0.2 \nWorking")
+	fmt.Println("Working")
+
+	config, err := ini.LoadFile("config.ini") // Loading default config file and checking for various errors.
+
+	if os.IsNotExist(err) { 
+		panic("config.ini does not exist, create it")
+		}
+
+	if err != nil { panic(err) }
+
+	key, ok := config.Get("main", "key") //Need to make things for key == nil
+
 	if !ok {
 		panic("'key' variable missing from 'main' section")
 		}
+
 	length := len(os.Args)
-	imgid := os.Args[length - 1] //temporally, because later would do with flags.
+	imgid := os.Args[length - 1] //Last argument given presumed to be number of image on site. Temporally, because later would do with flags.
 	
-//	fmt.Println(key)
+//	fmt.Println(key) //Just checking that I am not wrong
 	
 	fmt.Println("Processing image No " + imgid)
 	
@@ -45,33 +55,36 @@ type Image struct {
 
 func parse(imgid string, key string) (imgdata Image) {
 
-	source := "http://derpiboo.ru/" + imgid + ".json?nofav=&nocomments=?key=" + key
+	source := "http://derpiboo.ru/" + imgid + ".json?nofav=&nocomments=?key=" + key //correct way is to assemble all the different arguments and only then append them to source url. I can live with hardcoded source site. May be add check for derpiboo.ru or derpibooru.org ?
 //	fmt.Println(source)
 	
-	resp, err := http.Get(source)
+	resp, err := http.Get(source)	//Getting our nice http response. Needs checking for 404 and other responses that are... less expected
 		if err != nil {
 			panic(err)
 		}
 	
-	defer resp.Body.Close()
+	defer resp.Body.Close()	//and not forgetting to close it when it's done
 	
 	var dat map[string]interface{}
 	
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(resp.Body)	//stolen from official documentation
 		if err != nil {
 			panic(err)
 		}
 	
-	if err := json.Unmarshal(body, &dat); err != nil {
-        panic(err)
-    }
+	if err := json.Unmarshal(body, &dat); //transforming json into native map
+	
+	err != nil {
+	        panic(err)
+		}
 
 	imgdata.url = "http:" + dat["image"].(string)
-	imgdata.hash = dat["sha512_hash"].(string)
+	imgdata.hash = dat["sha512_hash"].(string)  //for the future and checking that we got file right
 	imgdata.filename = strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string)
 
 //	fmt.Println(dat)
 
+// for now and troubleshooting
 	fmt.Println(imgdata.url)
 	fmt.Println(imgdata.hash)
 	fmt.Println(imgdata.filename)

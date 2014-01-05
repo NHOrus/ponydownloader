@@ -17,33 +17,29 @@ Behavior:
 
 If no flags or arguments given, os.Exit(0) as there is nothing to do. (possibly, interactive mode?)
 If argument is a number, attempt to interpret it as imageid.
-If argument is not a number, --help
+If argument is not a number, -h. Will be provided by flag package
 If --version, print version and exit
-if --tag, search by tag in argument. Download all filtered images
+if -t, search by tag in argument. Download all filtered images
 
-Filters, work only with --tag:
-	--created {<,=<,>,=>}date
-	--updated {<,=<,>,=>}date
-	--reverse - sort and download in reverse order
+Filters, work only with -t, need revising
 
-	--startpage =page
-	--stoppage =page
 derpibo.ru is 1-indexed, default stoppage is 0, equivalent to go through all
-	--maxdl =number - limit number of downloaded images, default 0 - download them all
 	
 Todo:
 -----
 
 - get image json from derpiboo.ru - done
+- implement response to empty argument line
+- implement check for http return code
 - download image by imageid
 - add flags (rudimentary) and args(only imageid) - partially
 - add search by tag json
 - iterage and extract imageid from pages of search json
 - implement database
-- implement default config.ini writing / validity checking
-- implement directory of saving change
+- implement default config.ini writing / validity checking - partially, needs more checks
+- implement change of directory for containing downloaded images
 - implement directory creation according to search query
-- throw extracted imageids at downloading function (possibly one function to download json, extract name, format according to config.ini and pass formatted name and url to downloading function in async to prevent lock due to lack of response and cdn availability on derpiboo.ru side?)
+- throw extracted imageids at downloading function (possibly one function to download json, extract name, format according to config.ini and pass formatted name and url to downloading function in async to prevent lock due to lack of response and cdn availability on derpiboo.ru side?) - now i know how thrown content would look like
 - implement simultaneous downloads restrictions
 - revise todo
 
