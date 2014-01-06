@@ -46,7 +46,7 @@ func main(){
 	
 	fmt.Println("Processing image No " + imgid)
 	
-	imgdat := parse (imgid, key)
+	imgdat := parseImg (imgid, key)
 
 	dlimage(imgdat)
 
@@ -58,7 +58,7 @@ type Image struct {
 	hash		string
 	}
 
-func parse(imgid string, key string) (imgdata Image) {
+func parseImg(imgid string, key string) (imgdata Image) {
 
 	source := "http://derpiboo.ru/" + imgid + ".json?nofav=&nocomments=?key=" + key //correct way is to assemble all the different arguments and only then append them to source url. I can live with hardcoded source site. May be add check for derpiboo.ru or derpibooru.org ?
 //	fmt.Println(source)
@@ -115,3 +115,5 @@ func dlimage(imgdata Image) {
     io.Copy(output, response.Body)
 	
 	}
+
+func parseTag ( tag string ) (imgdata chan-< Image) {}
