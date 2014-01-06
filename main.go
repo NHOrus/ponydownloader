@@ -12,6 +12,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+//	"crypto/sha512"
+//	"encoding/hex"
 )
 
 func main() {
@@ -86,16 +88,16 @@ func parse(imgid string, key string) (imgdata Image) {
 
 	imgdata.url = "http:" + dat["image"].(string)
 	imgdata.hash = dat["sha512_hash"].(string) //for the future and checking that we got file right
-	imgdata.filename = strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string)
+	imgdata.filename = strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string) + "." + dat["original_format"].(string)
 
 	//	fmt.Println(strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64))
 
-	//	fmt.Println(dat)
+//	fmt.Println(dat)
 
 	// for now and troubleshooting
 	//	fmt.Println(imgdata.url)
-	//	fmt.Println(imgdata.hash)
-	//	fmt.Println(imgdata.filename)
+//	fmt.Println(imgdata.hash)
+//	fmt.Println(imgdata.filename)
 
 	return
 }
@@ -111,7 +113,24 @@ func dlimage(imgdata Image) {
 		return
 	}
 	defer response.Body.Close()
+	
+//	hash := sha512.New()
 
 	io.Copy(output, response.Body)
+
+/*	io.Copy(hash, response.Body)
+	b := make([]byte, hash.Size())
+	hash.Sum(b[:0])
+			
+	fmt.Println("\n", hex.EncodeToString(b), "\n", imgdata.hash )
+		
+	if hex.EncodeToString(b) == imgdata.hash {
+		fmt.Println("Hash correct") 
+	}	else { 
+		fmt.Println("Hash wrong") 
+	}
+
+	fmt.Println("\n", hex.EncodeToString(hash.Sum(nil)), "\n", imgdata.hash )
+*/
 
 }
