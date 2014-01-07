@@ -6,6 +6,7 @@
 # Folders
 _obj
 _test
+img
 
 # Architecture specific extensions/prefixes
 *.[568vq]
@@ -26,3 +27,8 @@ ponydownloader
 
 #here lies my poniboo.ru key, I do not want to share
 config.ini
+
+#images that should not be git
+*.png
+*.jpeg
+*.jpg
