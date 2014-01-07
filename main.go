@@ -49,7 +49,9 @@ func main() {
 
 	fmt.Println("Processing image No " + imgid)
 	
-	imgdat := parseImg (imgid, key)
+	imgdat := make (chan Image, 1)
+	
+	parseImg (imgdat, imgid, key)
 
 	dlimage(imgdat)
 
@@ -61,7 +63,7 @@ type Image struct {
 	hash     string
 }
 
-func parseImg(imgid string, key string) (imgdata Image) {
+func parseImg(imgchan chan<- Image, imgid string, key string) {
 
 	source := "http://derpiboo.ru/" + imgid + ".json?nofav=&nocomments=?key=" + key //correct way is to assemble all the different arguments and only then append them to source url. I can live with hardcoded source site. May be add check for derpiboo.ru or derpibooru.org ?
 	//	fmt.Println(source)
@@ -85,24 +87,30 @@ func parseImg(imgid string, key string) (imgdata Image) {
 	err != nil {
 		panic(err)
 	}
-
+	var imgdata Image
 	imgdata.url = "http:" + dat["image"].(string)
 	imgdata.hash = dat["sha512_hash"].(string) //for the future and checking that we got file right
 	imgdata.filename = strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string) + "." + dat["original_format"].(string)
 
-	//	fmt.Println(strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64))
+//	fmt.Println(strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64))
 
 //	fmt.Println(dat)
 
-	// for now and troubleshooting
-	//	fmt.Println(imgdata.url)
+//	for now and troubleshooting
+//	fmt.Println(imgdata.url)
 //	fmt.Println(imgdata.hash)
 //	fmt.Println(imgdata.filename)
 
-	return
+	imgchan <- imgdata
+	
+	return 
 }
 
-func dlimage(imgdata Image) {
+func dlimage(imgchan <-chan Image) {
+//	fmt.Println("reading channel")
+	
+	imgdata := <-imgchan
+	
 	fmt.Println("Saving as ", imgdata.filename)
 	output, err := os.Create(imgdata.filename)
 	defer output.Close()
@@ -135,5 +143,5 @@ func dlimage(imgdata Image) {
 
 }
 
-func parseTag ( tag string ) (imgdata chan-< Image) {}
+//func parseTag ( tag string ) (imgdata <-chan Image) {}
 
