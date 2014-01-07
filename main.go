@@ -143,5 +143,7 @@ func dlimage(imgchan <-chan Image) {
 
 }
 
-//func parseTag ( tag string ) (imgdata <-chan Image) {}
+func parseTag ( imgchan chan<- Image, tag string, key string) {
+
+}
 
