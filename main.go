@@ -2,26 +2,34 @@ package main
 
 import (
 	"fmt"
-	//	"net"
 	"os"
-	//	"errors"
-	//	"log"
 	"encoding/json"
 	"github.com/vaughan0/go-ini"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"flag"
+	
+//	"errors"
+//	"log"
+//	"net"
 //	"crypto/sha512"
 //	"encoding/hex"
+
 )
+
+//	defaults:
+var (
+	WORKERS	int64	= 10	//Number of workers
+	IMGDIR	string	= "img"	//default download directory
+	)
 
 func main() {
 
 	fmt.Println("Derpiboo.ru Downloader version 0.0.4 \nWorking")
 
 	config, err := ini.LoadFile("config.ini") // Loading default config file and checking for various errors.
-
 	if os.IsNotExist(err) {
 		panic("config.ini does not exist, create it")
 	}
@@ -29,24 +37,33 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	key, ok := config.Get("main", "key") //Need to make things for key == nil
-
+	
+	//Getting stuff from config, overwriting defaults
+	
+	key, ok := config.Get("main", "key") 
 	if !ok {
 		panic("'key' variable missing from 'main' section")
 	}
-
-	length := len(os.Args)
+	
+	W_temp, _ := config.Get("main", "workers")
+		if W_temp != "" { 
+		WORKERS, err = strconv.ParseInt( W_temp, 10, 0)
+		if err != nil { fmt.Println("Wrong configuration: Amount of workers is not a number"); os.Exit(1) }
+	}
+	
+	flag.Parse()
+	
+	length := flag.NArg()
 	if length == 1 {
 		fmt.Println("Nothing to download, bye!")
 		os.Exit(0)
 	}
 
-	imgid := os.Args[length-1] //Last argument given presumed to be number of image on site. Temporally, because later would do with flags.
+	imgid := flag.Arg(length-1) //Last argument given presumed to be number of image on site. Temporally, because later would do with flags.
 
 	//	fmt.Println(key) //Just checking that I am not wrong
 
-	_, err = strconv.ParseInt(imgid, 10, 64)
+	_, err = strconv.ParseInt(imgid, 10, 0)
 	if err != nil { fmt.Println("Wrong input: can not parse", imgid, "as a number"); os.Exit(1) }
 	
 	
