@@ -27,7 +27,7 @@ var (
 
 func main() {
 
-	fmt.Println("Derpiboo.ru Downloader version 0.0.4 \nWorking")
+	fmt.Println("Derpiboo.ru Downloader version 0.0.5 \nWorking")
 
 	config, err := ini.LoadFile("config.ini") // Loading default config file and checking for various errors.
 	if os.IsNotExist(err) {
@@ -50,6 +50,11 @@ func main() {
 		WORKERS, err = strconv.ParseInt( W_temp, 10, 0)
 		if err != nil { fmt.Println("Wrong configuration: Amount of workers is not a number"); os.Exit(1) }
 	}
+	
+	ID_temp, _ := config.Get("main", "downdir")
+		if ID_temp != "" { IMGDIR = ID_temp }
+	
+	//here shall be flag parser
 	
 	flag.Parse()
 	
