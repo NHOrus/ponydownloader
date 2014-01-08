@@ -54,10 +54,15 @@ func main() {
 	flag.Parse()
 	
 	length := flag.NArg()
-	if length == 1 {
+	if length == 0 {
 		fmt.Println("Nothing to download, bye!")
 		os.Exit(0)
 	}
+
+	//	creating directory for downloads if not yet done
+    if err := os.MkdirAll(IMGDIR, 0777); err != nil {
+         panic(err)
+    }
 
 	imgid := flag.Arg(length-1) //Last argument given presumed to be number of image on site. Temporally, because later would do with flags.
 
@@ -131,14 +136,19 @@ func parseImg(imgchan chan<- Image, imgid string, key string) {
 func dlimage(imgchan <-chan Image) {
 //	fmt.Println("reading channel")
 	
+	
 	imgdata := <-imgchan
 	
 	fmt.Println("Saving as ", imgdata.filename)
-	output, err := os.Create(imgdata.filename)
+	PathSep, _ := strconv.Unquote(strconv.QuoteRune(os.PathSeparator))
+
+	output, err := os.Create(IMGDIR + PathSep + imgdata.filename)
+	if err !=err { panic(err)}
 	defer output.Close()
 
 	response, err := http.Get(imgdata.url)
 	if err != nil {
+		panic(err)	
 		fmt.Println("Error while downloading", imgdata.url, "-", err)
 		return
 	}
