@@ -18,8 +18,7 @@ import (
 
 func main() {
 
-	fmt.Println("Derpiboo.ru Downloader version 0.0.2 \nWorking")
-	//	fmt.Println("Working")
+	fmt.Println("Derpiboo.ru Downloader version 0.0.4 \nWorking")
 
 	config, err := ini.LoadFile("config.ini") // Loading default config file and checking for various errors.
 
@@ -47,6 +46,10 @@ func main() {
 
 	//	fmt.Println(key) //Just checking that I am not wrong
 
+	_, err = strconv.ParseInt(imgid, 10, 64)
+	if err != nil { fmt.Println("Wrong input: can not parse", imgid, "as a number"); os.Exit(1) }
+	
+	
 	fmt.Println("Processing image No " + imgid)
 	
 	imgdat := make (chan Image, 1)
@@ -65,8 +68,10 @@ type Image struct {
 
 func parseImg(imgchan chan<- Image, imgid string, key string) {
 
-	source := "http://derpiboo.ru/" + imgid + ".json?nofav=&nocomments=?key=" + key //correct way is to assemble all the different arguments and only then append them to source url. I can live with hardcoded source site. May be add check for derpiboo.ru or derpibooru.org ?
-	//	fmt.Println(source)
+	source := "http://derpiboo.ru/" + imgid + ".json?nofav=&nocomments="
+	if (  key != "" ) { source = source + "&key=" + key }
+	
+//	fmt.Println(source)
 
 	resp, err := http.Get(source) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
 	if err != nil {
