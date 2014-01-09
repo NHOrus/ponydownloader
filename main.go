@@ -29,8 +29,6 @@ var (
 
 func main() {
 
-	fmt.Println("Derpiboo.ru Downloader version 0.0.5 \nWorking")
-
 	config, err := ini.LoadFile("config.ini") // Loading default config file and checking for various errors.
 	if os.IsNotExist(err) {
 		panic("config.ini does not exist, create it")
@@ -65,6 +63,9 @@ func main() {
 
 	flag.StringVar(&TAG, "t", TAG, "Tag to download: Replace spaces with \"+\".")
 	flag.Parse()
+	
+	fmt.Println("Derpiboo.ru Downloader version 0.0.6 \nWorking")
+
 
 	length := flag.NArg()
 	if length == 0 && TAG == "" {

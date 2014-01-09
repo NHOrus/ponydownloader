@@ -19,7 +19,11 @@ If no flags or arguments given, os.Exit(0) as there is nothing to do. (possibly,
 If argument is a number, attempt to interpret it as imageid.
 If argument is not a number, -h. Will be provided by flag package
 If --version, print version and exit
-if -t, search by tag in argument. Download all filtered images
+If -t, search by tag in argument. Download all filtered images
+Modificator -bp adds start page
+Modificator -ep adds stop page
+Modificator -r adds minimal rating
+Modificator -R adds maximal rating
 
 Filters, work only with -t, need revising
 
@@ -29,17 +33,16 @@ Todo:
 -----
 
 - get image json from derpiboo.ru - done
-- implement response to empty argument line
+- implement response to empty argument line -done
 - implement check for http return code
-- download image by imageid
-- add flags (rudimentary) and args(only imageid) - partially
-- add search by tag json
-- iterage and extract imageid from pages of search json
+- download image by imageid - done
+- add flags - done, partially
+- add search by tag json - done partially
 - implement database
 - implement default config.ini writing / validity checking - partially, needs more checks
-- implement change of directory for containing downloaded images
+- implement change of directory for containing downloaded images - done
 - implement directory creation according to search query
-- throw extracted imageids at downloading function (possibly one function to download json, extract name, format according to config.ini and pass formatted name and url to downloading function in async to prevent lock due to lack of response and cdn availability on derpiboo.ru side?) - now i know how thrown content would look like
-- implement simultaneous downloads restrictions
+- throw extracted imageids at downloading function - need to be refactored
+- implement simultaneous downloads restrictions - done
 - revise todo
 

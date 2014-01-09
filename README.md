@@ -39,7 +39,9 @@ config.ini
 Secion [main]
 
 key => your derpiboo.ru key
+
 downdir => in this directory your images would be saved
+
 workers => number of simultaneous downloads
 
 If any line is not changed from default, program would use default, build-in parameters.
