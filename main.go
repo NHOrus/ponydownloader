@@ -67,7 +67,7 @@ func main() {
 	flag.Parse()
 
 	length := flag.NArg()
-	if length == 0 {
+	if length == 0 && TAG == "" {
 		fmt.Println("Nothing to download, bye!")
 		os.Exit(0)
 	}
@@ -77,7 +77,7 @@ func main() {
 		panic(err)
 	}
 
-	imgdat := make(chan Image, 10)
+	imgdat := make(chan Image, WORKERS)
 	
 	if TAG == "" {
 
@@ -135,6 +135,8 @@ func parseImg(imgchan chan<- Image, imgid string, key string) {
 	if err != nil {
 		panic(err)
 	}
+	
+	fmt.Println(body)
 
 	if err := json.Unmarshal(body, &dat); //transforming json into native map
 
@@ -182,11 +184,10 @@ func dlimage(imgchan <-chan Image) {
 	}
 	defer response.Body.Close()
 
-	//	hash := sha512.New()
-
 	io.Copy(output, response.Body)
 
-	/*	io.Copy(hash, response.Body)
+	/*	hash := sha512.New()
+		io.Copy(hash, response.Body)
 		b := make([]byte, hash.Size())
 		hash.Sum(b[:0])
 
@@ -204,5 +205,36 @@ func dlimage(imgchan <-chan Image) {
 }
 
 func parseTag(imgchan chan<- Image, tag string, key string) {
+	
+	if tag == "" { fmt.Println("Something has gone horribly wrong, no tag found?"); os.Exit(1) }
+	source := "http://derpiboo.ru/search.json?nofav=&nocomments=&utf8=false"
+	if key != "" { source = source + "&key=" + key }
+	
+	fmt.Println(source + "&q=" + tag)
+	
+	resp, err := http.Get(source + "&q=" + tag) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
+	if err != nil {
+		panic(err)
+	}
 
+	defer resp.Body.Close() //and not forgetting to close it when it's done
+
+	var dat map[string]interface{}
+	
+	//fmt.Println(resp)
+	
+	body, err := ioutil.ReadAll(resp.Body) //stolen from official documentation
+	if err != nil {
+		panic(err)
+	}
+	
+	//fmt.Println(body)
+
+	if err := json.Unmarshal(body, &dat); //transforming json into native map
+
+	err != nil {
+		panic(err)
+	
+	}
+	fmt.Println(dat)
 }
