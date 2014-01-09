@@ -42,7 +42,7 @@ key => your derpiboo.ru key
 
 downdir => in this directory your images would be saved
 
-workers => number of simultaneous downloads
+workers => number of download buffer. Leave it no less that default: else there would be slowdown when parser requests next search page from derpibooru
 
 If any line is not changed from default, program would use default, build-in parameters.
 Currenly only key is ought to be in configuration file. It may be empty, then program would ignore it's existence. 
