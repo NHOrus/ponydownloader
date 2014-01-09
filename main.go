@@ -231,15 +231,18 @@ func dlimage(imgchan <-chan Image, done chan bool) {
 
 func parseTag(imgchan chan<- Image, tag string, key string) {
 
-	source := "http://derpiboo.ru/search.json?nofav=&nocomments=&utf8=false"
+	source := "http://derpiboo.ru/search.json?nofav=&nocomments="
 
 	if key != "" {
 		source = source + "&key=" + key
 	}
 
 	fmt.Println("Searching as", source+"&q="+tag)
-
-	resp, err := http.Get(source + "&q=" + tag) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
+	var i int = 1
+	
+	for {
+		fmt.Println("Searching page",i)
+	resp, err := http.Get(source + "&q=" + tag + "&page=" + strconv.Itoa(i)) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
 	if err != nil {
 		panic(err)
 	}
@@ -263,7 +266,9 @@ func parseTag(imgchan chan<- Image, tag string, key string) {
 		panic(err)
 
 	}
-
+	
+	if len(dats) == 0 { fmt.Println("Pages are over"); break } //exit due to finishing all pages
+	
 	var imgdata Image
 
 	for _, dat := range dats {
@@ -275,6 +280,7 @@ func parseTag(imgchan chan<- Image, tag string, key string) {
 
 		imgchan <- imgdata
 	}
-
+	i++
+}
 	close(imgchan)
 }
