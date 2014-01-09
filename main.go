@@ -79,6 +79,7 @@ func main() {
 	}
 
 	imgdat := make(chan Image, WORKERS)
+	done := make(chan bool)
 	
 	if TAG == "" {
 
@@ -94,17 +95,19 @@ func main() {
 
 		fmt.Println("Processing image No " + imgid)
 
-		parseImg(imgdat, imgid, key)
+		go parseImg(imgdat, imgid, key)
 
 	}	else	{
 	//	and here we parse tag and abuse stuff horribly
 		
-		fmt.Println("trying to process tags")
-		parseTag(imgdat, TAG, key)
+		fmt.Println("Trying to process tags")
+		go parseTag(imgdat, TAG, key)
 	}
 	
-
-	dlimage(imgdat)
+	fmt.Println("Starting worker")
+	go dlimage(imgdat, done)
+	
+	<-done
 
 }
 
@@ -121,7 +124,7 @@ func parseImg(imgchan chan<- Image, imgid string, key string) {
 		source = source + "&key=" + key
 	}
 
-	//	fmt.Println(source)
+		fmt.Println(source)
 
 	resp, err := http.Get(source) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
 	if err != nil {
@@ -137,7 +140,7 @@ func parseImg(imgchan chan<- Image, imgid string, key string) {
 		panic(err)
 	}
 	
-	fmt.Println(body)
+	//fmt.Println(body)
 
 	if err := json.Unmarshal(body, &dat); //transforming json into native map
 
@@ -159,16 +162,21 @@ func parseImg(imgchan chan<- Image, imgid string, key string) {
 	//	fmt.Println(imgdata.filename)
 
 	imgchan <- imgdata
+	
+	close(imgchan)
 
 	return
 }
 
-func dlimage(imgchan <-chan Image) {
+func dlimage(imgchan <-chan Image, done chan bool) {
 	//	fmt.Println("reading channel")
-
-	imgdata := <-imgchan
 	
-	if imgdata.filename == "" { fmt.Println("Empty filename. Oops?"); return }
+	for {
+
+	imgdata, more := <-imgchan
+	
+	if	more {
+	if imgdata.filename == "" { fmt.Println("Empty filename. Oops?"); break }
 	
 	fmt.Println("Saving as ", imgdata.filename)
 	PathSep, _ := strconv.Unquote(strconv.QuoteRune(os.PathSeparator))
@@ -204,7 +212,12 @@ func dlimage(imgchan <-chan Image) {
 
 		fmt.Println("\n", hex.EncodeToString(hash.Sum(nil)), "\n", imgdata.hash )
 	*/
-
+		} else	{
+			done <- true
+		
+		}
+				
+		}
 }
 
 func parseTag(imgchan chan<- Image, tag string, key string) {
@@ -222,7 +235,7 @@ func parseTag(imgchan chan<- Image, tag string, key string) {
 
 	defer resp.Body.Close() //and not forgetting to close it when it's done
 
-	var dat []map[string]interface{}
+	var dats []map[string]interface{}
 	
 	//fmt.Println(resp)
 	
@@ -233,12 +246,23 @@ func parseTag(imgchan chan<- Image, tag string, key string) {
 	
 	//fmt.Println(body)
 
-	if err := json.Unmarshal(body, &dat); //transforming json into native map
+	if err := json.Unmarshal(body, &dats); //transforming json into native map
 
 	err != nil {
 		panic(err)
 	
 	}
-	//fmt.Println(dat)
+	
+	var imgdata Image
+	
+	for _, dat := range dats {
+		
+		imgdata.url = "http:" + dat["image"].(string)
+		imgdata.hash = dat["sha512_hash"].(string) //for the future and checking that we got file right
+		imgdata.filename = strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string) + "." + dat["original_format"].(string)
+		
+		imgchan <- imgdata
+	}	
+	
 	close(imgchan)
 }
