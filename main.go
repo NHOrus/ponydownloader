@@ -166,7 +166,9 @@ func dlimage(imgchan <-chan Image) {
 	//	fmt.Println("reading channel")
 
 	imgdata := <-imgchan
-
+	
+	if imgdata.filename == "" { fmt.Println("Empty filename. Oops?"); return }
+	
 	fmt.Println("Saving as ", imgdata.filename)
 	PathSep, _ := strconv.Unquote(strconv.QuoteRune(os.PathSeparator))
 
@@ -219,7 +221,7 @@ func parseTag(imgchan chan<- Image, tag string, key string) {
 
 	defer resp.Body.Close() //and not forgetting to close it when it's done
 
-	var dat map[string]interface{}
+	var dat []map[string]interface{}
 	
 	//fmt.Println(resp)
 	
@@ -236,5 +238,6 @@ func parseTag(imgchan chan<- Image, tag string, key string) {
 		panic(err)
 	
 	}
-	fmt.Println(dat)
+	//fmt.Println(dat)
+	close(imgchan)
 }
