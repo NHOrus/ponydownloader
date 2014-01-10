@@ -69,7 +69,7 @@ func main() {
 	flag.StringVar(&TAG, "t", TAG, "Tags to download")
 	flag.Parse()
 
-	fmt.Println("Derpiboo.ru Downloader version 0.1.0 \nWorking")
+	fmt.Println("Derpiboo.ru Downloader version 0.1.1 \nWorking")
 
 	if flag.NArg() == 0 && TAG == "" {
 		fmt.Println("Nothing to download, bye!")
@@ -89,7 +89,7 @@ func main() {
 
 		//	checking argument for being a number and then getting image data
 
-		imgid := flag.Arg(1)
+		imgid := flag.Arg(0)
 		_, err = strconv.Atoi(imgid)
 
 		if err != nil {
@@ -187,9 +187,9 @@ func dlimage(imgchan <-chan Image, done chan bool) {
 			}
 
 			fmt.Println("Saving as", imgdata.filename)
-			PathSep, _ := strconv.Unquote(strconv.QuoteRune(os.PathSeparator)) //I am sure that it can be done simplier, but do not want to add additional packages
-
-			output, err := os.Create(IMGDIR + PathSep + imgdata.filename) //And now, THE FILE!
+			
+			func() { // to not hold all the files open when there is no need
+			output, err := os.Create(IMGDIR + string(os.PathSeparator) + imgdata.filename) //And now, THE FILE!
 			if err != err {
 				panic(err)
 			}
@@ -204,7 +204,9 @@ func dlimage(imgchan <-chan Image, done chan bool) {
 			defer response.Body.Close() //Same, we shall not listen to the void when we finished getting image
 
 			io.Copy(output, response.Body)
-
+			
+			}()
+			
 			// hash is here. Not yet working, sorry
 			/*	hash := sha512.New()
 				io.Copy(hash, response.Body)
