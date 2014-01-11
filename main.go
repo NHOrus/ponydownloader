@@ -153,18 +153,7 @@ func parseImg(imgchan chan<- Image, imgid string, key string) {
 		panic(err)
 	}
 
-	var imgdata Image
-	imgdata.url = "http:" + dat["image"].(string)
-	//imgdata.hash = dat["sha512_hash"].(string) //for the future and checking that we got file right
-	imgdata.filename = strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string) + "." + dat["original_format"].(string)
-
-	//	fmt.Println(dat)
-	//	for troubleshooting later
-	//	fmt.Println(imgdata.url)
-	//	fmt.Println(imgdata.hash)
-	//	fmt.Println(imgdata.filename)
-
-	imgchan <- imgdata
+	InfoToChannel(dat, imgchan)
 
 	close(imgchan) //closing channel, we are done here
 
@@ -274,18 +263,28 @@ func parseTag(imgchan chan<- Image, tag string, key string) {
 			break
 		} //exit due to finishing all pages
 
-		var imgdata Image
-
 		for _, dat := range dats {
-
-			// everything here is stolen from parseImage, because it works the same
-			imgdata.url = "http:" + dat["image"].(string)
-			//imgdata.hash = dat["sha512_hash"].(string) //for the future and checking that we got file right
-			imgdata.filename = strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string) + "." + dat["original_format"].(string)
-
-			imgchan <- imgdata
+			InfoToChannel(dat, imgchan)
 		}
+		
 		i++
 	}
 	close(imgchan)
+}
+
+func InfoToChannel(dat map[string]interface{}, imgchan chan<- Image){
+	
+	var imgdata Image
+	
+	imgdata.url = "http:" + dat["image"].(string)
+	//imgdata.hash = dat["sha512_hash"].(string) //for the future and checking that we got file right
+	imgdata.filename = strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string) + "." + dat["original_format"].(string)
+
+	//	fmt.Println(dat)
+	//	for troubleshooting later
+	//	fmt.Println(imgdata.url)
+	//	fmt.Println(imgdata.hash)
+	//	fmt.Println(imgdata.filename)
+
+	imgchan <- imgdata
 }
