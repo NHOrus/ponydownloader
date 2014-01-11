@@ -187,26 +187,26 @@ func dlimage(imgchan <-chan Image, done chan bool) {
 			}
 
 			fmt.Println("Saving as", imgdata.filename)
-			
+
 			func() { // to not hold all the files open when there is no need
-			output, err := os.Create(IMGDIR + string(os.PathSeparator) + imgdata.filename) //And now, THE FILE!
-			if err != err {
-				panic(err)
-			}
-			defer output.Close() //Not forgetting to deal with it after completing download
+				output, err := os.Create(IMGDIR + string(os.PathSeparator) + imgdata.filename) //And now, THE FILE!
+				if err != err {
+					panic(err)
+				}
+				defer output.Close() //Not forgetting to deal with it after completing download
 
-			response, err := http.Get(imgdata.url)
-			if err != nil {
-				panic(err)
-				fmt.Println("Error while downloading", imgdata.url, "-", err)
-				return
-			}
-			defer response.Body.Close() //Same, we shall not listen to the void when we finished getting image
+				response, err := http.Get(imgdata.url)
+				if err != nil {
+					panic(err)
+					fmt.Println("Error while downloading", imgdata.url, "-", err)
+					return
+				}
+				defer response.Body.Close() //Same, we shall not listen to the void when we finished getting image
 
-			io.Copy(output, response.Body)
-			
+				io.Copy(output, response.Body)
+
 			}()
-			
+
 			// hash is here. Not yet working, sorry
 			/*	hash := sha512.New()
 				io.Copy(hash, response.Body)
@@ -241,48 +241,51 @@ func parseTag(imgchan chan<- Image, tag string, key string) {
 
 	fmt.Println("Searching as", source+"&q="+tag)
 	var i int = 1
-	
+
 	for {
-		fmt.Println("Searching page",i)
-	resp, err := http.Get(source + "&q=" + tag + "&page=" + strconv.Itoa(i)) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
-	if err != nil {
-		panic(err)
+		fmt.Println("Searching page", i)
+		resp, err := http.Get(source + "&q=" + tag + "&page=" + strconv.Itoa(i)) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
+		if err != nil {
+			panic(err)
+		}
+
+		defer resp.Body.Close() //and not forgetting to close it when it's done
+
+		var dats []map[string]interface{} //Because we got array incoming instead of single object, we using an slive of maps!
+
+		//fmt.Println(resp)
+
+		body, err := ioutil.ReadAll(resp.Body) //stolen from official documentation
+		if err != nil {
+			panic(err)
+		}
+
+		//fmt.Println(body)
+
+		if err := json.Unmarshal(body, &dats); //transforming json into native slice of maps
+
+		err != nil {
+			panic(err)
+
+		}
+
+		if len(dats) == 0 {
+			fmt.Println("Pages are over")
+			break
+		} //exit due to finishing all pages
+
+		var imgdata Image
+
+		for _, dat := range dats {
+
+			// everything here is stolen from parseImage, because it works the same
+			imgdata.url = "http:" + dat["image"].(string)
+			//imgdata.hash = dat["sha512_hash"].(string) //for the future and checking that we got file right
+			imgdata.filename = strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string) + "." + dat["original_format"].(string)
+
+			imgchan <- imgdata
+		}
+		i++
 	}
-
-	defer resp.Body.Close() //and not forgetting to close it when it's done
-
-	var dats []map[string]interface{} //Because we got array incoming instead of single object, we using an slive of maps!
-
-	//fmt.Println(resp)
-
-	body, err := ioutil.ReadAll(resp.Body) //stolen from official documentation
-	if err != nil {
-		panic(err)
-	}
-
-	//fmt.Println(body)
-
-	if err := json.Unmarshal(body, &dats); //transforming json into native slice of maps
-
-	err != nil {
-		panic(err)
-
-	}
-	
-	if len(dats) == 0 { fmt.Println("Pages are over"); break } //exit due to finishing all pages
-	
-	var imgdata Image
-
-	for _, dat := range dats {
-		
-		// everything here is stolen from parseImage, because it works the same
-		imgdata.url = "http:" + dat["image"].(string)
-		//imgdata.hash = dat["sha512_hash"].(string) //for the future and checking that we got file right
-		imgdata.filename = strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string) + "." + dat["original_format"].(string)
-
-		imgchan <- imgdata
-	}
-	i++
-}
 	close(imgchan)
 }
