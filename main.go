@@ -14,8 +14,8 @@ import (
 	//	"errors"
 	//	"log"
 	//	"net"
-	//	"crypto/sha512"
-	//	"encoding/hex"
+	"crypto/sha512"
+	"encoding/hex"
 )
 
 //	defaults:
@@ -69,7 +69,7 @@ func main() {
 	flag.StringVar(&TAG, "t", TAG, "Tags to download")
 	flag.Parse()
 
-	fmt.Println("Derpiboo.ru Downloader version 0.1.1 \nWorking")
+	fmt.Println("Derpiboo.ru Downloader version 0.1.2 \nWorking")
 
 	if flag.NArg() == 0 && TAG == "" {
 		fmt.Println("Nothing to download, bye!")
@@ -119,8 +119,8 @@ func main() {
 type Image struct {
 	url      string
 	filename string
-	//	hash     string	//	we do not use hash yet, so it would be commented out for now
-}
+	hash     string	
+	}
 
 func parseImg(imgchan chan<- Image, imgid string, key string) {
 
@@ -129,7 +129,7 @@ func parseImg(imgchan chan<- Image, imgid string, key string) {
 		source = source + "&key=" + key
 	}
 
-	fmt.Println("Getting image indfo at:", source)
+	fmt.Println("Getting image info at:", source)
 
 	resp, err := http.Get(source) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
 	if err != nil {
@@ -186,23 +186,20 @@ func dlimage(imgchan <-chan Image, done chan bool) {
 
 				response, err := http.Get(imgdata.url)
 				if err != nil {
-					panic(err)
 					fmt.Println("Error while downloading", imgdata.url, "-", err)
+					panic(err)
 					return
 				}
 				defer response.Body.Close() //Same, we shall not listen to the void when we finished getting image
 
-				io.Copy(output, response.Body)
+				hash := sha512.New()
+				
+				io.Copy(io.MultiWriter(output, hash), response.Body) //	Writing things we got from Derpibooru into the 
 
-			}()
-
-			// hash is here. Not yet working, sorry
-			/*	hash := sha512.New()
-				io.Copy(hash, response.Body)
 				b := make([]byte, hash.Size())
 				hash.Sum(b[:0])
 
-				fmt.Println("\n", hex.EncodeToString(b), "\n", imgdata.hash )
+				//	fmt.Println("\n", hex.EncodeToString(b), "\n", imgdata.hash )
 
 				if hex.EncodeToString(b) == imgdata.hash {
 					fmt.Println("Hash correct")
@@ -210,8 +207,10 @@ func dlimage(imgchan <-chan Image, done chan bool) {
 					fmt.Println("Hash wrong")
 				}
 
-				fmt.Println("\n", hex.EncodeToString(hash.Sum(nil)), "\n", imgdata.hash )
-			*/
+				//fmt.Println("\n", hex.EncodeToString(hash.Sum(nil)), "\n", imgdata.hash )
+			
+			}()
+			
 		} else {
 			done <- true //well, there is no images in channel, it means we got them all, so synchronization is kicking in and ending the process
 
@@ -277,7 +276,7 @@ func InfoToChannel(dat map[string]interface{}, imgchan chan<- Image){
 	var imgdata Image
 	
 	imgdata.url = "http:" + dat["image"].(string)
-	//imgdata.hash = dat["sha512_hash"].(string) //for the future and checking that we got file right
+	imgdata.hash = dat["sha512_hash"].(string)
 	imgdata.filename = strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string) + "." + dat["original_format"].(string)
 
 	//	fmt.Println(dat)
