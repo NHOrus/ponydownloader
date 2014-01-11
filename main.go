@@ -279,8 +279,8 @@ func InfoToChannel(dat map[string]interface{}, imgchan chan<- Image){
 	imgdata.hash = dat["sha512_hash"].(string)
 	imgdata.filename = strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string) + "." + dat["original_format"].(string)
 
-	//	fmt.Println(dat)
 	//	for troubleshooting later
+	//	fmt.Println(dat)
 	//	fmt.Println(imgdata.url)
 	//	fmt.Println(imgdata.hash)
 	//	fmt.Println(imgdata.filename)
