@@ -67,6 +67,9 @@ func main() {
 	//here shall be flag parser
 
 	flag.StringVar(&TAG, "t", TAG, "Tags to download")
+	flag.IntVar(&STARTPAGE, "p", STARTPAGE, "Starting page for search")
+	flag.IntVar(&STOPPAGE, "sp", STOPPAGE, "Stopping page for search, 0 - parse all all search pages")
+	
 	flag.Parse()
 
 	fmt.Println("Derpiboo.ru Downloader version 0.1.2 \nWorking")
