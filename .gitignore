@@ -33,5 +33,5 @@ config.ini
 *.jpeg
 *.jpg
 
-#No, there is no need to preserve error.log
-error.log
+#No, there is no need to preserve event.log
+event.log

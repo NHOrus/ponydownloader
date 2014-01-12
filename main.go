@@ -82,22 +82,20 @@ func main() {
 		flag.Parse()
 
 	if flag.NArg() == 0 && TAG == "" {	//If no arguments after flags and empty/unchanged tag, what we should download? Sane end of line.
-		elog.SetPrefix("Done at ")
-//		elog.SetOutput(io.MultiWriter(logfile, os.Stdout))
-		elog.Println("Nothing to download, bye!")
+		log.Println("Nothing to download, bye!")
 		os.Exit(0)
 	}
 
 	//	creating directory for downloads if not yet done
-	if err := os.MkdirAll(IMGDIR, 0777); err != nil {
-		elog.Fatalln(err)
+	if err := os.MkdirAll(IMGDIR, 0777); err != nil { //Execute? No need to execute any image
+		elog.Fatalln(err) //We can not create folder for images, dying horribly
 	}
 
 	//	creating channels to pass info to downloader and to signal job well done
 	imgdat := make(chan Image, WORKERS)
 	done := make(chan bool)
 
-	if TAG == "" {
+	if TAG == "" {	//Because we can put imgid with flags. Why not?
 
 		//	checking argument for being a number and then getting image data
 
@@ -129,6 +127,7 @@ func main() {
 }
 
 type Image struct {
+	imgid	int
 	url      string
 	filename string
 	hash     string	
@@ -289,7 +288,8 @@ func InfoToChannel(dat map[string]interface{}, imgchan chan<- Image){
 	
 	imgdata.url = "http:" + dat["image"].(string)
 	imgdata.hash = dat["sha512_hash"].(string)
-	imgdata.filename = strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string) + "." + dat["original_format"].(string)
+	imgdata.filename = (strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string) + "." + dat["original_format"].(string))
+	imgdata.imgid = int(dat["id_number"].(float64))
 
 	//	for troubleshooting later
 	//	fmt.Println(dat)
