@@ -205,7 +205,7 @@ func dlimage(imgchan <-chan Image, done chan bool) {
 
 					response, err := http.Get(imgdata.url)
 					if err != nil {
-						elog.Println("Error when gettint image" + strconv.Itoa(imgdata.imgid))
+						elog.Println("Error when gettint image", imgdata.imgid)
 						elog.Println(err)
 						return
 					}
@@ -221,7 +221,7 @@ func dlimage(imgchan <-chan Image, done chan bool) {
 					//	fmt.Println("\n", hex.EncodeToString(b), "\n", imgdata.hash )
 
 					if hex.EncodeToString(b) != imgdata.hash {
-						elog.Println("Hash wrong with imageid", strconv.Itoa(imgdata.imgid))
+						elog.Println("Hash wrong with imageid", imgdata.imgid)
 					}
 				}()
 			}
@@ -230,7 +230,7 @@ func dlimage(imgchan <-chan Image, done chan bool) {
 
 		} else {
 			done <- true //well, there is no images in channel, it means we got them all, so synchronization is kicking in and ending the process
-			break
+			break        //Just in case, so it would not stupidly die when program finishes - it will die smartly
 
 		}
 	}
@@ -238,7 +238,7 @@ func dlimage(imgchan <-chan Image, done chan bool) {
 
 func parseTag(imgchan chan<- Image, tag string, key string) {
 
-	source := "http://derpiboo.ru/search.json?nofav=&nocomments="
+	source := "http://derpiboo.ru/search.json?nofav=&nocomments=" //yay hardwiring url strings!
 
 	if key != "" {
 		source = source + "&key=" + key
@@ -248,43 +248,51 @@ func parseTag(imgchan chan<- Image, tag string, key string) {
 	var i int = 1
 
 	for {
-		fmt.Println("Searching page", i)
-		resp, err := http.Get(source + "&q=" + tag + "&page=" + strconv.Itoa(i)) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
-		if err != nil {
-			panic(err)
-		}
+		func() {
+			fmt.Println("Searching page", i)
+			resp, err := http.Get(source + "&q=" + tag + "&page=" + strconv.Itoa(i)) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
+			defer resp.Body.Close()                                                  //and not forgetting to close it when it's done. And before we panic and die horribly.
+			if err != nil {
+				elog.Println("Error while getting search page", i)
+				elog.Println(err)
+				return
+			}
 
-		defer resp.Body.Close() //and not forgetting to close it when it's done
+			var dats []map[string]interface{} //Because we got array incoming instead of single object, we using an slive of maps!
 
-		var dats []map[string]interface{} //Because we got array incoming instead of single object, we using an slive of maps!
+			//fmt.Println(resp)
 
-		//fmt.Println(resp)
+			body, err := ioutil.ReadAll(resp.Body) //stolen from official documentation
+			if err != nil {
+				elog.Println("Error while reading search page", i)
+				elog.Println(err)
+				return
+			}
 
-		body, err := ioutil.ReadAll(resp.Body) //stolen from official documentation
-		if err != nil {
-			panic(err)
-		}
+			//fmt.Println(body)
 
-		//fmt.Println(body)
+			if err := json.Unmarshal(body, &dats); //transforming json into native slice of maps
 
-		if err := json.Unmarshal(body, &dats); //transforming json into native slice of maps
+			err != nil {
+				elog.Println("Error while parsing search page", i)
+				elog.Println(err)
+				return
 
-		err != nil {
-			panic(err)
+			}
 
-		}
+			if len(dats) == 0 {
+				fmt.Println("Pages are over")
+				return
+			} //exit due to finishing all pages
 
-		if len(dats) == 0 {
-			fmt.Println("Pages are over")
-			break
-		} //exit due to finishing all pages
+			for _, dat := range dats {
+				InfoToChannel(dat, imgchan)
+			}
+			i++
 
-		for _, dat := range dats {
-			InfoToChannel(dat, imgchan)
-		}
-
-		i++
+		}()
 	}
+
 	close(imgchan)
 }
 
