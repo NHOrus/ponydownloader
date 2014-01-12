@@ -10,12 +10,12 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-
-	//	"errors"
-	//	"log"
-	//	"net"
+	"log"
 	"crypto/sha512"
 	"encoding/hex"
+
+	//	"errors"	
+	//	"net"
 )
 
 //	defaults:
@@ -24,7 +24,7 @@ var (
 	IMGDIR    string = "img" //default download directory
 	TAG       string = ""    //default string is empty, it can only ge extracted from command line
 	STARTPAGE int    = 1     //default start page, derpiboo.ru 1-indexed
-	STOPPAGE  int    = 0     //default stop page, would stop parsing json when it ends
+	STOPPAGE  int    = 0     //default stop page, would stop parsing json when stop page is reached or site reaches the end of search
 )
 
 func main() {
