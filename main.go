@@ -28,11 +28,18 @@ var (
 )
 
 func main() {
+	
+	fmt.Println("Derpiboo.ru Downloader version 0.1.2 \nWorking")
+	
+	logfile, err := os.OpenFile("error.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644 ) //file for putting errors into
+		if err != nil { panic(err) }
+	
+	logs := log.New(io.MultiWriter(logfile, os.Stderr), "Errors at ", log.LstdFlags)
 
 	config, err := ini.LoadFile("config.ini") // Loading default config file and checking for various errors.
 
 	if os.IsNotExist(err) {
-		panic("Config.ini does not exist, create it")
+		logs.Fatalln("Config.ini does not exist, create it")
 	}
 
 	if err != nil {
@@ -68,8 +75,6 @@ func main() {
 
 	flag.StringVar(&TAG, "t", TAG, "Tags to download")
 	flag.Parse()
-
-	fmt.Println("Derpiboo.ru Downloader version 0.1.2 \nWorking")
 
 	if flag.NArg() == 0 && TAG == "" {
 		fmt.Println("Nothing to download, bye!")
