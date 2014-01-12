@@ -29,13 +29,13 @@ var (
 
 func main() {
 	
-	fmt.Println("Derpiboo.ru Downloader version 0.1.2 \nWorking")
+	fmt.Println("Derpiboo.ru Downloader version 0.1.2\nWorking")
 	
 	logfile, err := os.OpenFile("error.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644 ) //file for putting errors into
 		if err != nil { panic(err) }
 	
 	logs := log.New(io.MultiWriter(logfile, os.Stderr), "Errors at ", log.LstdFlags)
-
+	
 	config, err := ini.LoadFile("config.ini") // Loading default config file and checking for various errors.
 
 	if os.IsNotExist(err) {
@@ -43,7 +43,7 @@ func main() {
 	}
 
 	if err != nil {
-		panic(err)
+		logs.Panicln(err)
 	}
 
 	//Getting stuff from config, overwriting defaults
@@ -51,7 +51,7 @@ func main() {
 	key, ok := config.Get("main", "key")
 
 	if !ok {
-		panic("'key' variable missing from 'main' section")
+		logs.Println("'key' variable missing from 'main' section")
 	}
 
 	W_temp, _ := config.Get("main", "workers")
@@ -60,8 +60,8 @@ func main() {
 		WORKERS, err = strconv.ParseInt(W_temp, 10, 0)
 
 		if err != nil {
-			fmt.Println("Wrong configuration: Amount of workers is not a number")
-			os.Exit(1)
+			logs.Fatalln("Wrong configuration: Amount of workers is not a number")
+			
 		}
 	}
 
@@ -74,16 +74,18 @@ func main() {
 	//here shall be flag parser
 
 	flag.StringVar(&TAG, "t", TAG, "Tags to download")
-	flag.Parse()
+		flag.Parse()
 
 	if flag.NArg() == 0 && TAG == "" {
-		fmt.Println("Nothing to download, bye!")
+		logs.SetPrefix("Done at ")
+//		logs.SetOutput(io.MultiWriter(logfile, os.Stdout))
+		logs.Println("Nothing to download, bye!")
 		os.Exit(0)
 	}
 
 	//	creating directory for downloads if not yet done
 	if err := os.MkdirAll(IMGDIR, 0777); err != nil {
-		panic(err)
+		logs.Fatalln(err)
 	}
 
 	//	creating channels to pass info to downloader and to signal job well done
@@ -98,8 +100,7 @@ func main() {
 		_, err = strconv.Atoi(imgid)
 
 		if err != nil {
-			fmt.Println("Wrong input: can not parse", imgid, "as a number")
-			os.Exit(1)
+			logs.Fatalln("Wrong input: can not parse", imgid, "as a number")
 		}
 
 		fmt.Println("Processing image No", imgid)
@@ -118,6 +119,9 @@ func main() {
 	go dlimage(imgdat, done)
 
 	<-done
+	logs.SetPrefix("Done at ")
+//	logs.SetOutput(io.MultiWriter(logfile, os.Stdout))
+	logs.Println("Finised")
 
 }
 
