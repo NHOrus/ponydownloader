@@ -1,20 +1,20 @@
 package main
 
 import (
+	"crypto/sha512"
+	"encoding/hex"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/vaughan0/go-ini"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
-	"log"
-	"crypto/sha512"
-	"encoding/hex"
 
-	//	"errors"	
+	//	"errors"
 	//	"net"
 )
 
@@ -25,22 +25,25 @@ var (
 	TAG       string = ""    //default string is empty, it can only ge extracted from command line
 	STARTPAGE int    = 1     //default start page, derpiboo.ru 1-indexed
 	STOPPAGE  int    = 0     //default stop page, would stop parsing json when stop page is reached or site reaches the end of search
+	elog      *log.Logger
 )
 
 func main() {
-	
+
 	fmt.Println("Derpiboo.ru Downloader version 0.1.3")
-	
-	logfile, err := os.OpenFile("event.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644 ) //file for putting errors into
-		if err != nil { panic(err) }
-	defer logfile.Close()	//Almost forgot. Always close the file in the end.
-	
-	elog := log.New(io.MultiWriter(logfile, os.Stderr), "Errors at ", log.LstdFlags) //setting stuff for our logging: both errors and events.
+
+	logfile, err := os.OpenFile("event.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644) //file for putting errors into
+	if err != nil {
+		panic(err)
+	}
+	defer logfile.Close() //Almost forgot. Always close the file in the end.
+
+	elog = log.New(io.MultiWriter(logfile, os.Stderr), "Errors at ", log.LstdFlags) //setting stuff for our logging: both errors and events.
 	log.SetPrefix("Happens at ")
 	log.SetFlags(log.LstdFlags)
 	log.SetOutput(io.MultiWriter(logfile, os.Stdout))
 	log.Println("Program start")
-	
+
 	config, err := ini.LoadFile("config.ini") // Loading default config file and checking for various errors.
 
 	if os.IsNotExist(err) {
@@ -66,7 +69,7 @@ func main() {
 
 		if err != nil {
 			elog.Fatalln("Wrong configuration: Amount of workers is not a number")
-			
+
 		}
 	}
 
@@ -79,9 +82,10 @@ func main() {
 	//Here we are parsing all the flags
 
 	flag.StringVar(&TAG, "t", TAG, "Tags to download")
-		flag.Parse()
+	flag.Parse()
 
-	if flag.NArg() == 0 && TAG == "" {	//If no arguments after flags and empty/unchanged tag, what we should download? Sane end of line.
+	if flag.NArg() == 0 && TAG == "" { //If no arguments after flags and empty/unchanged tag, what we should download? Sane end of line.
+		log.SetPrefix("Done at ")
 		log.Println("Nothing to download, bye!")
 		os.Exit(0)
 	}
@@ -95,7 +99,7 @@ func main() {
 	imgdat := make(chan Image, WORKERS)
 	done := make(chan bool)
 
-	if TAG == "" {	//Because we can put imgid with flags. Why not?
+	if TAG == "" { //Because we can put imgid with flags. Why not?
 
 		//	checking argument for being a number and then getting image data
 
@@ -122,16 +126,17 @@ func main() {
 	go dlimage(imgdat, done)
 
 	<-done
+	log.SetPrefix("Done at ")
 	log.Println("Finised")
 
 }
 
 type Image struct {
-	imgid	int
+	imgid    int
 	url      string
 	filename string
-	hash     string	
-	}
+	hash     string
+}
 
 func parseImg(imgchan chan<- Image, imgid string, key string) {
 
@@ -144,7 +149,8 @@ func parseImg(imgchan chan<- Image, imgid string, key string) {
 
 	resp, err := http.Get(source) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
 	if err != nil {
-		panic(err)
+		elog.Println(err)
+		return
 	}
 
 	defer resp.Body.Close() //and not forgetting to close it when it's done
@@ -153,15 +159,15 @@ func parseImg(imgchan chan<- Image, imgid string, key string) {
 
 	body, err := ioutil.ReadAll(resp.Body) //stolen from official documentation
 	if err != nil {
-		panic(err)
+		elog.Println(err)
+		return
 	}
-
-	//fmt.Println(body)
 
 	if err := json.Unmarshal(body, &dat); //transforming json into native map
 
 	err != nil {
-		panic(err)
+		elog.Println(err)
+		return
 	}
 
 	InfoToChannel(dat, imgchan)
@@ -182,51 +188,51 @@ func dlimage(imgchan <-chan Image, done chan bool) {
 		if more { //checking that there is an image in channel
 
 			if imgdata.filename == "" {
-				fmt.Println("Empty filename. Oops?") //something somewhere had gone wrong, off with the worker
-				break
+				elog.Println("Empty filename. Oops?") //something somewhere had gone wrong, going to the next image
+			} else {
+
+				fmt.Println("Saving as", imgdata.filename)
+
+				func() { // to not hold all the files open when there is no need
+
+					output, err := os.Create(IMGDIR + string(os.PathSeparator) + imgdata.filename) //And now, THE FILE!
+					if err != err {
+						elog.Println("Error when creating file for image" + strconv.Itoa(imgdata.imgid))
+						elog.Println(err)
+						return
+					}
+					defer output.Close() //Not forgetting to deal with it after completing download
+
+					response, err := http.Get(imgdata.url)
+					if err != nil {
+						elog.Println("Error when gettint image" + strconv.Itoa(imgdata.imgid))
+						elog.Println(err)
+						return
+					}
+					defer response.Body.Close() //Same, we shall not listen to the void when we finished getting image
+
+					hash := sha512.New()
+
+					io.Copy(io.MultiWriter(output, hash), response.Body) //	Writing things we got from Derpibooru into the
+
+					b := make([]byte, hash.Size())
+					hash.Sum(b[:0])
+
+					//	fmt.Println("\n", hex.EncodeToString(b), "\n", imgdata.hash )
+
+					if hex.EncodeToString(b) != imgdata.hash {
+						elog.Println("Hash wrong with imageid", strconv.Itoa(imgdata.imgid))
+					}
+				}()
 			}
 
-			fmt.Println("Saving as", imgdata.filename)
+			//fmt.Println("\n", hex.EncodeToString(hash.Sum(nil)), "\n", imgdata.hash )
 
-			func() { // to not hold all the files open when there is no need
-				output, err := os.Create(IMGDIR + string(os.PathSeparator) + imgdata.filename) //And now, THE FILE!
-				if err != err {
-					panic(err)
-				}
-				defer output.Close() //Not forgetting to deal with it after completing download
-
-				response, err := http.Get(imgdata.url)
-				if err != nil {
-					fmt.Println("Error while downloading", imgdata.url, "-", err)
-					panic(err)
-					return
-				}
-				defer response.Body.Close() //Same, we shall not listen to the void when we finished getting image
-
-				hash := sha512.New()
-				
-				io.Copy(io.MultiWriter(output, hash), response.Body) //	Writing things we got from Derpibooru into the 
-
-				b := make([]byte, hash.Size())
-				hash.Sum(b[:0])
-
-				//	fmt.Println("\n", hex.EncodeToString(b), "\n", imgdata.hash )
-
-				if hex.EncodeToString(b) == imgdata.hash {
-					fmt.Println("Hash correct")
-				}	else {
-					fmt.Println("Hash wrong")
-				}
-
-				//fmt.Println("\n", hex.EncodeToString(hash.Sum(nil)), "\n", imgdata.hash )
-			
-			}()
-			
 		} else {
 			done <- true //well, there is no images in channel, it means we got them all, so synchronization is kicking in and ending the process
+			break
 
 		}
-
 	}
 }
 
@@ -276,16 +282,16 @@ func parseTag(imgchan chan<- Image, tag string, key string) {
 		for _, dat := range dats {
 			InfoToChannel(dat, imgchan)
 		}
-		
+
 		i++
 	}
 	close(imgchan)
 }
 
-func InfoToChannel(dat map[string]interface{}, imgchan chan<- Image){
-	
+func InfoToChannel(dat map[string]interface{}, imgchan chan<- Image) {
+
 	var imgdata Image
-	
+
 	imgdata.url = "http:" + dat["image"].(string)
 	imgdata.hash = dat["sha512_hash"].(string)
 	imgdata.filename = (strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string) + "." + dat["original_format"].(string))
