@@ -29,6 +29,7 @@ you get binary with same name as directory with source code, by default - ponydo
 Run it.
 
 Alternatively, put ponydownloader folder inside $GOPATH/src and do wherever you want
+
 >go build ponydownloader
 
 then put config file in same place. In the future it would write default config.ini on first run, but not yet.
@@ -50,5 +51,4 @@ Currenly only key is ought to be in configuration file. It may be empty, then pr
 ./bin directory
 ---------------
 
-Attempt at cross-compilation. Should contain statically linked binaries for all major systems, just in case. Try it if you trust me and author of cross-compilation scripts.
-
+Cross-compiled versions of the program. Should work. At least for me they are working on Windows.
