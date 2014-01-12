@@ -29,21 +29,26 @@ var (
 
 func main() {
 	
-	fmt.Println("Derpiboo.ru Downloader version 0.1.2\nWorking")
+	fmt.Println("Derpiboo.ru Downloader version 0.1.3")
 	
-	logfile, err := os.OpenFile("error.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644 ) //file for putting errors into
+	logfile, err := os.OpenFile("event.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644 ) //file for putting errors into
 		if err != nil { panic(err) }
+	defer logfile.Close()	//Almost forgot. Always close the file in the end.
 	
-	logs := log.New(io.MultiWriter(logfile, os.Stderr), "Errors at ", log.LstdFlags)
+	elog := log.New(io.MultiWriter(logfile, os.Stderr), "Errors at ", log.LstdFlags) //setting stuff for our logging: both errors and events.
+	log.SetPrefix("Happens at ")
+	log.SetFlags(log.LstdFlags)
+	log.SetOutput(io.MultiWriter(logfile, os.Stdout))
+	log.Println("Program start")
 	
 	config, err := ini.LoadFile("config.ini") // Loading default config file and checking for various errors.
 
 	if os.IsNotExist(err) {
-		logs.Fatalln("Config.ini does not exist, create it")
+		elog.Fatalln("Config.ini does not exist, create it")
 	}
 
 	if err != nil {
-		logs.Panicln(err)
+		elog.Panicln(err)
 	}
 
 	//Getting stuff from config, overwriting defaults
@@ -51,7 +56,7 @@ func main() {
 	key, ok := config.Get("main", "key")
 
 	if !ok {
-		logs.Println("'key' variable missing from 'main' section")
+		elog.Println("'key' variable missing from 'main' section")
 	}
 
 	W_temp, _ := config.Get("main", "workers")
@@ -60,7 +65,7 @@ func main() {
 		WORKERS, err = strconv.ParseInt(W_temp, 10, 0)
 
 		if err != nil {
-			logs.Fatalln("Wrong configuration: Amount of workers is not a number")
+			elog.Fatalln("Wrong configuration: Amount of workers is not a number")
 			
 		}
 	}
@@ -71,21 +76,21 @@ func main() {
 		IMGDIR = ID_temp
 	}
 
-	//here shall be flag parser
+	//Here we are parsing all the flags
 
 	flag.StringVar(&TAG, "t", TAG, "Tags to download")
 		flag.Parse()
 
-	if flag.NArg() == 0 && TAG == "" {
-		logs.SetPrefix("Done at ")
-//		logs.SetOutput(io.MultiWriter(logfile, os.Stdout))
-		logs.Println("Nothing to download, bye!")
+	if flag.NArg() == 0 && TAG == "" {	//If no arguments after flags and empty/unchanged tag, what we should download? Sane end of line.
+		elog.SetPrefix("Done at ")
+//		elog.SetOutput(io.MultiWriter(logfile, os.Stdout))
+		elog.Println("Nothing to download, bye!")
 		os.Exit(0)
 	}
 
 	//	creating directory for downloads if not yet done
 	if err := os.MkdirAll(IMGDIR, 0777); err != nil {
-		logs.Fatalln(err)
+		elog.Fatalln(err)
 	}
 
 	//	creating channels to pass info to downloader and to signal job well done
@@ -100,10 +105,10 @@ func main() {
 		_, err = strconv.Atoi(imgid)
 
 		if err != nil {
-			logs.Fatalln("Wrong input: can not parse", imgid, "as a number")
+			elog.Fatalln("Wrong input: can not parse", imgid, "as a number")
 		}
 
-		fmt.Println("Processing image No", imgid)
+		log.Println("Processing image No", imgid)
 
 		go parseImg(imgdat, imgid, key)
 
@@ -111,17 +116,15 @@ func main() {
 
 		//	and here we send tags to getter/parser
 
-		fmt.Println("Processing tags", TAG)
+		log.Println("Processing tags", TAG)
 		go parseTag(imgdat, TAG, key)
 	}
 
-	fmt.Println("Starting worker")
+	log.Println("Starting worker")
 	go dlimage(imgdat, done)
 
 	<-done
-	logs.SetPrefix("Done at ")
-//	logs.SetOutput(io.MultiWriter(logfile, os.Stdout))
-	logs.Println("Finised")
+	log.Println("Finised")
 
 }
 
