@@ -30,7 +30,7 @@ var (
 
 func main() {
 
-	fmt.Println("Derpiboo.ru Downloader version 0.1.3")
+	fmt.Println("Derpiboo.ru Downloader version 0.1.4")
 
 	logfile, err := os.OpenFile("event.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644) //file for putting errors into
 	if err != nil {
@@ -84,7 +84,7 @@ func main() {
 	flag.StringVar(&TAG, "t", TAG, "Tags to download")
 	flag.IntVar(&STARTPAGE, "p", STARTPAGE, "Starting page for search")
 	flag.IntVar(&STOPPAGE, "sp", STOPPAGE, "Stopping page for search, 0 - parse all all search pages")
-	
+
 	flag.Parse()
 
 	if flag.NArg() == 0 && TAG == "" { //If no arguments after flags and empty/unchanged tag, what we should download? Sane end of line.
@@ -248,8 +248,8 @@ func parseTag(imgchan chan<- Image, tag string, key string) {
 	}
 
 	fmt.Println("Searching as", source+"&q="+tag)
-	var i int = 1
 	var working bool = true
+	i := STARTPAGE
 	for working {
 		func() {
 			fmt.Println("Searching page", i)
@@ -291,6 +291,10 @@ func parseTag(imgchan chan<- Image, tag string, key string) {
 
 			for _, dat := range dats {
 				InfoToChannel(dat, imgchan)
+			}
+			if i == STOPPAGE {
+				working = false
+				return
 			}
 			i++
 
