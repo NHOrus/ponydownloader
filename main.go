@@ -249,8 +249,8 @@ func parseTag(imgchan chan<- Image, tag string, key string) {
 
 	fmt.Println("Searching as", source+"&q="+tag)
 	var i int = 1
-
-	for {
+	var working bool = true
+	for working {
 		func() {
 			fmt.Println("Searching page", i)
 			resp, err := http.Get(source + "&q=" + tag + "&page=" + strconv.Itoa(i)) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
@@ -285,6 +285,7 @@ func parseTag(imgchan chan<- Image, tag string, key string) {
 
 			if len(dats) == 0 {
 				fmt.Println("Pages are over")
+				working = false
 				return
 			} //exit due to finishing all pages
 
