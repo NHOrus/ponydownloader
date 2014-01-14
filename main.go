@@ -32,42 +32,42 @@ func main() {
 	fmt.Println("Derpiboo.ru Downloader version 0.2.0")
 
 	logfile, err := os.OpenFile("event.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644) //We are creating file to put vital files
-	if err != nil {	//If it can not be created
+	if err != nil {	//If it can not be created or written to
 		panic(err)	//DIE!
 	}
 	defer logfile.Close() //Always close the file in the end.
 
-	elog = log.New(io.MultiWriter(logfile, os.Stderr), "Errors at ", log.LstdFlags) //setting stuff for our logging: both errors and events.
+	//Setting paraemeters for logging stuff
+	elog = log.New(io.MultiWriter(logfile, os.Stderr), "Errors at ", log.LstdFlags) //We will write critical errors into logfile and error stream
 	log.SetPrefix("Happens at ")
 	log.SetFlags(log.LstdFlags)
 	log.SetOutput(io.MultiWriter(logfile, os.Stdout))
-	log.Println("Program start")
+	log.Println("Program start")	//And now we can do whatever we are made to do
 
 	config, err := ini.LoadFile("config.ini") // Loading default config file and checking for various errors.
 
 	if os.IsNotExist(err) {
-		elog.Fatalln("Config.ini does not exist, create it")
+		elog.Fatalln("Config.ini does not exist, create it")	//We can not live without config. We could, but writing default config if none exist can wait
 	}
 
 	if err != nil {
-		elog.Panicln(err)
+		elog.Panicln(err) //Oh, something is broken beyond my understanding. Sorry.
 	}
 
-	//Getting stuff from config, overwriting defaults
+	//Getting stuff from config, overwriting hardwired defaults when needed
 
 	key, ok := config.Get("main", "key")
 
-	if !ok {
-		elog.Println("'key' variable missing from 'main' section")
+	if !ok || key =="" {
+		elog.Println("'key' variable missing from 'main' section. It is vital for server-side filtering")	//Empty key or key does not exist. Derpibooru works with this, but default image filter filters too much. Use key to set your own!
 	}
 
-	W_temp, _ := config.Get("main", "workers")
+	Q_temp, _ := config.Get("main", "queue_depth")
 
-	if W_temp != "" {
-		QDEPTH, err = strconv.ParseInt(W_temp, 10, 0)
-
+	if Q_temp != "" {
+		QDEPTH, err = strconv.ParseInt(Q_temp, 10, 0) //Trust user? Are you insane?
 		if err != nil {
-			elog.Fatalln("Wrong configuration: Amount of workers is not a number")
+			elog.Fatalln("Wrong configuration: Depth of the buffer queue is not a number")
 
 		}
 	}
@@ -78,7 +78,7 @@ func main() {
 		IMGDIR = ID_temp
 	}
 
-	//Here we are parsing all the flags
+	//Here we are parsing all the flags. Command line argument hold priority to config. Except for 'key'. API-key is config-only
 
 	flag.StringVar(&TAG, "t", TAG, "Tags to download")
 	flag.IntVar(&STARTPAGE, "p", STARTPAGE, "Starting page for search")
@@ -87,50 +87,49 @@ func main() {
 	flag.Parse()
 
 	if flag.NArg() == 0 && TAG == "" { //If no arguments after flags and empty/unchanged tag, what we should download? Sane end of line.
-		log.SetPrefix("Done at ")
+		log.SetPrefix("Done at ")	//We can not do this with elog!
 		log.Println("Nothing to download, bye!")
 		os.Exit(0)
 	}
 
-	//	creating directory for downloads if not yet done
-	if err := os.MkdirAll(IMGDIR, 0777); err != nil { //Execute? No need to execute any image
-		elog.Fatalln(err) //We can not create folder for images, dying horribly
+	//Creating directory for downloads if it does not yet exist
+	if err := os.MkdirAll(IMGDIR, 0644); err != nil { //Execute? No need to execute any image. Also, all those other users can not do anything beyond enjoying our images.
+		elog.Fatalln(err) //We can not create folder for images, end of line.
 	}
 
-	//	creating channels to pass info to downloader and to signal job well done
-	imgdat := make(chan Image, QDEPTH)
+	//	Creating channels to pass info to downloader and to signal job well done
+	imgdat := make(chan Image, QDEPTH) //Better leave default queue depth. Experiment shown that depth about 20 provides optimal perfomance on my system
 	done := make(chan bool)
 
 	if TAG == "" { //Because we can put imgid with flags. Why not?
 
-		//	checking argument for being a number and then getting image data
+		//	Checking argument for being a number and then getting image data
 
-		imgid := flag.Arg(0)
+		imgid := flag.Arg(0)	//0-indexed, unlike os.Args. os.Args[0] is path to program. It needs to be used later, when we are searching for what directory we are writing in
 		_, err = strconv.Atoi(imgid)
 
 		if err != nil {
 			elog.Fatalln("Wrong input: can not parse", imgid, "as a number")
 		}
 
-		log.Println("Processing image No", imgid)
-
-		go parseImg(imgdat, imgid, key)
+		go parseImg(imgdat, imgid, key) // Sending imgid to parser. Here validity is our problem
 
 	} else {
 
-		//	and here we send tags to getter/parser
+		//	and here we send tags to getter/parser. Validity is server problem, mostly
 
 		log.Println("Processing tags", TAG)
 		go parseTag(imgdat, TAG, key)
 	}
 
-	log.Println("Starting worker")
+	log.Println("Starting worker")	//It would be funny if worker goroutine does not start
 	go dlimage(imgdat, done)
 
 	<-done
 	log.SetPrefix("Done at ")
 	log.Println("Finised")
-
+	//And we are done here! Hooray!
+	return
 }
 
 type Image struct {
