@@ -1,30 +1,29 @@
 package main
 
 import (
-	"fmt"
-	"io"
-	"flag"
-	"log"
 	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
+	"flag"
+	"fmt"
+	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
-	
+
 	"github.com/vaughan0/go-ini"
-	
 )
 
 //	default variables
 var (
-	QDEPTH   int64  = 20    //Depth of the queue buffer - how many images are enqueued
-	IMGDIR    string = "img" //Default download directory
-	TAG       string = ""    //Default tag string is empty, it should be extracted from command line and only command line
-	STARTPAGE int    = 1     //Default start page, derpiboo.ru 1-indexed
-	STOPPAGE  int    = 0     //Default stop page, would stop parsing json when stop page is reached or site reaches the end of search
-	elog      *log.Logger	//The logger for errors
+	QDEPTH    int64       = 20    //Depth of the queue buffer - how many images are enqueued
+	IMGDIR    string      = "img" //Default download directory
+	TAG       string      = ""    //Default tag string is empty, it should be extracted from command line and only command line
+	STARTPAGE int         = 1     //Default start page, derpiboo.ru 1-indexed
+	STOPPAGE  int         = 0     //Default stop page, would stop parsing json when stop page is reached or site reaches the end of search
+	elog      *log.Logger         //The logger for errors
 )
 
 func main() {
@@ -32,8 +31,8 @@ func main() {
 	fmt.Println("Derpiboo.ru Downloader version 0.2.0")
 
 	logfile, err := os.OpenFile("event.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644) //We are creating file to put vital files
-	if err != nil {	//If it can not be created or written to
-		panic(err)	//DIE!
+	if err != nil {                                                                     //If it can not be created or written to
+		panic(err) //DIE!
 	}
 	defer logfile.Close() //Always close the file in the end.
 
@@ -42,12 +41,12 @@ func main() {
 	log.SetPrefix("Happens at ")
 	log.SetFlags(log.LstdFlags)
 	log.SetOutput(io.MultiWriter(logfile, os.Stdout))
-	log.Println("Program start")	//And now we can do whatever we are made to do
+	log.Println("Program start") //And now we can do whatever we are made to do
 
-	config, err := ini.LoadFile("config.ini") // Loading default config file and checking for various errors.
+	config, err := ini.LoadFile("config.ini") //Loading default config file and checking for various errors.
 
 	if os.IsNotExist(err) {
-		elog.Fatalln("Config.ini does not exist, create it")	//We can not live without config. We could, but writing default config if none exist can wait
+		elog.Fatalln("Config.ini does not exist, create it") //We can not live without config. We could, in theory, but writing default config if none exist can wait
 	}
 
 	if err != nil {
@@ -58,8 +57,8 @@ func main() {
 
 	key, ok := config.Get("main", "key")
 
-	if !ok || key =="" {
-		elog.Println("'key' variable missing from 'main' section. It is vital for server-side filtering")	//Empty key or key does not exist. Derpibooru works with this, but default image filter filters too much. Use key to set your own!
+	if !ok || key == "" {
+		elog.Println("'key' variable missing from 'main' section. It is vital for server-side filtering") //Empty key or key does not exist. Derpibooru works with this, but default image filter filters too much. Use key to set your own!
 	}
 
 	Q_temp, _ := config.Get("main", "queue_depth")
@@ -87,7 +86,7 @@ func main() {
 	flag.Parse()
 
 	if flag.NArg() == 0 && TAG == "" { //If no arguments after flags and empty/unchanged tag, what we should download? Sane end of line.
-		log.SetPrefix("Done at ")	//We can not do this with elog!
+		log.SetPrefix("Done at ") //We can not do this with elog!
 		log.Println("Nothing to download, bye!")
 		os.Exit(0)
 	}
@@ -105,7 +104,7 @@ func main() {
 
 		//	Checking argument for being a number and then getting image data
 
-		imgid := flag.Arg(0)	//0-indexed, unlike os.Args. os.Args[0] is path to program. It needs to be used later, when we are searching for what directory we are writing in
+		imgid := flag.Arg(0) //0-indexed, unlike os.Args. os.Args[0] is path to program. It needs to be used later, when we are searching for what directory we are writing in
 		_, err = strconv.Atoi(imgid)
 
 		if err != nil {
@@ -122,7 +121,7 @@ func main() {
 		go parseTag(imgdat, TAG, key)
 	}
 
-	log.Println("Starting worker")	//It would be funny if worker goroutine does not start
+	log.Println("Starting worker") //It would be funny if worker goroutine does not start
 	go dlimage(imgdat, done)
 
 	<-done
@@ -206,7 +205,7 @@ func dlimage(imgchan <-chan Image, done chan bool) {
 
 					response, err := http.Get(imgdata.url)
 					if err != nil {
-						elog.Println("Error when gettint image", imgdata.imgid)
+						elog.Println("Error when getting image", imgdata.imgid)
 						elog.Println(err)
 						return
 					}
@@ -310,8 +309,8 @@ func InfoToChannel(dat map[string]interface{}, imgchan chan<- Image) {
 	imgdata.hash = dat["sha512_hash"].(string)
 	imgdata.filename = (strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string) + "." + dat["original_format"].(string))
 	imgdata.imgid = int(dat["id_number"].(float64))
-
-	//	for troubleshooting later
+	
+	//	for troubleshooting - possibly debug flag?
 	//	fmt.Println(dat)
 	//	fmt.Println(imgdata.url)
 	//	fmt.Println(imgdata.hash)

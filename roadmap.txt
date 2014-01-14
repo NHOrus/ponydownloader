@@ -1,13 +1,11 @@
 Roadmap
 =======
 
-What needs to be done with this project? What I want from this project?
-
 Summapy:
 --------
 
 Ponydownloader is to get images from derpiboo.ru by imageid or by iterating search/lists. It should remember what imageids it already downloaded and not to query them again.
-Program should be controlled by flags and support '--version' and '--help' with default response to erroneous flags being same as --help.
+Program should be controlled by flags and support '-v'ersion and '-h'elp with default response to erroneous flags being same as -h.
 Flags should allow filtering on server-side or on client-side, if server-side query filtering does not provide all needed filtering options.
 Program behavior should be manipulated by human-readable confuguration file config.ini
 Ability to work anonimously or with key login.
@@ -20,12 +18,12 @@ If argument is a number, attempt to interpret it as imageid.
 If argument is not a number, -h. Will be provided by flag package
 If --version, print version and exit
 If -t, search by tag in argument. Download all filtered images
-Modificator -bp adds start page
-Modificator -ep adds stop page
-Modificator -r adds minimal rating
-Modificator -R adds maximal rating
+Flag -p adds start page
+Flag -sp adds stop page
 
 Filters, work only with -t, need revising
+Flag -r adds minimal rating
+Flag -R adds maximal rating
 
 derpibo.ru is 1-indexed, default stoppage is 0, equivalent to go through all
 	
@@ -33,8 +31,8 @@ Todo:
 -----
 
 - get image json from derpiboo.ru - done
-- implement response to empty argument line -done
-- implement check for http return code
+- implement response to empty argument line - done
+- implement check for http return code - done?
 - download image by imageid - done
 - add flags - done, partially
 - add search by tag json - done partially
@@ -42,7 +40,6 @@ Todo:
 - implement default config.ini writing / validity checking - partially, needs more checks
 - implement change of directory for containing downloaded images - done
 - implement directory creation according to search query
-- throw extracted imageids at downloading function - need to be refactored
-- implement simultaneous downloads restrictions - done
+- throw extracted imageids at downloading function - done
 - revise todo
 
