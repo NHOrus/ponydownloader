@@ -1,42 +1,41 @@
 package main
 
 import (
+	"fmt"
+	"io"
+	"flag"
+	"log"
 	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
-	"flag"
-	"fmt"
-	"github.com/vaughan0/go-ini"
-	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
-
-	//	"errors"
-	//	"net"
+	
+	"github.com/vaughan0/go-ini"
+	
 )
 
-//	defaults:
+//	default variables
 var (
-	WORKERS   int64  = 10    //Number of workers
-	IMGDIR    string = "img" //default download directory
-	TAG       string = ""    //default string is empty, it can only ge extracted from command line
-	STARTPAGE int    = 1     //default start page, derpiboo.ru 1-indexed
-	STOPPAGE  int    = 0     //default stop page, would stop parsing json when stop page is reached or site reaches the end of search
-	elog      *log.Logger
+	QDEPTH   int64  = 20    //Depth of the queue buffer - how many images are enqueued
+	IMGDIR    string = "img" //Default download directory
+	TAG       string = ""    //Default tag string is empty, it should be extracted from command line and only command line
+	STARTPAGE int    = 1     //Default start page, derpiboo.ru 1-indexed
+	STOPPAGE  int    = 0     //Default stop page, would stop parsing json when stop page is reached or site reaches the end of search
+	elog      *log.Logger	//The logger for errors
 )
 
 func main() {
 
-	fmt.Println("Derpiboo.ru Downloader version 0.1.4")
+	fmt.Println("Derpiboo.ru Downloader version 0.2.0")
 
-	logfile, err := os.OpenFile("event.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644) //file for putting errors into
-	if err != nil {
-		panic(err)
+	logfile, err := os.OpenFile("event.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644) //We are creating file to put vital files
+	if err != nil {	//If it can not be created
+		panic(err)	//DIE!
 	}
-	defer logfile.Close() //Almost forgot. Always close the file in the end.
+	defer logfile.Close() //Always close the file in the end.
 
 	elog = log.New(io.MultiWriter(logfile, os.Stderr), "Errors at ", log.LstdFlags) //setting stuff for our logging: both errors and events.
 	log.SetPrefix("Happens at ")
@@ -65,7 +64,7 @@ func main() {
 	W_temp, _ := config.Get("main", "workers")
 
 	if W_temp != "" {
-		WORKERS, err = strconv.ParseInt(W_temp, 10, 0)
+		QDEPTH, err = strconv.ParseInt(W_temp, 10, 0)
 
 		if err != nil {
 			elog.Fatalln("Wrong configuration: Amount of workers is not a number")
@@ -99,7 +98,7 @@ func main() {
 	}
 
 	//	creating channels to pass info to downloader and to signal job well done
-	imgdat := make(chan Image, WORKERS)
+	imgdat := make(chan Image, QDEPTH)
 	done := make(chan bool)
 
 	if TAG == "" { //Because we can put imgid with flags. Why not?
