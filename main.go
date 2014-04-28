@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/vaughan0/go-ini"
 	"io"
 	"io/ioutil"
 	"log"
@@ -15,23 +14,22 @@ import (
 	"ponydownloader/settings"
 	"strconv"
 
-	//	"errors"
-	//	"net"
+	"github.com/vaughan0/go-ini"
 )
 
-//	defaults:
+//	default variables
 var (
-	QDEPTH    int64  = 10    //depth of the queue of processed images
-	IMGDIR    string = "img" //default download directory
-	TAG       string = ""    //default string is empty, it can only ge extracted from command line
-	STARTPAGE int    = 1     //default start page, derpiboo.ru 1-indexed
-	STOPPAGE  int    = 0     //default stop page, would stop parsing json when stop page is reached or site reaches the end of search
-	elog      *log.Logger
+	QDEPTH    int64       = 20    //Depth of the queue buffer - how many images are enqueued
+	IMGDIR    string      = "img" //Default download directory
+	TAG       string      = ""    //Default tag string is empty, it should be extracted from command line and only command line
+	STARTPAGE int         = 1     //Default start page, derpiboo.ru 1-indexed
+	STOPPAGE  int         = 0     //Default stop page, would stop parsing json when stop page is reached or site reaches the end of search
+	elog      *log.Logger         //The logger for errors
 )
 
 func main() {
 
-	fmt.Println("Derpiboo.ru Downloader version 0.1.4")
+	fmt.Println("Derpiboo.ru Downloader version 0.2.0")
 
 	elog, logfile := settings.SetLog() //setting up logging of errors
 	
@@ -40,19 +38,19 @@ func main() {
 	config, err := ini.LoadFile("config.ini") // Loading default config file and checking for various errors.
 
 	if os.IsNotExist(err) {
-		elog.Fatalln("Config.ini does not exist, create it")
+		elog.Fatalln("Config.ini does not exist, create it") //We can not live without config. We could, in theory, but writing default config if none exist can wait
 	}
 
 	if err != nil {
-		elog.Panicln(err)
+		elog.Panicln(err) //Oh, something is broken beyond my understanding. Sorry.
 	}
 
-	//Getting stuff from config, overwriting defaults
+	//Getting stuff from config, overwriting hardwired defaults when needed
 
 	key, ok := config.Get("main", "key")
 
-	if !ok {
-		elog.Println("'key' variable missing from 'main' section")
+	if !ok || key == "" {
+		elog.Println("'key' variable missing from 'main' section. It is vital for server-side filtering") //Empty key or key does not exist. Derpibooru works with this, but default image filter filters too much. Use key to set your own!
 	}
 
 	Q_temp, _ := config.Get("main", "workers")
@@ -61,7 +59,7 @@ func main() {
 		QDEPTH, err = strconv.ParseInt(Q_temp, 10, 0)
 
 		if err != nil {
-			elog.Fatalln("Wrong configuration: Amount of workers is not a number")
+			elog.Fatalln("Wrong configuration: Depth of the buffer queue is not a number")
 
 		}
 	}
@@ -72,7 +70,7 @@ func main() {
 		IMGDIR = ID_temp
 	}
 
-	//Here we are parsing all the flags
+	//Here we are parsing all the flags. Command line argument hold priority to config. Except for 'key'. API-key is config-only
 
 	flag.StringVar(&TAG, "t", TAG, "Tags to download")
 	flag.IntVar(&STARTPAGE, "p", STARTPAGE, "Starting page for search")
@@ -81,25 +79,25 @@ func main() {
 	flag.Parse()
 
 	if flag.NArg() == 0 && TAG == "" { //If no arguments after flags and empty/unchanged tag, what we should download? Sane end of line.
-		log.SetPrefix("Done at ")
+		log.SetPrefix("Done at ") //We can not do this with elog!
 		log.Println("Nothing to download, bye!")
 		os.Exit(0)
 	}
 
-	//	creating directory for downloads if not yet done
-	if err := os.MkdirAll(IMGDIR, 0777); err != nil { //Execute? No need to execute any image
-		elog.Fatalln(err) //We can not create folder for images, dying horribly
+	//Creating directory for downloads if it does not yet exist
+	if err := os.MkdirAll(IMGDIR, 0644); err != nil { //Execute? No need to execute any image. Also, all those other users can not do anything beyond enjoying our images.
+		elog.Fatalln(err) //We can not create folder for images, end of line.
 	}
 
-	//	creating channels to pass info to downloader and to signal job well done
-	imgdat := make(chan Image, QDEPTH)
+	//	Creating channels to pass info to downloader and to signal job well done
+	imgdat := make(chan Image, QDEPTH) //Better leave default queue depth. Experiment shown that depth about 20 provides optimal perfomance on my system
 	done := make(chan bool)
 
 	if TAG == "" { //Because we can put imgid with flags. Why not?
 
-		//	checking argument for being a number and then getting image data
+		//	Checking argument for being a number and then getting image data
 
-		imgid := flag.Arg(0)
+		imgid := flag.Arg(0) //0-indexed, unlike os.Args. os.Args[0] is path to program. It needs to be used later, when we are searching for what directory we are writing in
 		_, err = strconv.Atoi(imgid)
 
 		if err != nil {
@@ -108,23 +106,26 @@ func main() {
 
 		log.Println("Processing image No", imgid)
 
-		go ParseImg(imgdat, imgid, key)
+		go parseImg(imgdat, imgid, key) // Sending imgid to parser. Here validity is our problem
 
 	} else {
 
-		//	and here we send tags to getter/parser
+		//	and here we send tags to getter/parser. Validity is server problem, mostly
 
 		log.Println("Processing tags", TAG)
 		go ParseTag(imgdat, TAG, key)
 	}
 
-	log.Println("Starting worker")
+
+	log.Println("Starting worker") //It would be funny if worker goroutine does not start
 	go DlImg(imgdat, done)
+
 
 	<-done
 	log.SetPrefix("Done at ")
 	log.Println("Finised")
-
+	//And we are done here! Hooray!
+	return
 }
 
 type Image struct {
@@ -201,7 +202,7 @@ func DlImg(imgchan <-chan Image, done chan bool) {
 
 					response, err := http.Get(imgdata.url)
 					if err != nil {
-						elog.Println("Error when gettint image", imgdata.imgid)
+						elog.Println("Error when getting image", imgdata.imgid)
 						elog.Println(err)
 						return
 					}
@@ -305,8 +306,8 @@ func InfoToChannel(dat map[string]interface{}, imgchan chan<- Image) {
 	imgdata.hash = dat["sha512_hash"].(string)
 	imgdata.filename = (strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string) + "." + dat["original_format"].(string))
 	imgdata.imgid = int(dat["id_number"].(float64))
-
-	//	for troubleshooting later
+	
+	//	for troubleshooting - possibly debug flag?
 	//	fmt.Println(dat)
 	//	fmt.Println(imgdata.url)
 	//	fmt.Println(imgdata.hash)

@@ -37,13 +37,13 @@ then put config file in same place. In the future it would write default config.
 config.ini
 ----------
 
-Secion [main]
+[main]
 
-key => your derpiboo.ru key
+key ==> your derpiboo.ru key
 
-downdir => in this directory your images would be saved
+downdir ==> in this directory your images would be saved
 
-workers => number of download buffer. Leave it no less that default: else there would be slowdown when parser requests next search page from derpibooru
+queue_depth ==> depth of download buffer. Leave it no less that default: else there would be slowdown when parser requests next search page from derpibooru and feeds it's content to worker
 
 If any line is not changed from default, program would use default, build-in parameters.
 Currenly only key is ought to be in configuration file. It may be empty, then program would ignore it's existence. 

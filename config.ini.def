@@ -1,5 +1,5 @@
 [main]
 
 key = 
-workers =
+queue_depth =
 downdir =
