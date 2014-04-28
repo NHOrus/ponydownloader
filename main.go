@@ -106,7 +106,7 @@ func main() {
 
 		log.Println("Processing image No", imgid)
 
-		go parseImg(imgdat, imgid, key) // Sending imgid to parser. Here validity is our problem
+		go ParseImg(imgdat, imgid, key) // Sending imgid to parser. Here validity is our problem
 
 	} else {
 
