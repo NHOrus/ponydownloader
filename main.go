@@ -20,7 +20,7 @@ import (
 
 //	defaults:
 var (
-	WORKERS   int64  = 10    //Number of workers
+	QDEPTH    int64  = 10    //depth of the queue of processed images
 	IMGDIR    string = "img" //default download directory
 	TAG       string = ""    //default string is empty, it can only ge extracted from command line
 	STARTPAGE int    = 1     //default start page, derpiboo.ru 1-indexed
@@ -62,10 +62,10 @@ func main() {
 		elog.Println("'key' variable missing from 'main' section")
 	}
 
-	W_temp, _ := config.Get("main", "workers")
+	Q_temp, _ := config.Get("main", "workers")
 
-	if W_temp != "" {
-		WORKERS, err = strconv.ParseInt(W_temp, 10, 0)
+	if Q_temp != "" {
+		QDEPTH, err = strconv.ParseInt(Q_temp, 10, 0)
 
 		if err != nil {
 			elog.Fatalln("Wrong configuration: Amount of workers is not a number")
@@ -99,7 +99,7 @@ func main() {
 	}
 
 	//	creating channels to pass info to downloader and to signal job well done
-	imgdat := make(chan Image, WORKERS)
+	imgdat := make(chan Image, QDEPTH)
 	done := make(chan bool)
 
 	if TAG == "" { //Because we can put imgid with flags. Why not?
