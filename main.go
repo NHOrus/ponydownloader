@@ -38,11 +38,7 @@ func main() {
 	}
 	defer logfile.Close() //Almost forgot. Always close the file in the end.
 
-	elog = log.New(io.MultiWriter(logfile, os.Stderr), "Errors at ", log.LstdFlags) //setting stuff for our logging: both errors and events.
-	log.SetPrefix("Happens at ")
-	log.SetFlags(log.LstdFlags)
-	log.SetOutput(io.MultiWriter(logfile, os.Stdout))
-	log.Println("Program start")
+	elog := SetLog(logfile)
 
 	config, err := ini.LoadFile("config.ini") // Loading default config file and checking for various errors.
 
@@ -320,4 +316,13 @@ func InfoToChannel(dat map[string]interface{}, imgchan chan<- Image) {
 	//	fmt.Println(imgdata.filename)
 
 	imgchan <- imgdata
+}
+
+func SetLog(logfile *os.File) (retlog *log.Logger) {
+	retlog = log.New(io.MultiWriter(logfile, os.Stderr), "Errors at ", log.LstdFlags) //Setting stuff for our logging: both errors and events.
+	log.SetPrefix("Happens at ")
+	log.SetFlags(log.LstdFlags)
+	log.SetOutput(io.MultiWriter(logfile, os.Stdout))
+	log.Println("Program start")
+	return retlog
 }
