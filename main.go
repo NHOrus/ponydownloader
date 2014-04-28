@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"ponydownloader/settings"
 	"strconv"
 
 	//	"errors"
@@ -32,13 +33,9 @@ func main() {
 
 	fmt.Println("Derpiboo.ru Downloader version 0.1.4")
 
-	logfile, err := os.OpenFile("event.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644) //file for putting errors into
-	if err != nil {
-		panic(err)
-	}
+	elog, logfile := settings.SetLog() //setting up logging of errors
+	
 	defer logfile.Close() //Almost forgot. Always close the file in the end.
-
-	elog := SetLog(logfile)
 
 	config, err := ini.LoadFile("config.ini") // Loading default config file and checking for various errors.
 
@@ -316,13 +313,4 @@ func InfoToChannel(dat map[string]interface{}, imgchan chan<- Image) {
 	//	fmt.Println(imgdata.filename)
 
 	imgchan <- imgdata
-}
-
-func SetLog(logfile *os.File) (retlog *log.Logger) {
-	retlog = log.New(io.MultiWriter(logfile, os.Stderr), "Errors at ", log.LstdFlags) //Setting stuff for our logging: both errors and events.
-	log.SetPrefix("Happens at ")
-	log.SetFlags(log.LstdFlags)
-	log.SetOutput(io.MultiWriter(logfile, os.Stdout))
-	log.Println("Program start")
-	return retlog
 }
