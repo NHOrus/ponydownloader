@@ -115,18 +115,18 @@ func main() {
 
 		log.Println("Processing image No", imgid)
 
-		go parseImg(imgdat, imgid, key)
+		go ParseImg(imgdat, imgid, key)
 
 	} else {
 
 		//	and here we send tags to getter/parser
 
 		log.Println("Processing tags", TAG)
-		go parseTag(imgdat, TAG, key)
+		go ParseTag(imgdat, TAG, key)
 	}
 
 	log.Println("Starting worker")
-	go dlimage(imgdat, done)
+	go DlImg(imgdat, done)
 
 	<-done
 	log.SetPrefix("Done at ")
@@ -141,7 +141,7 @@ type Image struct {
 	hash     string
 }
 
-func parseImg(imgchan chan<- Image, imgid string, key string) {
+func ParseImg(imgchan chan<- Image, imgid string, key string) {
 
 	source := "http://derpiboo.ru/" + imgid + ".json?nofav=&nocomments="
 	if key != "" {
@@ -180,7 +180,7 @@ func parseImg(imgchan chan<- Image, imgid string, key string) {
 	return
 }
 
-func dlimage(imgchan <-chan Image, done chan bool) {
+func DlImg(imgchan <-chan Image, done chan bool) {
 
 	fmt.Println("Worker started; reading channel") //nice notification that we are not forgotten
 
@@ -239,7 +239,7 @@ func dlimage(imgchan <-chan Image, done chan bool) {
 	}
 }
 
-func parseTag(imgchan chan<- Image, tag string, key string) {
+func ParseTag(imgchan chan<- Image, tag string, key string) {
 
 	source := "http://derpiboo.ru/search.json?nofav=&nocomments=" //yay hardwiring url strings!
 
