@@ -2,7 +2,7 @@ package main
 
 import (
 	"crypto/sha512"
-	"encoding/hex"
+	//"encoding/hex"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -136,7 +136,7 @@ type Image struct {
 
 func ParseImg(imgchan chan<- Image, imgid string, key string) {
 
-	source := "http://derpiboo.ru/" + imgid + ".json?nofav=&nocomments="
+	source := "http://derpiboo.ru/images/" + imgid + ".json?nofav=&nocomments="
 	if key != "" {
 		source = source + "&key=" + key
 	}
@@ -216,9 +216,9 @@ func DlImg(imgchan <-chan Image, done chan bool) {
 
 					//	fmt.Println("\n", hex.EncodeToString(b), "\n", imgdata.hash )
 
-					if hex.EncodeToString(b) != imgdata.hash {
-						elog.Println("Hash wrong with imageid", imgdata.imgid)
-					}
+					//if hex.EncodeToString(b) != imgdata.hash {
+						//elog.Println("Hash wrong with imageid", imgdata.imgid)
+					//}
 				}()
 			}
 
