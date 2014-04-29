@@ -1,8 +1,6 @@
 package main
 
 import (
-	"crypto/sha512"
-	//"encoding/hex"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -206,18 +204,10 @@ func DlImg(imgchan <-chan Image, done chan bool) {
 					}
 					defer response.Body.Close() //Same, we shall not listen to the void when we finished getting image
 
-					hash := sha512.New()
+					
+					io.Copy(output, response.Body) //	Writing things we got from Derpibooru into the file and into hasher
 
-					io.Copy(io.MultiWriter(output, hash), response.Body) //	Writing things we got from Derpibooru into the
-
-					b := make([]byte, hash.Size())
-					hash.Sum(b[:0])
-
-					//	fmt.Println("\n", hex.EncodeToString(b), "\n", imgdata.hash )
-
-					//if hex.EncodeToString(b) != imgdata.hash {
-					//elog.Println("Hash wrong with imageid", imgdata.imgid)
-					//}
+			
 				}()
 			}
 
