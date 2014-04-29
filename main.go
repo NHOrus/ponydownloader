@@ -32,7 +32,7 @@ func main() {
 	fmt.Println("Derpiboo.ru Downloader version 0.2.0")
 
 	elog, logfile := settings.SetLog() //setting up logging of errors
-	
+
 	defer logfile.Close() //Almost forgot. Always close the file in the end.
 
 	config, err := ini.LoadFile("config.ini") // Loading default config file and checking for various errors.
@@ -116,10 +116,8 @@ func main() {
 		go ParseTag(imgdat, TAG, key)
 	}
 
-
 	log.Println("Starting worker") //It would be funny if worker goroutine does not start
 	go DlImg(imgdat, done)
-
 
 	<-done
 	log.SetPrefix("Done at ")
@@ -218,7 +216,7 @@ func DlImg(imgchan <-chan Image, done chan bool) {
 					//	fmt.Println("\n", hex.EncodeToString(b), "\n", imgdata.hash )
 
 					//if hex.EncodeToString(b) != imgdata.hash {
-						//elog.Println("Hash wrong with imageid", imgdata.imgid)
+					//elog.Println("Hash wrong with imageid", imgdata.imgid)
 					//}
 				}()
 			}
@@ -306,7 +304,7 @@ func InfoToChannel(dat map[string]interface{}, imgchan chan<- Image) {
 	imgdata.hash = dat["sha512_hash"].(string)
 	imgdata.filename = (strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string) + "." + dat["original_format"].(string))
 	imgdata.imgid = int(dat["id_number"].(float64))
-	
+
 	//	for troubleshooting - possibly debug flag?
 	//	fmt.Println(dat)
 	//	fmt.Println(imgdata.url)

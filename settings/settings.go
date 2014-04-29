@@ -4,7 +4,7 @@ import (
 	"io"
 	"log"
 	"os"
-	//	"github.com/vaughan0/go-ini"
+	//"github.com/vaughan0/go-ini"
 )
 
 func SetLog() (retlog *log.Logger, logfile *os.File) {
@@ -23,4 +23,8 @@ func SetLog() (retlog *log.Logger, logfile *os.File) {
 	log.Println("Program start")
 
 	return
+}
+
+func WriteConfig() {
+
 }
