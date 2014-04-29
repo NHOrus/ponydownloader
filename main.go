@@ -25,6 +25,13 @@ var (
 	elog      *log.Logger         //The logger for errors
 )
 
+type Image struct {
+	imgid    int
+	url      string
+	filename string
+	//	hash     string
+}
+
 func main() {
 
 	fmt.Println("Derpiboo.ru Downloader version 0.2.0")
@@ -124,13 +131,6 @@ func main() {
 	return
 }
 
-type Image struct {
-	imgid    int
-	url      string
-	filename string
-	hash     string
-}
-
 func ParseImg(imgchan chan<- Image, imgid string, key string) {
 
 	source := "http://derpiboo.ru/images/" + imgid + ".json?nofav=&nocomments="
@@ -204,10 +204,8 @@ func DlImg(imgchan <-chan Image, done chan bool) {
 					}
 					defer response.Body.Close() //Same, we shall not listen to the void when we finished getting image
 
-					
 					io.Copy(output, response.Body) //	Writing things we got from Derpibooru into the file and into hasher
 
-			
 				}()
 			}
 
@@ -291,7 +289,7 @@ func InfoToChannel(dat map[string]interface{}, imgchan chan<- Image) {
 	var imgdata Image
 
 	imgdata.url = "http:" + dat["image"].(string)
-	imgdata.hash = dat["sha512_hash"].(string)
+	//	imgdata.hash = dat["sha512_hash"].(string)
 	imgdata.filename = (strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string) + "." + dat["original_format"].(string))
 	imgdata.imgid = int(dat["id_number"].(float64))
 
