@@ -1,6 +1,7 @@
 package settings
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -25,6 +26,15 @@ func SetLog() (retlog *log.Logger, logfile *os.File) {
 	return
 }
 
-func WriteConfig() {
+func writeConfigDefault() {
+	config, err := os.OpenFile("config.ini", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	defer config.Close()
+	if err != nil {
+		panic(err)
+	}
+	_, err = fmt.Fprint(config, "[main] \nkey =\nqueue_depth =\ndowndir =")
 
+	if err != nil {
+		panic(err)
+	}
 }
