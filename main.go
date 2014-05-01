@@ -23,6 +23,7 @@ var (
 	STARTPAGE int         = 1     //Default start page, derpiboo.ru 1-indexed
 	STOPPAGE  int         = 0     //Default stop page, would stop parsing json when stop page is reached or site reaches the end of search
 	elog      *log.Logger         //The logger for errors
+	key       string      = ""
 )
 
 type Image struct {
@@ -32,14 +33,7 @@ type Image struct {
 	//	hash     string
 }
 
-func main() {
-
-	fmt.Println("Derpiboo.ru Downloader version 0.2.0")
-
-	elog, logfile := settings.SetLog() //setting up logging of errors
-
-	defer logfile.Close() //Almost forgot. Always close the file in the end.
-
+func init() {
 	config, err := ini.LoadFile("config.ini") // Loading default config file and checking for various errors.
 
 	if os.IsNotExist(err) {
@@ -89,6 +83,16 @@ func main() {
 		os.Exit(0)
 	}
 
+}
+
+func main() {
+
+	fmt.Println("Derpiboo.ru Downloader version 0.2.0")
+
+	elog, logfile := settings.SetLog() //setting up logging of errors
+
+	defer logfile.Close() //Almost forgot. Always close the file in the end.
+
 	//Creating directory for downloads if it does not yet exist
 	if err := os.MkdirAll(IMGDIR, 0644); err != nil { //Execute? No need to execute any image. Also, all those other users can not do anything beyond enjoying our images.
 		elog.Fatalln(err) //We can not create folder for images, end of line.
@@ -103,7 +107,7 @@ func main() {
 		//	Checking argument for being a number and then getting image data
 
 		imgid := flag.Arg(0) //0-indexed, unlike os.Args. os.Args[0] is path to program. It needs to be used later, when we are searching for what directory we are writing in
-		_, err = strconv.Atoi(imgid)
+		_, err := strconv.Atoi(imgid)
 
 		if err != nil {
 			elog.Fatalln("Wrong input: can not parse", imgid, "as a number")
