@@ -9,13 +9,13 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"ponydownloader/settings"
 	"strconv"
 
-	"github.com/vaughan0/go-ini"
+	"github.com/vaughan0/go-ini" //We need some simple way to parse ini files, here it is, externally.
+	"ponydownloader/settings"    //Here we are working with setting things up or down, depending.
 )
 
-//	default variables
+//Default hardcoded variables
 var (
 	QDEPTH    int64       = 20    //Depth of the queue buffer - how many images are enqueued
 	IMGDIR    string      = "img" //Default download directory
@@ -23,7 +23,7 @@ var (
 	STARTPAGE int         = 1     //Default start page, derpiboo.ru 1-indexed
 	STOPPAGE  int         = 0     //Default stop page, would stop parsing json when stop page is reached or site reaches the end of search
 	elog      *log.Logger         //The logger for errors
-	key       string      = ""
+	KEY       string      = ""    //Default identification key. Get your own and place it in configuration, people
 )
 
 type Image struct {
@@ -34,6 +34,7 @@ type Image struct {
 }
 
 func init() {
+
 	config, err := ini.LoadFile("config.ini") // Loading default config file and checking for various errors.
 
 	if os.IsNotExist(err) {
@@ -46,9 +47,9 @@ func init() {
 
 	//Getting stuff from config, overwriting hardwired defaults when needed
 
-	key, ok := config.Get("main", "key")
+	KEY, ok := config.Get("main", "key")
 
-	if !ok || key == "" {
+	if !ok || KEY == "" {
 		elog.Println("'key' variable missing from 'main' section. It is vital for server-side filtering") //Empty key or key does not exist. Derpibooru works with this, but default image filter filters too much. Use key to set your own!
 	}
 
@@ -115,14 +116,14 @@ func main() {
 
 		log.Println("Processing image No", imgid)
 
-		go ParseImg(imgdat, imgid, key) // Sending imgid to parser. Here validity is our problem
+		go ParseImg(imgdat, imgid, KEY) // Sending imgid to parser. Here validity is our problem
 
 	} else {
 
 		//	and here we send tags to getter/parser. Validity is server problem, mostly
 
 		log.Println("Processing tags", TAG)
-		go ParseTag(imgdat, TAG, key)
+		go ParseTag(imgdat, TAG, KEY)
 	}
 
 	log.Println("Starting worker") //It would be funny if worker goroutine does not start
@@ -135,11 +136,11 @@ func main() {
 	return
 }
 
-func ParseImg(imgchan chan<- Image, imgid string, key string) {
+func ParseImg(imgchan chan<- Image, imgid string, KEY string) {
 
 	source := "http://derpiboo.ru/images/" + imgid + ".json?nofav=&nocomments="
-	if key != "" {
-		source = source + "&key=" + key
+	if KEY != "" {
+		source = source + "&key=" + KEY
 	}
 
 	fmt.Println("Getting image info at:", source)
@@ -223,12 +224,12 @@ func DlImg(imgchan <-chan Image, done chan bool) {
 	}
 }
 
-func ParseTag(imgchan chan<- Image, tag string, key string) {
+func ParseTag(imgchan chan<- Image, tag string, KEY string) {
 
 	source := "http://derpiboo.ru/search.json?nofav=&nocomments=" //yay hardwiring url strings!
 
-	if key != "" {
-		source = source + "&key=" + key
+	if KEY != "" {
+		source = source + "&key=" + KEY
 	}
 
 	fmt.Println("Searching as", source+"&q="+tag)
