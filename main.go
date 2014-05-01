@@ -11,13 +11,12 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/vaughan0/go-ini" //We need some simple way to parse ini files, here it is, externally.
 	"ponydownloader/settings"    //Here we are working with setting things up or down, depending.
 )
 
 //Default hardcoded variables
 var (
-	QDEPTH    int64       = 20    //Depth of the queue buffer - how many images are enqueued
+	QDEPTH    int       = 20    //Depth of the queue buffer - how many images are enqueued
 	IMGDIR    string      = "img" //Default download directory
 	TAG       string      = ""    //Default tag string is empty, it should be extracted from command line and only command line
 	STARTPAGE int         = 1     //Default start page, derpiboo.ru 1-indexed
@@ -35,43 +34,15 @@ type Image struct {
 
 func init() {
 
-	config, err := ini.LoadFile("config.ini") // Loading default config file and checking for various errors.
-
-	if os.IsNotExist(err) {
-		elog.Fatalln("Config.ini does not exist, create it") //We can not live without config. We could, in theory, but writing default config if none exist can wait
-	}
-
-	if err != nil {
-		elog.Panicln(err) //Oh, something is broken beyond my understanding. Sorry.
-	}
-
-	//Getting stuff from config, overwriting hardwired defaults when needed
-
-	KEY, ok := config.Get("main", "key")
-
-	if !ok || KEY == "" {
-		elog.Println("'key' variable missing from 'main' section. It is vital for server-side filtering") //Empty key or key does not exist. Derpibooru works with this, but default image filter filters too much. Use key to set your own!
-	}
-
-	Q_temp, _ := config.Get("main", "workers")
-
-	if Q_temp != "" {
-		QDEPTH, err = strconv.ParseInt(Q_temp, 10, 0)
-
-		if err != nil {
-			elog.Fatalln("Wrong configuration: Depth of the buffer queue is not a number")
-
-		}
-	}
-
-	ID_temp, _ := config.Get("main", "downdir")
-
-	if ID_temp != "" {
-		IMGDIR = ID_temp
-	}
-
+	Set := settings.Settings{QDepth: QDEPTH, ImgDir: IMGDIR, Key: KEY}
+	
+	settings.GetConfig(&Set, elog)
+	
+	QDEPTH = Set.QDepth
+	KEY = Set.Key
+	IMGDIR = Set.ImgDir
+	
 	//Here we are parsing all the flags. Command line argument hold priority to config. Except for 'key'. API-key is config-only
-
 	flag.StringVar(&TAG, "t", TAG, "Tags to download")
 	flag.IntVar(&STARTPAGE, "p", STARTPAGE, "Starting page for search")
 	flag.IntVar(&STOPPAGE, "sp", STOPPAGE, "Stopping page for search, 0 - parse all all search pages")
@@ -83,6 +54,7 @@ func init() {
 		log.Println("Nothing to download, bye!")
 		os.Exit(0)
 	}
+
 
 }
 
