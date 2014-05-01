@@ -90,7 +90,7 @@ func main() {
 
 	fmt.Println("Derpiboo.ru Downloader version 0.2.0")
 
-	elog, logfile := settings.SetLog() //setting up logging of errors
+	elog, logfile := settings.SetLog() //Setting up logging of errors
 
 	defer logfile.Close() //Almost forgot. Always close the file in the end.
 
@@ -100,7 +100,7 @@ func main() {
 	}
 
 	//	Creating channels to pass info to downloader and to signal job well done
-	imgdat := make(chan Image, QDEPTH) //Better leave default queue depth. Experiment shown that depth about 20 provides optimal perfomance on my system
+	imgdat := make(chan Image, QDEPTH) //Better leave default queue depth. Experiment shown that depth about 20 provides optimal perfomance on my system.
 	done := make(chan bool)
 
 	if TAG == "" { //Because we can put imgid with flags. Why not?
