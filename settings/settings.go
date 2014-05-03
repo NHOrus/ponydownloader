@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 	"strconv"
-	
+
 	"github.com/vaughan0/go-ini" //We need some simple way to parse ini files, here it is, externally.
 )
 
@@ -36,7 +36,7 @@ func SetLog() (retlog *log.Logger, logfile *os.File) {
 }
 
 //Writing default configuration data into file.
-func WriteConfig(WSet Settings, elog *log.Logger) {
+func (WSet Settings) WriteConfig(elog *log.Logger) {
 	config, err := os.OpenFile("config.ini", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	defer config.Close()
 
@@ -46,17 +46,17 @@ func WriteConfig(WSet Settings, elog *log.Logger) {
 
 	_, err = fmt.Fprintln(config,
 		"[main]", "",
-		"key = " + WSet.Key,
-		"queue_depth = " + string(WSet.QDepth),
-		"downdir = " + WSet.ImgDir)
+		"key = "+WSet.Key,
+		"queue_depth = "+string(WSet.QDepth),
+		"downdir = "+WSet.ImgDir)
 
 	if err != nil {
 		panic(err)
 	}
 }
 
-func GetConfig(DSet *Settings, elog *log.Logger) {
-	
+func (DSet *Settings) GetConfig(elog *log.Logger) {
+
 	config, err := ini.LoadFile("config.ini") // Loading default config file and checking for various errors.
 
 	if os.IsNotExist(err) {

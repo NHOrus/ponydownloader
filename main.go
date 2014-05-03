@@ -11,12 +11,12 @@ import (
 	"os"
 	"strconv"
 
-	"ponydownloader/settings"    //Here we are working with setting things up or down, depending.
+	"ponydownloader/settings" //Here we are working with setting things up or down, depending.
 )
 
 //Default hardcoded variables
 var (
-	QDEPTH    int       = 20    //Depth of the queue buffer - how many images are enqueued
+	QDEPTH    int         = 20    //Depth of the queue buffer - how many images are enqueued
 	IMGDIR    string      = "img" //Default download directory
 	TAG       string      = ""    //Default tag string is empty, it should be extracted from command line and only command line
 	STARTPAGE int         = 1     //Default start page, derpiboo.ru 1-indexed
@@ -35,17 +35,18 @@ type Image struct {
 func init() {
 
 	Set := settings.Settings{QDepth: QDEPTH, ImgDir: IMGDIR, Key: KEY}
-	
-	settings.GetConfig(&Set, elog)
-	
+
+	Set.GetConfig(elog)
+
 	QDEPTH = Set.QDepth
 	KEY = Set.Key
 	IMGDIR = Set.ImgDir
-	
+
 	//Here we are parsing all the flags. Command line argument hold priority to config. Except for 'key'. API-key is config-only
 	flag.StringVar(&TAG, "t", TAG, "Tags to download")
 	flag.IntVar(&STARTPAGE, "p", STARTPAGE, "Starting page for search")
 	flag.IntVar(&STOPPAGE, "sp", STOPPAGE, "Stopping page for search, 0 - parse all all search pages")
+	flag.StringVar(&KEY, "k", KEY, "Your key to derpibooru API")
 
 	flag.Parse()
 
@@ -54,7 +55,6 @@ func init() {
 		log.Println("Nothing to download, bye!")
 		os.Exit(0)
 	}
-
 
 }
 
