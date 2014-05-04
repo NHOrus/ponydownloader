@@ -8,6 +8,7 @@ import (
 	//"github.com/vaughan0/go-ini"
 )
 
+//We are setting our logging facilities as we needed them - in readable form
 func SetLog() (retlog *log.Logger, logfile *os.File) {
 
 	logfile, err := os.OpenFile("event.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644) //file for putting errors into
