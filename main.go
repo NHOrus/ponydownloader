@@ -17,18 +17,21 @@ import (
 //Default hardcoded variables
 var (
 	QDEPTH    int         = 20    //Depth of the queue buffer - how many images are enqueued
-	IMGDIR    string      = "img" //Default download directory
-	TAG       string      = ""    //Default tag string is empty, it should be extracted from command line and only command line
-	STARTPAGE int         = 1     //Default start page, derpiboo.ru 1-indexed
-	STOPPAGE  int         = 0     //Default stop page, would stop parsing json when stop page is reached or site reaches the end of search
-	elog      *log.Logger         //The logger for errors
+	IMGDIR     string      = "img" //Default download directory
+	TAG        string      = ""    //Default tag string is empty, it should be extracted from command line and only command line
+	STARTPAGE  int         = 1     //Default start page, derpiboo.ru 1-indexed
+	STOPPAGE   int         = 0     //Default stop page, would stop parsing json when stop page is reached or site reaches the end of search
+	elog       *log.Logger         //The logger for errors
 	KEY       string      = ""    //Default identification key. Get your own and place it in configuration, people
+	SCRFILTER  int                 //So we can ignore things with limited
+	FILTERFLAG bool        = false //Gah, not sure how to make it better.
 )
 
 type Image struct {
 	imgid    int
 	url      string
 	filename string
+	score    int
 	//	hash     string
 }
 
@@ -45,8 +48,10 @@ func init() {
 	//Here we are parsing all the flags. Command line argument hold priority to config. Except for 'key'. API-key is config-only
 	flag.StringVar(&TAG, "t", TAG, "Tags to download")
 	flag.IntVar(&STARTPAGE, "p", STARTPAGE, "Starting page for search")
-	flag.IntVar(&STOPPAGE, "sp", STOPPAGE, "Stopping page for search, 0 - parse all all search pages")
+	flag.IntVar(&STOPPAGE, "np", STOPPAGE, "Stopping page for search, 0 - parse all all search pages")
 	flag.StringVar(&KEY, "k", KEY, "Your key to derpibooru API")
+	flag.IntVar(&SCRFILTER, "scr", SCRFILTER, "Minimal score of image for it to be downloaded")
+	flag.BoolVar(&FILTERFLAG, "filter", FILTERFLAG, "If set to true, enables client-side filtration of downloaded images")
 
 	flag.Parse()
 
@@ -99,7 +104,10 @@ func main() {
 	}
 
 	log.Println("Starting worker") //It would be funny if worker goroutine does not start
-	go DlImg(imgdat, done)
+
+	filtimgdat := make(chan Image, QDEPTH)
+	go FilterChannel(imgdat, filtimgdat)
+	go DlImg(filtimgdat, done)
 
 	<-done
 	log.SetPrefix("Done at ")
@@ -269,6 +277,7 @@ func InfoToChannel(dat map[string]interface{}, imgchan chan<- Image) {
 	//	imgdata.hash = dat["sha512_hash"].(string)
 	imgdata.filename = (strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string) + "." + dat["original_format"].(string))
 	imgdata.imgid = int(dat["id_number"].(float64))
+	imgdata.score = int(dat["score"].(float64))
 
 	//	for troubleshooting - possibly debug flag?
 	//	fmt.Println(dat)
@@ -277,4 +286,23 @@ func InfoToChannel(dat map[string]interface{}, imgchan chan<- Image) {
 	//	fmt.Println(imgdata.filename)
 
 	imgchan <- imgdata
+}
+
+func FilterChannel(inchan <-chan Image, outchan chan<- Image) {
+
+	for {
+
+		imgdata, more := <-inchan
+
+		if !more {
+			close(outchan)
+			return //Why make a bunch of layers of ifs if one can just end it all?
+		}
+
+		if !FILTERFLAG || (FILTERFLAG && imgdata.score >= SCRFILTER) {
+			outchan <- imgdata
+		} else {
+			fmt.Println("Filtering " + imgdata.filename)
+		}
+	}
 }
