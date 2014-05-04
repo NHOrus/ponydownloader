@@ -82,8 +82,8 @@ func main() {
 
 	flag.StringVar(&TAG, "t", TAG, "Tags to download")
 	flag.IntVar(&STARTPAGE, "p", STARTPAGE, "Starting page for search")
-	flag.IntVar(&STOPPAGE, "sp", STOPPAGE, "Stopping page for search, 0 - parse all all search pages")
-	flag.IntVar(&SCRFILTER, "fav", SCRFILTER, "Minimal score of image for it to be downloaded")
+	flag.IntVar(&STOPPAGE, "np", STOPPAGE, "Stopping page for search, 0 - parse all all search pages")
+	flag.IntVar(&SCRFILTER, "scr", SCRFILTER, "Minimal score of image for it to be downloaded")
 	flag.BoolVar(&FILTERFLAG, "filter", FILTERFLAG, "If set to true, enables client-side filtration of downloaded images")
 
 	flag.Parse()
@@ -300,7 +300,7 @@ func InfoToChannel(dat map[string]interface{}, imgchan chan<- Image) {
 	//	imgdata.hash = dat["sha512_hash"].(string)
 	imgdata.filename = (strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string) + "." + dat["original_format"].(string))
 	imgdata.imgid = int(dat["id_number"].(float64))
-	imgdata.score = int(dat["score"].(int))
+	imgdata.score = int(dat["score"].(float64))
 
 	//	for troubleshooting - possibly debug flag?
 	//	fmt.Println(dat)
@@ -324,7 +324,8 @@ func FilterChannel(inchan <-chan Image, outchan chan<- Image) {
 
 		if !FILTERFLAG || (FILTERFLAG && imgdata.score >= SCRFILTER) {
 			outchan <- imgdata
+		} else {
+			fmt.Println("Filtering " + imgdata.filename)
 		}
-
 	}
 }
