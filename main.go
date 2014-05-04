@@ -23,6 +23,8 @@ var (
 	STARTPAGE int         = 1     //Default start page, derpiboo.ru 1-indexed
 	STOPPAGE  int         = 0     //Default stop page, would stop parsing json when stop page is reached or site reaches the end of search
 	elog      *log.Logger         //The logger for errors
+	SCRFILTER int				  //So we can ignore things with limited 
+	FILTERFLAG bool = false		  //Gah, not sure how to make it better.
 )
 
 type Image struct {
@@ -80,6 +82,8 @@ func main() {
 	flag.StringVar(&TAG, "t", TAG, "Tags to download")
 	flag.IntVar(&STARTPAGE, "p", STARTPAGE, "Starting page for search")
 	flag.IntVar(&STOPPAGE, "sp", STOPPAGE, "Stopping page for search, 0 - parse all all search pages")
+	flag.IntVar(&SCRFILTER, "fav", SCRFILTER, "Minimal score of image for it to be downloaded")
+	flag.BoolVar(&FILTERFLAG, "filter", FILTERFLAG, "If set to true, enables client-side filtration of downloaded images")
 
 	flag.Parse()
 
