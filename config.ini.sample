@@ -1,5 +1,5 @@
 [main]
 
 key = 
-queue_depth =
-downdir =
+queue_depth = 20
+downdir = img
