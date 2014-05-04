@@ -260,9 +260,9 @@ func ParseTag(imgchan chan<- Image, tag string, key string) {
 
 			//fmt.Println(body)
 
-			if err := json.Unmarshal(body, &dats); //transforming json into native slice of maps
+			err = json.Unmarshal(body, &dats) //transforming json into native slice of maps
 
-			err != nil {
+			if err != nil {
 				elog.Println("Error while parsing search page", i)
 				elog.Println(err)
 				return
