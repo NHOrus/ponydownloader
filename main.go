@@ -51,15 +51,9 @@ func init() {
 	flag.IntVar(&STOPPAGE, "np", STOPPAGE, "Stopping page for search, 0 - parse all all search pages")
 	flag.StringVar(&KEY, "k", KEY, "Your key to derpibooru API")
 	flag.IntVar(&SCRFILTER, "scr", SCRFILTER, "Minimal score of image for it to be downloaded")
-	flag.BoolVar(&FILTERFLAG, "filter", FILTERFLAG, "If set to true, enables client-side filtration of downloaded images")
+	flag.BoolVar(&FILTERFLAG, "filter", FILTERFLAG, "If set (to true), enables client-side filtration of downloaded images")
 
 	flag.Parse()
-
-	if flag.NArg() == 0 && TAG == "" { //If no arguments after flags and empty/unchanged tag, what we should download? Sane end of line.
-		log.SetPrefix("Done at ") //We can not do this with elog!
-		log.Println("Nothing to download, bye!")
-		os.Exit(0)
-	}
 
 }
 
@@ -70,6 +64,13 @@ func main() {
 	elog, logfile := settings.SetLog() //Setting up logging of errors
 
 	defer logfile.Close() //Almost forgot. Always close the file in the end.
+
+	if flag.NArg() == 0 && TAG == "" { //If no arguments after flags and empty/unchanged tag, what we should download? Sane end of line.
+
+		log.SetPrefix("Done at ")                //We can not do this with elog!
+		log.Println("Nothing to download, bye!") //Need to reshuffle flow: now it could end before it starts.
+		os.Exit(0)
+	}
 
 	//Creating directory for downloads if it does not yet exist
 	if err := os.MkdirAll(IMGDIR, 0644); err != nil { //Execute? No need to execute any image. Also, all those other users can not do anything beyond enjoying our images.
