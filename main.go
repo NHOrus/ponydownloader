@@ -186,44 +186,42 @@ func DlImg(imgchan <-chan Image, done chan bool) {
 
 		imgdata, more := <-imgchan
 
-		if more { //checking that there is an image in channel
-
-			if imgdata.filename == "" {
-				elog.Println("Empty filename. Oops?") //something somewhere had gone wrong, going to the next image
-			} else {
-
-				fmt.Println("Saving as", imgdata.filename)
-
-				func() { // to not hold all the files open when there is no need
-
-					output, err := os.Create(IMGDIR + string(os.PathSeparator) + imgdata.filename) //And now, THE FILE!
-					if err != err {
-						elog.Println("Error when creating file for image" + strconv.Itoa(imgdata.imgid))
-						elog.Println(err)
-						return
-					}
-					defer output.Close() //Not forgetting to deal with it after completing download
-
-					response, err := http.Get(imgdata.url)
-					if err != nil {
-						elog.Println("Error when getting image", imgdata.imgid)
-						elog.Println(err)
-						return
-					}
-					defer response.Body.Close() //Same, we shall not listen to the void when we finished getting image
-
-					io.Copy(output, response.Body) //	Writing things we got from Derpibooru into the file and into hasher
-
-				}()
-			}
-
-			//fmt.Println("\n", hex.EncodeToString(hash.Sum(nil)), "\n", imgdata.hash )
-
-		} else {
+		if !more { //checking that there is an image in channel
 			done <- true //well, there is no images in channel, it means we got them all, so synchronization is kicking in and ending the process
 			break        //Just in case, so it would not stupidly die when program finishes - it will die smartly
-
 		}
+
+		if imgdata.filename == "" {
+			elog.Println("Empty filename. Oops?") //something somewhere had gone wrong, not a cause to die, going to the next image
+		} else {
+
+			fmt.Println("Saving as", imgdata.filename)
+
+			func() { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
+
+				output, err := os.Create(IMGDIR + string(os.PathSeparator) + imgdata.filename) //And now, THE FILE!
+				if err != err {
+					elog.Println("Error when creating file for image" + strconv.Itoa(imgdata.imgid))
+					elog.Println(err) //Either we got no permisson or no space, end of line
+					return
+				}
+				defer output.Close() //Not forgetting to deal with it after completing download
+
+				response, err := http.Get(imgdata.url)
+				if err != nil {
+					elog.Println("Error when getting image", imgdata.imgid)
+					elog.Println(err)
+					return
+				}
+				defer response.Body.Close() //Same, we shall not listen to the void when we finished getting image
+
+				io.Copy(output, response.Body) //	Writing things we got from Derpibooru into the file and into hasher
+
+			}()
+		}
+
+		//fmt.Println("\n", hex.EncodeToString(hash.Sum(nil)), "\n", imgdata.hash )
+
 	}
 }
 
@@ -239,7 +237,7 @@ func ParseTag(imgchan chan<- Image, tag string, key string) {
 	var working bool = true
 	i := STARTPAGE
 	for working {
-		func() {
+		func() { //I suspect that all those returns could be dealt with in some way. But lazy.
 			fmt.Println("Searching page", i)
 			resp, err := http.Get(source + "&q=" + tag + "&page=" + strconv.Itoa(i)) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
 			defer resp.Body.Close()                                                  //and not forgetting to close it when it's done. And before we panic and die horribly.
@@ -272,7 +270,7 @@ func ParseTag(imgchan chan<- Image, tag string, key string) {
 			}
 
 			if len(dats) == 0 {
-				fmt.Println("Pages are over")
+				fmt.Println("Pages are over") //Does not mean that process is over.
 				working = false
 				return
 			} //exit due to finishing all pages
