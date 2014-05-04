@@ -16,13 +16,13 @@ import (
 
 //Default hardcoded variables
 var (
-	QDEPTH    int         = 20    //Depth of the queue buffer - how many images are enqueued
+	QDEPTH     int         = 20    //Depth of the queue buffer - how many images are enqueued
 	IMGDIR     string      = "img" //Default download directory
 	TAG        string      = ""    //Default tag string is empty, it should be extracted from command line and only command line
 	STARTPAGE  int         = 1     //Default start page, derpiboo.ru 1-indexed
 	STOPPAGE   int         = 0     //Default stop page, would stop parsing json when stop page is reached or site reaches the end of search
 	elog       *log.Logger         //The logger for errors
-	KEY       string      = ""    //Default identification key. Get your own and place it in configuration, people
+	KEY        string      = ""    //Default identification key. Get your own and place it in configuration, people
 	SCRFILTER  int                 //So we can ignore things with limited
 	FILTERFLAG bool        = false //Gah, not sure how to make it better.
 )
