@@ -17,17 +17,17 @@ import (
 //Default hardcoded variables
 var (
 	QDEPTH     int         = 20    //Depth of the queue buffer - how many images are enqueued
-	IMGDIR     string      = "img" //Default download directory
-	TAG        string      = ""    //Default tag string is empty, it should be extracted from command line and only command line
-	STARTPAGE  int         = 1     //Default start page, derpiboo.ru 1-indexed
-	STOPPAGE   int         = 0     //Default stop page, would stop parsing json when stop page is reached or site reaches the end of search
+	IMGDIR                 = "img" //Default download directory
+	TAG        string              //Default tag string is empty, it should be extracted from command line and only command line
+	STARTPAGE  = 1                 //Default start page, derpiboo.ru 1-indexed
+	STOPPAGE   = 0                 //Default stop page, would stop parsing json when stop page is reached or site reaches the end of search
 	elog       *log.Logger         //The logger for errors
 	KEY        string      = ""    //Default identification key. Get your own and place it in configuration, people
 	SCRFILTER  int                 //So we can ignore things with limited
-	FILTERFLAG bool        = false //Gah, not sure how to make it better.
+	FILTERFLAG = false             //Gah, not sure how to make it better.
 )
 
-type Image struct {
+type image struct {
 	imgid    int
 	url      string
 	filename string
@@ -78,7 +78,7 @@ func main() {
 	}
 
 	//	Creating channels to pass info to downloader and to signal job well done
-	imgdat := make(chan Image, QDEPTH) //Better leave default queue depth. Experiment shown that depth about 20 provides optimal perfomance on my system.
+	imgdat := make(chan image, QDEPTH) //Better leave default queue depth. Experiment shown that depth about 20 provides optimal perfomance on my system
 	done := make(chan bool)
 
 	if TAG == "" { //Because we can put imgid with flags. Why not?
@@ -106,7 +106,7 @@ func main() {
 
 	log.Println("Starting worker") //It would be funny if worker goroutine does not start
 
-	filtimgdat := make(chan Image)       //we already got one queue, second is not needed
+	filtimgdat := make(chan image, QDEPTH)
 	go FilterChannel(imgdat, filtimgdat) //see to move it into filter.Filter(inchan, outchan) where all filtration is done
 	go DlImg(filtimgdat, done)
 
@@ -117,7 +117,7 @@ func main() {
 	return
 }
 
-func ParseImg(imgchan chan<- Image, imgid string, KEY string) {
+func ParseImg(imgchan chan<- image, imgid string, KEY string) {
 
 	source := "http://derpiboo.ru/images/" + imgid + ".json?nofav=&nocomments="
 	if KEY != "" {
@@ -156,7 +156,7 @@ func ParseImg(imgchan chan<- Image, imgid string, KEY string) {
 	return
 }
 
-func DlImg(imgchan <-chan Image, done chan bool) {
+func DlImg(imgchan <-chan image, done chan bool) {
 
 	fmt.Println("Worker started; reading channel") //nice notification that we are not forgotten
 
@@ -203,7 +203,7 @@ func DlImg(imgchan <-chan Image, done chan bool) {
 	}
 }
 
-func ParseTag(imgchan chan<- Image, tag string, KEY string) {
+func ParseTag(imgchan chan<- image, tag string, KEY string) {
 
 	source := "http://derpiboo.ru/search.json?nofav=&nocomments=" //yay hardwiring url strings!
 
@@ -212,7 +212,7 @@ func ParseTag(imgchan chan<- Image, tag string, KEY string) {
 	}
 
 	fmt.Println("Searching as", source+"&q="+tag)
-	var working bool = true
+	var working = true
 	i := STARTPAGE
 	for working {
 		func() { //I suspect that all those returns could be dealt with in some way. But lazy.
@@ -268,9 +268,9 @@ func ParseTag(imgchan chan<- Image, tag string, KEY string) {
 	close(imgchan)
 }
 
-func InfoToChannel(dat map[string]interface{}, imgchan chan<- Image) {
+func InfoToChannel(dat map[string]interface{}, imgchan chan<- image) {
 
-	var imgdata Image
+	var imgdata image
 
 	imgdata.url = "http:" + dat["image"].(string)
 	//	imgdata.hash = dat["sha512_hash"].(string)
@@ -287,7 +287,7 @@ func InfoToChannel(dat map[string]interface{}, imgchan chan<- Image) {
 	imgchan <- imgdata
 }
 
-func FilterChannel(inchan <-chan Image, outchan chan<- Image) {
+func FilterChannel(inchan <-chan image, outchan chan<- image) {
 
 	for {
 
