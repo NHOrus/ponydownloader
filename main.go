@@ -11,7 +11,7 @@ import (
 	"os"
 	"strconv"
 
-	"ponydownloader/settings" //Here we are working with setting things up or down, depending.
+	"github.com/NHOrus/ponydownloader/settings" //Here we are working with setting things up or down, depending.
 )
 
 //Default hardcoded variables
@@ -106,8 +106,8 @@ func main() {
 
 	log.Println("Starting worker") //It would be funny if worker goroutine does not start
 
-	filtimgdat := make(chan Image, QDEPTH)
-	go FilterChannel(imgdat, filtimgdat)
+	filtimgdat := make(chan Image)       //we already got one queue, second is not needed
+	go FilterChannel(imgdat, filtimgdat) //see to move it into filter.Filter(inchan, outchan) where all filtration is done
 	go DlImg(filtimgdat, done)
 
 	<-done
