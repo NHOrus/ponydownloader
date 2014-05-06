@@ -94,7 +94,7 @@ func DlImg(imgchan <-chan Image, done chan bool, elog *log.Logger, IMGDIR string
 			elog.Println("Empty filename. Oops?") //something somewhere had gone wrong, not a cause to die, going to the next image
 		} else {
 
-			fmt.Println("Saving as", imgdata.Filename)
+			log.Println("Saving as", imgdata.Filename)
 
 			func() { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
 
