@@ -75,7 +75,7 @@ func (DSet *Settings) GetConfig(elog *log.Logger) {
 	Key, ok := config.Get("main", "key")
 
 	if !ok || Key == "" {
-		elog.Println("'key' variable missing from 'main' section. It is vital for server-side filtering") //Empty key or key does not exist. Derpibooru works with this, but default image filter filters too much. Use key to set your own!
+		log.Println("'key' variable missing from 'main' section. It is vital for server-side filtering") //Empty key or key does not exist. Derpibooru works with this, but default image filter filters too much. Use key to set your own!
 	}
 
 	DSet.Key = Key
