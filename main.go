@@ -11,6 +11,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/NHOrus/ponydownloader/derpiapi" //Things we do with images and stuff
 	"github.com/NHOrus/ponydownloader/settings" //Here we are working with setting things up or down, depending.
 )
 
@@ -26,14 +27,6 @@ var (
 	SCRFILTER  int                 //So we can ignore things with limited
 	FILTERFLAG = false             //Gah, not sure how to make it better.
 )
-
-type image struct {
-	imgid    int
-	url      string
-	filename string
-	score    int
-	//	hash     string
-}
 
 func init() {
 
@@ -80,7 +73,7 @@ func main() {
 	}
 
 	//	Creating channels to pass info to downloader and to signal job well done
-	imgdat := make(chan image, QDEPTH) //Better leave default queue depth. Experiment shown that depth about 20 provides optimal perfomance on my system
+	imgdat := make(chan derpiapi.Image, QDEPTH) //Better leave default queue depth. Experiment shown that depth about 20 provides optimal perfomance on my system
 	done := make(chan bool)
 
 	if TAG == "" { //Because we can put imgid with flags. Why not?
@@ -108,8 +101,10 @@ func main() {
 
 	log.Println("Starting worker") //It would be funny if worker goroutine does not start
 
-	filtimgdat := make(chan image, QDEPTH)
-	go FilterChannel(imgdat, filtimgdat) //see to move it into filter.Filter(inchan, outchan) where all filtration is done
+	filtimgdat := make(chan derpiapi.Image)
+	fflag := derpiapi.FilterSet{Scrfilter: SCRFILTER, Filterflag: FILTERFLAG}
+
+	go derpiapi.FilterChannel(imgdat, filtimgdat, fflag) //see to move it into filter.Filter(inchan, outchan) where all filtration is done
 	go DlImg(filtimgdat, done)
 
 	<-done
@@ -119,7 +114,7 @@ func main() {
 	return
 }
 
-func ParseImg(imgchan chan<- image, imgid string, KEY string) {
+func ParseImg(imgchan chan<- derpiapi.Image, imgid string, KEY string) {
 
 	source := "http://derpiboo.ru/images/" + imgid + ".json?nofav=&nocomments="
 	if KEY != "" {
@@ -158,7 +153,7 @@ func ParseImg(imgchan chan<- image, imgid string, KEY string) {
 	return
 }
 
-func DlImg(imgchan <-chan image, done chan bool) {
+func DlImg(imgchan <-chan derpiapi.Image, done chan bool) {
 
 	fmt.Println("Worker started; reading channel") //nice notification that we are not forgotten
 
@@ -171,25 +166,25 @@ func DlImg(imgchan <-chan image, done chan bool) {
 			break        //Just in case, so it would not stupidly die when program finishes - it will die smartly
 		}
 
-		if imgdata.filename == "" {
+		if imgdata.Filename == "" {
 			elog.Println("Empty filename. Oops?") //something somewhere had gone wrong, not a cause to die, going to the next image
 		} else {
 
-			fmt.Println("Saving as", imgdata.filename)
+			fmt.Println("Saving as", imgdata.Filename)
 
 			func() { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
 
-				output, err := os.Create(IMGDIR + string(os.PathSeparator) + imgdata.filename) //And now, THE FILE!
+				output, err := os.Create(IMGDIR + string(os.PathSeparator) + imgdata.Filename) //And now, THE FILE!
 				if err != err {
-					elog.Println("Error when creating file for image" + strconv.Itoa(imgdata.imgid))
+					elog.Println("Error when creating file for image" + strconv.Itoa(imgdata.Imgid))
 					elog.Println(err) //Either we got no permisson or no space, end of line
 					return
 				}
 				defer output.Close() //Not forgetting to deal with it after completing download
 
-				response, err := http.Get(imgdata.url)
+				response, err := http.Get(imgdata.Url)
 				if err != nil {
-					elog.Println("Error when getting image", imgdata.imgid)
+					elog.Println("Error when getting image", imgdata.Imgid)
 					elog.Println(err)
 					return
 				}
@@ -205,7 +200,7 @@ func DlImg(imgchan <-chan image, done chan bool) {
 	}
 }
 
-func ParseTag(imgchan chan<- image, tag string, KEY string) {
+func ParseTag(imgchan chan<- derpiapi.Image, tag string, KEY string) {
 
 	source := "http://derpiboo.ru/search.json?nofav=&nocomments=" //yay hardwiring url strings!
 
@@ -270,40 +265,21 @@ func ParseTag(imgchan chan<- image, tag string, KEY string) {
 	close(imgchan)
 }
 
-func InfoToChannel(dat map[string]interface{}, imgchan chan<- image) {
+func InfoToChannel(dat map[string]interface{}, imgchan chan<- derpiapi.Image) {
 
-	var imgdata image
+	var imgdata derpiapi.Image
 
-	imgdata.url = "http:" + dat["image"].(string)
-	//	imgdata.hash = dat["sha512_hash"].(string)
-	imgdata.filename = (strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string) + "." + dat["original_format"].(string))
-	imgdata.imgid = int(dat["id_number"].(float64))
-	imgdata.score = int(dat["score"].(float64))
+	imgdata.Url = "http:" + dat["image"].(string)
+	//	imgdata.Hashval = dat["sha512_hash"].(string)
+	imgdata.Filename = (strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string) + "." + dat["original_format"].(string))
+	imgdata.Imgid = int(dat["id_number"].(float64))
+	imgdata.Score = int(dat["score"].(float64))
 
 	//	for troubleshooting - possibly debug flag?
 	//	fmt.Println(dat)
-	//	fmt.Println(imgdata.url)
-	//	fmt.Println(imgdata.hash)
-	//	fmt.Println(imgdata.filename)
+	//	fmt.Println(imgdata.Url)
+	//	fmt.Println(imgdata.Hashval)
+	//	fmt.Println(imgdata.Filename)
 
 	imgchan <- imgdata
-}
-
-func FilterChannel(inchan <-chan image, outchan chan<- image) {
-
-	for {
-
-		imgdata, more := <-inchan
-
-		if !more {
-			close(outchan)
-			return //Why make a bunch of layers of ifs if one can just end it all?
-		}
-
-		if !FILTERFLAG || (FILTERFLAG && imgdata.score >= SCRFILTER) {
-			outchan <- imgdata
-		} else {
-			fmt.Println("Filtering " + imgdata.filename)
-		}
-	}
 }
