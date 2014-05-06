@@ -18,7 +18,7 @@ var (
 	TAG        string              //Default tag string is empty, it should be extracted from command line and only command line
 	STARTPAGE  = 1                 //Default start page, derpiboo.ru 1-indexed
 	STOPPAGE   = 0                 //Default stop page, would stop parsing json when stop page is reached or site reaches the end of search
-	elog       *log.Logger         //The logger for errors
+	elog       log.Logger         //The logger for errors
 	KEY        string      = ""    //Default identification key. Get your own and place it in configuration, people
 	SCRFILTER  int                 //So we can ignore things with limited
 	FILTERFLAG = false             //Gah, not sure how to make it better.
