@@ -20,10 +20,14 @@ func FilterChannel(inchan <-chan Image, outchan chan<- Image, fset FilterSet) {
 			return //Why make a bunch of layers of ifs if one can just end it all?
 		}
 
-		if !fset.Filterflag || (fset.Filterflag && imgdata.Score >= fset.Scrfilter) {
+		if filterByScore(imgdata, fset) {
 			outchan <- imgdata
 		} else {
 			log.Println("Filtering " + imgdata.Filename)
 		}
 	}
+}
+
+func filterByScore(img Image, fset FilterSet) bool {
+	return !fset.Filterflag || (fset.Filterflag && img.Score >= fset.Scrfilter)
 }

@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
-	"log"
-
 )
 
 type Image struct {
