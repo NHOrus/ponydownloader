@@ -73,7 +73,9 @@ func main() {
 	}
 
 	//Creating directory for downloads if it does not yet exist
-	if err := os.MkdirAll(IMGDIR, 0644); err != nil { //Execute? No need to execute any image. Also, all those other users can not do anything beyond enjoying our images.
+	err := os.MkdirAll(IMGDIR, 0755)
+
+	if err != nil { //Execute bit means different thing for directories that for files. And I was stupid.
 		elog.Fatalln(err) //We can not create folder for images, end of line.
 	}
 
