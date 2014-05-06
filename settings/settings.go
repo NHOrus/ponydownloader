@@ -60,10 +60,13 @@ func (DSet *Settings) GetConfig(elog *log.Logger) {
 	config, err := ini.LoadFile("config.ini") // Loading default config file and checking for various errors.
 
 	if os.IsNotExist(err) {
-		elog.Fatalln("Config.ini does not exist, create it") //We can not live without config. We could, in theory, but writing default config if none exist can wait
+		
+		log.Println("Config.ini does not exist, creating it") //We can not live without config. We could, in theory, but writing default config if none exist can wait
+		DSet.WriteConfig(elog)
+		return
 	}
 
-	if err != nil {
+	if err != nil && !os.IsNotExist(err) {
 		elog.Panicln(err) //Oh, something is broken beyond my understanding. Sorry.
 	}
 

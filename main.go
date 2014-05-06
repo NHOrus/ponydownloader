@@ -89,7 +89,7 @@ func main() {
 		_, err := strconv.Atoi(imgid)
 
 		if err != nil {
-			elog.Fatalln("Wrong input: can not parse", imgid, "as a number")
+			elog.Fatalln("Wrong input: can not parse ", imgid, "as a number")
 		}
 
 		log.Println("Processing image No", imgid)
@@ -112,7 +112,7 @@ func main() {
 
 	<-done
 	log.SetPrefix("Done at ")
-	log.Println("Finised")
+	log.Println("Finished")
 	//And we are done here! Hooray!
 	return
 }
