@@ -55,12 +55,22 @@ There are two way to install this program: definitely working/developer way and 
 
 ##### Path of less resistance.
 
-If you trust me, this git repository contains binaries. This especially true for releases. They should just work. Copy ponydownloader-<your_os>-<your_architecture> in a folder you want to run it from or somewhere in your path. Enjoy.
+If you trust me, this git repository contains binaries. This especially true for releases. They should just work. Copy ponydownloader-*your_os*-*your_architecture* in a folder you want to run it from or somewhere in your path. Enjoy.
 
 Binaries may be outdated. My cross-compilation system may work not as well as intended. Binaries may be malicious, knowingly or unknowingly.
 
 ##### Path of more compilation
 
+```
+ go get git@github.com:NHOrus/ponydownloader.git
+ cd $GOPATH/src/github.com/NHOrus/ponydownloader
+ go build
+ cp config.ini.sample config.ini
+ // edit in your key into config.ini
+ // run ponydownloader as explained earlier
+```
+
+###### Explanation:
 Correct first compilation after cloning repository / getting source code some other way is:
 
 Move inside ponydownloader directory.
