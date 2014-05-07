@@ -85,7 +85,7 @@ config.ini
 [main]
 key =  //your derpiboo.ru key
 downdir = img // in this directory your images would be saved
-queue_depth = 20 // depth of download buffer. Leave it no less that default: else there would be slowdown when parser requests next search page from derpibooru and feeds it's content to worker
+queue_depth = 20 // depth of queue of images, waiting for download. 
 ``` 
-
+I feel that optimal depth is around 10-20, else there would be slowdown when parser requests next search page from derpibooru and feeds it's content to worker. It depends upon downloading speed and server response time. Ponydownloader downloads search  pages and images simultaneously, one by one.
 If any line is empty, program would use default, build-in parameters. Empty `key` would end up with no API key being used.
