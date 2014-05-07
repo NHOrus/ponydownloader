@@ -13,15 +13,15 @@ import (
 
 //Default hardcoded variables
 var (
-	QDEPTH     int         = 20    //Depth of the queue buffer - how many images are enqueued
-	IMGDIR                 = "img" //Default download directory
-	TAG        string              //Default tag string is empty, it should be extracted from command line and only command line
-	STARTPAGE  = 1                 //Default start page, derpiboo.ru 1-indexed
-	STOPPAGE   = 0                 //Default stop page, would stop parsing json when stop page is reached or site reaches the end of search
+	QDEPTH     int        = 20    //Depth of the queue buffer - how many images are enqueued
+	IMGDIR                = "img" //Default download directory
+	TAG        string             //Default tag string is empty, it should be extracted from command line and only command line
+	STARTPAGE  = 1                //Default start page, derpiboo.ru 1-indexed
+	STOPPAGE   = 0                //Default stop page, would stop parsing json when stop page is reached or site reaches the end of search
 	elog       log.Logger         //The logger for errors
-	KEY        string      = ""    //Default identification key. Get your own and place it in configuration, people
-	SCRFILTER  int                 //So we can ignore things with limited
-	FILTERFLAG = false             //Gah, not sure how to make it better.
+	KEY        string     = ""    //Default identification key. Get your own and place it in configuration, people
+	SCRFILTER  int                //So we can ignore things with limited
+	FILTERFLAG = false            //Gah, not sure how to make it better.
 )
 
 func init() {
@@ -101,7 +101,7 @@ func main() {
 	fflag := derpiapi.FilterSet{Scrfilter: SCRFILTER, Filterflag: FILTERFLAG}
 
 	go derpiapi.FilterChannel(imgdat, filtimgdat, fflag) //see to move it into filter.Filter(inchan, outchan) where all filtration is done
-	
+
 	go derpiapi.DlImg(filtimgdat, done, elog, IMGDIR)
 
 	<-done

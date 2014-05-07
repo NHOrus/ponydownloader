@@ -44,10 +44,10 @@ func (WSet Settings) WriteConfig(elog log.Logger) {
 	if err != nil {
 		elog.Fatalln("Could  not create configuration file")
 	}
-	
-	defset := []string {"[main]", "", "key = "+WSet.Key, "queue_depth = "+strconv.Itoa(WSet.QDepth), "downdir = "+WSet.ImgDir }
-	
-	_, err = fmt.Fprintln(config, strings.Join( defset, "\n") )
+
+	defset := []string{"[main]", "", "key = " + WSet.Key, "queue_depth = " + strconv.Itoa(WSet.QDepth), "downdir = " + WSet.ImgDir}
+
+	_, err = fmt.Fprintln(config, strings.Join(defset, "\n"))
 
 	if err != nil {
 		elog.Fatalln("Could  not write in configuration file")
@@ -59,7 +59,7 @@ func (DSet *Settings) GetConfig(elog log.Logger) {
 	config, err := ini.LoadFile("config.ini") // Loading default config file and checking for various errors.
 
 	if os.IsNotExist(err) {
-		
+
 		log.Println("Config.ini does not exist, creating it") //We can not live without config. We could, in theory, but writing default config if none exist can wait
 		DSet.WriteConfig(elog)
 		return

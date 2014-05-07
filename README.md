@@ -23,8 +23,31 @@ Currently only filter available is filter by score: `-scr <minimal score to acce
 
 Optional flag `-k` defines API key to use and overrides said key from configuration file. Derpibooru provides significant capability to exclude undesirable images server-side and API key allows one to switch from default settings to currently selected personal rule. One of the way to get API key is to look at your [account settings](https://derpiboo.ru/users/edit)
 
-How-to compile
---------------
+#### Simple usage example:
+```bash
+./ponydownloader 415147
+```
+
+#### Complex usage example:
+```bash
+./ponydownloader -filter -scr 15 -p 3 -np 7 -t princess+luna%2C+safe
+```
+At the moment of writing both samples were working, you would get output looking approximately like quote below and images in default directory `img`
+
+>Derpiboo.ru Downloader version 0.2.0
+>Happens at 2014/05/07 16:17:54 Program start
+>Happens at 2014/05/07 16:17:54 Processing tags princess+luna%2C+safe
+>Searching as http://derpiboo.ru/search.json?nofav=&nocomments=&q=princess+luna%2C+safe
+>Searching page 3
+>Happens at 2014/05/07 16:17:54 Starting worker
+>Worker started; reading channel
+>Happens at 2014/05/07 16:17:58 Saving as 617803.sun_and_moon_by_wildberry_poptart-d7h5e3b.png.png
+>Happens at 2014/05/07 16:17:59 Saving as 617794.00_10_30_33_file.png
+>...
+>Happens at 2014/05/07 16:18:11 Filtering 617461.Untitled-11.jpg.jpg
+>...
+
+## How-to compile and/or install
 
 Only thing this program needs for compilation  is a working Go compiler.
 
