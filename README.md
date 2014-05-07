@@ -8,6 +8,12 @@ Currently ponydownloader provides three bits of functionality: download by image
 Usage
 -----
 
+Currently ponydownloader got two main modes of usage: download single image by id and batch download of images by tag.
+
+After invocation, ponydownloader would read `config.ini` if it exist or write default one in current working directory. Then it would write completed actions in file `event.log` and write image in a directory specified in configuration file.
+
+To download single image, simply invoke ponydownloader with image id as argument.
+
 
 
 How-to compile
