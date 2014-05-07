@@ -1,11 +1,14 @@
 ponydownloader
 ==============
 
-Attempt to learn go and exploit derpiboo.ru public api to batch download files concurrently.
+Ponydownloader seeks to provide useful command-line tool to download images from [Derpibooru](http://derpiboo.ru) using provided API
 
-Current version gets a number of image and saves it in current directory
+Currently ponydownloader provides three bits of functionality: download by image id, download by tag and filter images you download by their score.
 
-There are ways to go, but it provides minimal functionality as of now
+Usage
+-----
+
+
 
 How-to compile
 --------------
