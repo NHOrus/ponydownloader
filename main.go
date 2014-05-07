@@ -34,7 +34,7 @@ func init() {
 	KEY = Set.Key
 	IMGDIR = Set.ImgDir
 
-	//Here we are parsing all the flags. Command line argument hold priority to config. Except for 'key'. API-key is config-only
+	//Here we are parsing all the flags. Command line argument hold priority to config.
 	flag.StringVar(&TAG, "t", TAG, "Tags to download")
 	flag.IntVar(&STARTPAGE, "p", STARTPAGE, "Starting page for search")
 	flag.IntVar(&STOPPAGE, "np", STOPPAGE, "Stopping page for search, 0 - parse all all search pages")

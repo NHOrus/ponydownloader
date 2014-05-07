@@ -33,6 +33,7 @@ Optional flag `-k` defines API key to use and overrides said key from configurat
 ./ponydownloader -filter -scr 15 -p 3 -np 7 -t princess+luna%2C+safe
 ```
 At the moment of writing both samples were working, you would get output looking approximately like quote below and images in default directory `img`
+
 ```
 Derpiboo.ru Downloader version 0.2.0
 Happens at 2014/05/07 16:17:54 Program start
@@ -48,9 +49,17 @@ Happens at 2014/05/07 16:18:11 Filtering 617461.Untitled-11.jpg.jpg
 ...
 ```
 
-## How-to compile and/or install
+## How to install ponydownloader
 
-Only thing this program needs for compilation  is a working Go compiler.
+There are two way to install this program: definitely working/developer way and most likely working/path of less resistance.
+
+##### Path of less resistance.
+
+If you trust me, this git repository contains binaries. This especially true for releases. They should just work. Copy ponydownloader-<your_os>-<your_architecture> in a folder you want to run it from or somewhere in your path. Enjoy.
+
+Binaries may be outdated. My cross-compilation system may work not as well as intended. Binaries may be malicious, knowingly or unknowingly.
+
+##### Path of more compilation
 
 Correct first compilation after cloning repository / getting source code some other way is:
 
