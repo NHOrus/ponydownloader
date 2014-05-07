@@ -55,7 +55,7 @@ There are two way to install this program: definitely working/developer way and 
 
 ##### Path of less resistance.
 
-If you trust me, this git repository contains binaries. This especially true for releases. They should just work. Copy ponydownloader-*your_os*-*your_architecture* in a folder you want to run it from or somewhere in your path. Enjoy.
+If you trust me, this git repository contains binaries in `bin` directory. This especially true for releases. They should just work. Copy ponydownloader-*your_os*-*your_architecture* in a folder you want to run it from or somewhere in your path. Enjoy.
 
 Binaries may be outdated. My cross-compilation system may work not as well as intended. Binaries may be malicious, knowingly or unknowingly.
 
@@ -81,18 +81,11 @@ Then we move into directory where source code sleeps endless sleep, compile ever
 config.ini
 ----------
 
+```config.ini
 [main]
+key =  //your derpiboo.ru key
+downdir = img // in this directory your images would be saved
+queue_depth = 20 // depth of download buffer. Leave it no less that default: else there would be slowdown when parser requests next search page from derpibooru and feeds it's content to worker
+``` 
 
-key ==> your derpiboo.ru key
-
-downdir ==> in this directory your images would be saved
-
-queue_depth ==> depth of download buffer. Leave it no less that default: else there would be slowdown when parser requests next search page from derpibooru and feeds it's content to worker
-
-If any line is not changed from default, program would use default, build-in parameters.
-Currenly only key is ought to be in configuration file. It may be empty, then program would ignore it's existence. 
-
-./bin directory
----------------
-
-Cross-compiled versions of the program. Should work. At least for me they are working on Windows.
+If any line is empty, program would use default, build-in parameters. Empty `key` would end up with no API key being used.
