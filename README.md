@@ -59,39 +59,24 @@ If you trust me, this git repository contains binaries. This especially true for
 
 Binaries may be outdated. My cross-compilation system may work not as well as intended. Binaries may be malicious, knowingly or unknowingly.
 
-##### Path of more compilation
+##### Path of more compilation (*NIX, console)
 
 ```
- go get git@github.com:NHOrus/ponydownloader.git
+ go get -d git@github.com:NHOrus/ponydownloader.git
  cd $GOPATH/src/github.com/NHOrus/ponydownloader
  go build
  cp config.ini.sample config.ini
  // edit in your key into config.ini
  // run ponydownloader as explained earlier
-```
+``` 
 
 ###### Explanation:
-Correct first compilation after cloning repository / getting source code some other way is:
 
-Move inside ponydownloader directory.
+Make sure your $GOPATH is set and correct and you got git installed and working.
 
-Make sure your $GOPATH is set and correct.
+We trust into `go get -d` to get source code of ponydownloader and all dependencies. Also, it updates them. `-d` flag  prevents installation. Alternatively, one can run `go get` to compile all the code and install binary into $GOPATH/bin 
 
->go get
-
-It downloads external dependency from github and prepares it for usage
-
->go build
-
-you get binary with same name as directory with source code, by default - ponydownloader
-
-Run it.
-
-Alternatively, put ponydownloader folder inside $GOPATH/src and do wherever you want
-
->go build ponydownloader
-
-then put config file in same place. In the future it would write default config.ini on first run, but not yet.
+Then we move into directory where source code sleeps endless sleep, compile everything into one binary executable and set it up for running in that same directory with the source. Or we can move it everywhere we want and run locally there.
 
 config.ini
 ----------
