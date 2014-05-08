@@ -26,10 +26,9 @@ func InfoToChannel(dat map[string]interface{}, imgchan chan<- Image) {
 
 	imgdata.Url = "http:" + dat["image"].(string)
 	//	imgdata.Hashval = dat["sha512_hash"].(string)
-	if (dat["original_format"].(string) == "svg") {
+	if dat["original_format"].(string) == "svg" {
 		tmp := strings.Split(dat["image"].(string), "/")
-		fmt.Println(tmp[5:8])
-		//imgdata.Url = "https://derpicdn.net/img/download/" + strings.Join(tmp[],  "/") + "/" + strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + ".svg"
+		imgdata.Url = "https://derpicdn.net/img/download/" + strings.Join(tmp[5:8], "/") + "/" + strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + ".svg" //Was afraid to extract things I needed from the date field, so extracting them from URL.
 	}
 	imgdata.Filename = (strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string) + "." + dat["original_format"].(string))
 	imgdata.Imgid = int(dat["id_number"].(float64))
@@ -37,7 +36,7 @@ func InfoToChannel(dat map[string]interface{}, imgchan chan<- Image) {
 
 	//	for troubleshooting - possibly debug flag?
 	//	fmt.Println(dat)
-	fmt.Println(imgdata.Url)
+	//  fmt.Println(imgdata.Url)
 	//	fmt.Println(imgdata.Hashval)
 	//	fmt.Println(imgdata.Filename)
 
