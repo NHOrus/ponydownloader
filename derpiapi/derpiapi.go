@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type Image struct {
@@ -25,13 +26,16 @@ func InfoToChannel(dat map[string]interface{}, imgchan chan<- Image) {
 
 	imgdata.Url = "http:" + dat["image"].(string)
 	//	imgdata.Hashval = dat["sha512_hash"].(string)
+	if (dat["original_format"].(string) == "svg") {
+		imgdata.Url = "https://derpicdn.net/img/download/" + strings.Join(strings.Split("/",dat["image"].(string)[6:8]),  "/") + "/" + strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + ".svg"
+	}
 	imgdata.Filename = (strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string) + "." + dat["original_format"].(string))
 	imgdata.Imgid = int(dat["id_number"].(float64))
 	imgdata.Score = int(dat["score"].(float64))
 
 	//	for troubleshooting - possibly debug flag?
 	//	fmt.Println(dat)
-	//	fmt.Println(imgdata.Url)
+	fmt.Println(imgdata.Url)
 	//	fmt.Println(imgdata.Hashval)
 	//	fmt.Println(imgdata.Filename)
 
