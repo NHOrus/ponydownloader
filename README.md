@@ -1,6 +1,13 @@
 ponydownloader
 ==============
 
+WARNING
+-------
+
+This app is dropped due to 1) loss of interest into ponies 2) block of derpibooru in my country. Sorry for those people who may have wanted more.
+
+---
+
 Ponydownloader seeks to provide useful command-line tool to download images from [Derpibooru](http://derpiboo.ru) using provided API
 
 Currently ponydownloader provides three bits of functionality: download by image id, download by tag and filter images you download by their score.
