@@ -55,9 +55,7 @@ There are two way to install this program: definitely working/developer way and 
 
 ##### Path of less resistance.
 
-If you trust me, this git repository contains binaries in `bin` directory. This especially true for releases. They should just work. Copy ponydownloader-*your_os*-*your_architecture* in a folder you want to run it from or somewhere in your path. Enjoy.
-
-Binaries may be outdated. My cross-compilation system may work not as well as intended. Binaries may be malicious, knowingly or unknowingly.
+Simple way does not work any more - all the binaries should not be in git repo, removed completely.
 
 ##### Path of more compilation (*NIX, console)
 
