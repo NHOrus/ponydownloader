@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	//	"strings"
+	"strings"
 )
 
 //Image contains data we got from API that we are using to filter and fetch said image next
@@ -34,6 +34,12 @@ type ImageCh chan Image
 func infotochannel(dat Image, imgchan ImageCh) {
 	dat.Filename = strconv.Itoa(dat.Imgid) + "." + dat.OriginalFormat
 	dat.URL = "https:" + dat.URL
+	if dat.OriginalFormat == "svg" {
+		i := strings.LastIndex(dat.URL, ".")
+		if i != -1 {
+		dat.URL = dat.URL[:i] + ".svg" //Was afraid to extract things I needed from the date field, so extracting them from URL.
+		}
+	}
 	imgchan <- dat
 }
 
