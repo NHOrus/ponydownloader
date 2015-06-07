@@ -34,11 +34,6 @@ type ImageCh chan Image
 func infotochannel(dat Image, imgchan ImageCh) {
 	dat.Filename = strconv.Itoa(dat.Imgid) + "." + dat.OriginalFormat	
 	dat.URL= "http:" + dat.URL
-	
-	fmt.Println(dat.URL)
-	fmt.Println(dat.Imgid)
-	fmt.Println(dat.Filename)
-	
 	imgchan <- dat
 }
 
