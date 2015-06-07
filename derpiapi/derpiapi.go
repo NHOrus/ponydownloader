@@ -9,45 +9,43 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
+	//	"strings"
 )
 
 //Image contains data we got from API that we are using to filter and fetch said image next
 type Image struct {
-	Imgid    int
-	URL      string
-	Filename string
-	Score    int
-	//	Hashval     string
+	Imgid          int    `json:"id_number"`
+	URL            string `json:"image"`
+	Filename       string
+	Score          int    `json:"score"`
+	OriginalFormat string `json:"original_format"`
+	// Hashval     string `json:"sha512_hash"`
 }
 
+//Search returns to us array of searched images...
+type Search struct {
+	Images []Image `json:"search"`
+	Total  int     `json:"total"`
+}
+
+type ImageCh chan Image
+
 //infotochannel gets unmarchalled JSON info and plugs it into channel so it would be processed in other places
-func infotochannel(dat map[string]interface{}, imgchan chan<- Image) {
-
-	var imgdata Image
-
-	imgdata.URL = "http:" + dat["image"].(string)
-	//	imgdata.Hashval = dat["sha512_hash"].(string)
-	if dat["original_format"].(string) == "svg" {
-		imgdata.URL = "https://derpicdn.net/img/download/" + strings.Join(strings.Split(dat["image"].(string), "/")[5:8], "/") + "/" + strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + ".svg" //Was afraid to extract things I needed from the date field, so extracting them from URL.
-	}
-	imgdata.Filename = (strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string) + "." + dat["original_format"].(string))
-	imgdata.Imgid = int(dat["id_number"].(float64))
-	imgdata.Score = int(dat["score"].(float64))
-
-	//	for troubleshooting - possibly debug flag?
-	//	fmt.Println(dat)
-	//  fmt.Println(imgdata.Url)
-	//	fmt.Println(imgdata.Hashval)
-	//	fmt.Println(imgdata.Filename)
-
-	imgchan <- imgdata
+func infotochannel(dat Image, imgchan ImageCh) {
+	dat.Filename = strconv.Itoa(dat.Imgid) + "." + dat.OriginalFormat	
+	dat.URL= "http:" + dat.URL
+	
+	fmt.Println(dat.URL)
+	fmt.Println(dat.Imgid)
+	fmt.Println(dat.Filename)
+	
+	imgchan <- dat
 }
 
 //ParseImg gets image ID and, fetches information about this image from Derpibooru and puts it into the channel.
-func ParseImg(imgchan chan<- Image, imgid string, KEY string, elog *log.Logger) {
+func (imgchan ImageCh) ParseImg(imgid string, KEY string, elog *log.Logger) {
 
-	source := "http://derpiboo.ru/images/" + imgid + ".json?nofav=&nocomments="
+	source := "http://derpiboo.ru/images/" + imgid + ".json"
 	if KEY != "" {
 		source = source + "&key=" + KEY
 	}
@@ -62,7 +60,7 @@ func ParseImg(imgchan chan<- Image, imgid string, KEY string, elog *log.Logger) 
 
 	defer resp.Body.Close() //and not forgetting to close it when it's done
 
-	var dat map[string]interface{}
+	var dat Image
 
 	body, err := ioutil.ReadAll(resp.Body) //stolen from official documentation
 	if err != nil {
@@ -84,9 +82,8 @@ func ParseImg(imgchan chan<- Image, imgid string, KEY string, elog *log.Logger) 
 	return
 }
 
-
 //DlImg downloads image on disk, given image data
-func DlImg(imgchan <-chan Image, done chan bool, elog *log.Logger, IMGDIR string) {
+func (imgchan ImageCh) DlImg(done chan bool, elog *log.Logger, IMGDIR string) {
 
 	fmt.Println("Worker started; reading channel") //nice notification that we are not forgotten
 
@@ -138,9 +135,9 @@ func DlImg(imgchan <-chan Image, done chan bool, elog *log.Logger, IMGDIR string
 	}
 }
 
-func ParseTag(imgchan chan<- Image, tag string, KEY string, STARTPAGE int, STOPPAGE int, elog *log.Logger) {
+func (imgchan ImageCh) ParseTag(tag string, KEY string, STARTPAGE int, STOPPAGE int, elog *log.Logger) {
 
-	source := "http://derpiboo.ru/search.json?nofav=&nocomments=" //yay hardwiring url strings!
+	source := "https://derpiboo.ru/search.json?" //yay hardwiring url strings!
 
 	if KEY != "" {
 		source = source + "&key=" + KEY
@@ -160,7 +157,7 @@ func ParseTag(imgchan chan<- Image, tag string, KEY string, STARTPAGE int, STOPP
 				return
 			}
 
-			var dats []map[string]interface{} //Because we got array incoming instead of single object, we using an slive of maps!
+			var dats Search //Because we got array incoming instead of single object, we using an slive of maps!
 
 			//fmt.Println(resp)
 
@@ -182,13 +179,13 @@ func ParseTag(imgchan chan<- Image, tag string, KEY string, STARTPAGE int, STOPP
 
 			}
 
-			if len(dats) == 0 {
+			if dats.Total == 0 {
 				fmt.Println("Pages are over") //Does not mean that process is over.
 				working = false
 				return
 			} //exit due to finishing all pages
 
-			for _, dat := range dats {
+			for _, dat := range dats.Images {
 				infotochannel(dat, imgchan)
 			}
 			if i == STOPPAGE {

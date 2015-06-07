@@ -69,7 +69,7 @@ func main() {
 	}
 
 	//	Creating channels to pass info to downloader and to signal job well done
-	imgdat := make(chan derpiapi.Image, QDEPTH) //Better leave default queue depth. Experiment shown that depth about 20 provides optimal perfomance on my system
+	imgdat := make(derpiapi.ImageCh, QDEPTH) //Better leave default queue depth. Experiment shown that depth about 20 provides optimal perfomance on my system
 	done := make(chan bool)
 
 	if TAG == "" { //Because we can put imgid with flags. Why not?
@@ -85,24 +85,24 @@ func main() {
 
 		log.Println("Processing image No", imgid)
 
-		go derpiapi.ParseImg(imgdat, imgid, KEY, elog) // Sending imgid to parser. Here validity is our problem
+		go imgdat.ParseImg(imgid, KEY, elog) // Sending imgid to parser. Here validity is our problem
 
 	} else {
 
 		//	and here we send tags to getter/parser. Validity is server problem, mostly
 
 		log.Println("Processing tags", TAG)
-		go derpiapi.ParseTag(imgdat, TAG, KEY, STARTPAGE, STOPPAGE, elog)
+		go imgdat.ParseTag(TAG, KEY, STARTPAGE, STOPPAGE, elog)
 	}
 
 	log.Println("Starting worker") //It would be funny if worker goroutine does not start
 
-	filtimgdat := make(chan derpiapi.Image)
+	filtimgdat := make(derpiapi.ImageCh)
 	fflag := derpiapi.FilterSet{Scrfilter: SCRFILTER, Filterflag: FILTERFLAG}
 
 	go derpiapi.FilterChannel(imgdat, filtimgdat, fflag) //see to move it into filter.Filter(inchan, outchan) where all filtration is done
 
-	go derpiapi.DlImg(filtimgdat, done, elog, IMGDIR)
+	go filtimgdat.DlImg(done, elog, IMGDIR)
 
 	<-done
 	log.SetPrefix("Done at ")
