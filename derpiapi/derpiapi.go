@@ -32,15 +32,15 @@ type ImageCh chan Image
 
 //infotochannel gets unmarchalled JSON info and plugs it into channel so it would be processed in other places
 func infotochannel(dat Image, imgchan ImageCh) {
-	dat.Filename = strconv.Itoa(dat.Imgid) + "." + dat.OriginalFormat	
-	dat.URL= "http:" + dat.URL
+	dat.Filename = strconv.Itoa(dat.Imgid) + "." + dat.OriginalFormat
+	dat.URL = "https:" + dat.URL
 	imgchan <- dat
 }
 
 //ParseImg gets image ID and, fetches information about this image from Derpibooru and puts it into the channel.
 func (imgchan ImageCh) ParseImg(imgid string, KEY string, elog *log.Logger) {
 
-	source := "http://derpiboo.ru/images/" + imgid + ".json"
+	source := "https://derpiboo.ru/images/" + imgid + ".json"
 	if KEY != "" {
 		source = source + "&key=" + KEY
 	}
