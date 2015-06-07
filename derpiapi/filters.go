@@ -4,11 +4,13 @@ import (
 	"log"
 )
 
+//FilterSet describes parameters upon which we need to cut off unneeded images
 type FilterSet struct {
-	Filterflag bool
-	Scrfilter  int
+	Filterflag bool //Enable or disalbe filter
+	Scrfilter  int //minimal score upon which to filter things
 }
 
+//FilterChannel cuts off unneeded images
 func FilterChannel(inchan <-chan Image, outchan chan<- Image, fset FilterSet) {
 
 	for {

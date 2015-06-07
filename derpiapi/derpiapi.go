@@ -12,22 +12,24 @@ import (
 	"strings"
 )
 
+//Image contains data we got from API that we are using to filter and fetch said image next
 type Image struct {
 	Imgid    int
-	Url      string
+	URL      string
 	Filename string
 	Score    int
 	//	Hashval     string
 }
 
-func InfoToChannel(dat map[string]interface{}, imgchan chan<- Image) {
+//infotochannel gets unmarchalled JSON info and plugs it into channel so it would be processed in other places
+func infotochannel(dat map[string]interface{}, imgchan chan<- Image) {
 
 	var imgdata Image
 
-	imgdata.Url = "http:" + dat["image"].(string)
+	imgdata.URL = "http:" + dat["image"].(string)
 	//	imgdata.Hashval = dat["sha512_hash"].(string)
 	if dat["original_format"].(string) == "svg" {
-		imgdata.Url = "https://derpicdn.net/img/download/" + strings.Join(strings.Split(dat["image"].(string), "/")[5:8], "/") + "/" + strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + ".svg" //Was afraid to extract things I needed from the date field, so extracting them from URL.
+		imgdata.URL = "https://derpicdn.net/img/download/" + strings.Join(strings.Split(dat["image"].(string), "/")[5:8], "/") + "/" + strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + ".svg" //Was afraid to extract things I needed from the date field, so extracting them from URL.
 	}
 	imgdata.Filename = (strconv.FormatFloat(dat["id_number"].(float64), 'f', -1, 64) + "." + dat["file_name"].(string) + "." + dat["original_format"].(string))
 	imgdata.Imgid = int(dat["id_number"].(float64))
@@ -42,6 +44,7 @@ func InfoToChannel(dat map[string]interface{}, imgchan chan<- Image) {
 	imgchan <- imgdata
 }
 
+//ParseImg gets image ID and, fetches information about this image from Derpibooru and puts it into the channel.
 func ParseImg(imgchan chan<- Image, imgid string, KEY string, elog *log.Logger) {
 
 	source := "http://derpiboo.ru/images/" + imgid + ".json?nofav=&nocomments="
@@ -74,13 +77,15 @@ func ParseImg(imgchan chan<- Image, imgid string, KEY string, elog *log.Logger) 
 		return
 	}
 
-	InfoToChannel(dat, imgchan)
+	infotochannel(dat, imgchan)
 
 	close(imgchan) //closing channel, we are done here
 
 	return
 }
 
+
+//DlImg downloads image on disk, given image data
 func DlImg(imgchan <-chan Image, done chan bool, elog *log.Logger, IMGDIR string) {
 
 	fmt.Println("Worker started; reading channel") //nice notification that we are not forgotten
@@ -110,7 +115,7 @@ func DlImg(imgchan <-chan Image, done chan bool, elog *log.Logger, IMGDIR string
 				}
 				defer output.Close() //Not forgetting to deal with it after completing download
 
-				response, err := http.Get(imgdata.Url)
+				response, err := http.Get(imgdata.URL)
 				if err != nil {
 					elog.Println("Error when getting image", imgdata.Imgid)
 					elog.Println(err)
@@ -118,7 +123,12 @@ func DlImg(imgchan <-chan Image, done chan bool, elog *log.Logger, IMGDIR string
 				}
 				defer response.Body.Close() //Same, we shall not listen to the void when we finished getting image
 
-				io.Copy(output, response.Body) //	Writing things we got from Derpibooru into the file and into hasher
+				_, err = io.Copy(output, response.Body) //	Writing things we got from Derpibooru into the file and into hasher
+				if err != nil {
+					elog.Println("Unable to write image on disk, id ", imgdata.Imgid)
+					elog.Println(err)
+					return
+				}
 
 			}()
 		}
@@ -179,7 +189,7 @@ func ParseTag(imgchan chan<- Image, tag string, KEY string, STARTPAGE int, STOPP
 			} //exit due to finishing all pages
 
 			for _, dat := range dats {
-				InfoToChannel(dat, imgchan)
+				infotochannel(dat, imgchan)
 			}
 			if i == STOPPAGE {
 				working = false

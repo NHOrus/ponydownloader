@@ -20,7 +20,7 @@ var (
 	STOPPAGE   = 0        //Default stop page, would stop parsing json when stop page is reached or site reaches the end of search
 	elog       log.Logger //The logger for errors
 	KEY        string     //Default identification key. Get your own and place it in configuration, people
-	SCRFILTER  int        //So we can ignore things with limited
+	SCRFILTER  int        //So we can ignore things by the score
 	FILTERFLAG = false    //Gah, not sure how to make it better.
 )
 

@@ -11,13 +11,14 @@ import (
 	"github.com/vaughan0/go-ini" //We need some simple way to parse ini files, here it is, externally.
 )
 
+//Settings contain configuration used in ponydownloader
 type Settings struct {
 	QDepth int
 	ImgDir string
 	Key    string
 }
 
-//Setting up logfile as I want it to: Copy to event.log, copy to commandline
+//SetLog sets up logfile as I want it to: Copy to event.log, copy to commandline
 func SetLog() (retlog *log.Logger, logfile *os.File) {
 
 	logfile, err := os.OpenFile("event.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644) //file for putting errors into
@@ -36,10 +37,15 @@ func SetLog() (retlog *log.Logger, logfile *os.File) {
 	return
 }
 
-//Writing default configuration data into file.
+//WriteConfig writes default, presumably sensible configuration into file.
 func (WSet Settings) WriteConfig(elog log.Logger) {
 	config, err := os.OpenFile("config.ini", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
-	defer config.Close()
+	defer func() {
+		err = config.Close()
+		if err != nil {
+			elog.Fatalln("Could  not close configuration file")
+		}
+	}()
 
 	if err != nil {
 		elog.Fatalln("Could  not create configuration file")
@@ -54,14 +60,15 @@ func (WSet Settings) WriteConfig(elog log.Logger) {
 	}
 }
 
-func (DSet *Settings) GetConfig(elog log.Logger) {
+//GetConfig gets configuration from the file, presuming it exist
+func (WSet *Settings) GetConfig(elog log.Logger) {
 
 	config, err := ini.LoadFile("config.ini") // Loading default config file and checking for various errors.
 
 	if os.IsNotExist(err) {
 
 		log.Println("Config.ini does not exist, creating it") //We can not live without config. We could, in theory, but writing default config if none exist can wait
-		DSet.WriteConfig(elog)
+		WSet.WriteConfig(elog)
 		return
 	}
 
@@ -77,12 +84,12 @@ func (DSet *Settings) GetConfig(elog log.Logger) {
 		log.Println("'key' variable missing from 'main' section. It is vital for server-side filtering") //Empty key or key does not exist. Derpibooru works with this, but default image filter filters too much. Use key to set your own!
 	}
 
-	DSet.Key = Key
+	WSet.Key = Key
 
-	Q_temp, _ := config.Get("main", "queue_depth")
+	QTemp, _ := config.Get("main", "queue_depth")
 
-	if Q_temp != "" {
-		DSet.QDepth, err = strconv.Atoi(Q_temp)
+	if QTemp != "" {
+		WSet.QDepth, err = strconv.Atoi(QTemp)
 
 		if err != nil {
 			elog.Fatalln("Wrong configuration: Depth of the buffer queue is not a number")
@@ -90,9 +97,9 @@ func (DSet *Settings) GetConfig(elog log.Logger) {
 		}
 	}
 
-	ID_temp, _ := config.Get("main", "downdir")
+	IDTemp, _ := config.Get("main", "downdir")
 
-	if ID_temp != "" {
-		DSet.ImgDir = ID_temp
+	if IDTemp != "" {
+		WSet.ImgDir = IDTemp
 	}
 }
