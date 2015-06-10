@@ -10,6 +10,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 //Image contains data we got from API that we are using to filter and fetch said image next
@@ -48,7 +49,7 @@ func (imgchan ImageCh) ParseImg(imgid string, KEY string, elog *log.Logger) {
 
 	source := "https://derpiboo.ru/images/" + imgid + ".json"
 	if KEY != "" {
-		source = source + "&key=" + KEY
+		source = source + "?key=" + KEY
 	}
 
 	fmt.Println("Getting image info at:", source)
@@ -113,6 +114,8 @@ func (imgchan ImageCh) DlImg(done chan bool, elog *log.Logger, IMGDIR string) {
 				}
 				defer output.Close() //Not forgetting to deal with it after completing download
 
+				start := time.Now()
+
 				response, err := http.Get(imgdata.URL)
 				if err != nil {
 					elog.Println("Error when getting image", imgdata.Imgid)
@@ -121,13 +124,14 @@ func (imgchan ImageCh) DlImg(done chan bool, elog *log.Logger, IMGDIR string) {
 				}
 				defer response.Body.Close() //Same, we shall not listen to the void when we finished getting image
 
-				_, err = io.Copy(output, response.Body) //	Writing things we got from Derpibooru into the file and into hasher
+				size, err := io.Copy(output, response.Body) //	Writing things we got from Derpibooru into the file and into hasher
 				if err != nil {
 					elog.Println("Unable to write image on disk, id ", imgdata.Imgid)
 					elog.Println(err)
 					return
 				}
-
+timed := time.Since(start).Seconds()
+				log.Printf("Downloaded %d bytes in %.2fs, speed %.2f B/s\n", size, timed, float64(size)/timed)
 			}()
 		}
 
