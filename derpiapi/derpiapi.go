@@ -26,7 +26,6 @@ type Image struct {
 //Search returns to us array of searched images...
 type Search struct {
 	Images []Image `json:"search"`
-	Total  int     `json:"total"`
 }
 
 type ImageCh chan Image
@@ -184,7 +183,7 @@ func (imgchan ImageCh) ParseTag(tag string, KEY string, STARTPAGE int, STOPPAGE 
 
 			}
 
-			if dats.Total == 0 {
+			if len(dats.Images) == 0 {
 				log.Println("Pages are over") //Does not mean that process is over.
 				working = false
 				return
