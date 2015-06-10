@@ -2,7 +2,7 @@ package derpiapi
 
 import (
 	"encoding/json"
-	"fmt"
+	//	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -38,7 +38,7 @@ func infotochannel(dat Image, imgchan ImageCh) {
 	if dat.OriginalFormat == "svg" {
 		i := strings.LastIndex(dat.URL, ".")
 		if i != -1 {
-		dat.URL = dat.URL[:i] + ".svg" //Was afraid to extract things I needed from the date field, so extracting them from URL.
+			dat.URL = dat.URL[:i] + ".svg" //Was afraid to extract things I needed from the date field, so extracting them from URL.
 		}
 	}
 	imgchan <- dat
@@ -52,7 +52,7 @@ func (imgchan ImageCh) ParseImg(imgid string, KEY string, elog *log.Logger) {
 		source = source + "?key=" + KEY
 	}
 
-	fmt.Println("Getting image info at:", source)
+	log.Println("Getting image info at:", source)
 
 	resp, err := http.Get(source) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
 	if err != nil {
@@ -87,7 +87,7 @@ func (imgchan ImageCh) ParseImg(imgid string, KEY string, elog *log.Logger) {
 //DlImg downloads image on disk, given image data
 func (imgchan ImageCh) DlImg(done chan bool, elog *log.Logger, IMGDIR string) {
 
-	fmt.Println("Worker started; reading channel") //nice notification that we are not forgotten
+	log.Println("Worker started; reading channel") //nice notification that we are not forgotten
 
 	for {
 
@@ -130,7 +130,7 @@ func (imgchan ImageCh) DlImg(done chan bool, elog *log.Logger, IMGDIR string) {
 					elog.Println(err)
 					return
 				}
-timed := time.Since(start).Seconds()
+				timed := time.Since(start).Seconds()
 				log.Printf("Downloaded %d bytes in %.2fs, speed %s/s\n", size, timed, fmtbytes(float64(size)/timed))
 			}()
 		}
@@ -148,12 +148,12 @@ func (imgchan ImageCh) ParseTag(tag string, KEY string, STARTPAGE int, STOPPAGE 
 		source = source + "&key=" + KEY
 	}
 
-	fmt.Println("Searching as", source+"&q="+tag)
+	log.Println("Searching as", source+"&q="+tag)
 	var working = true
 	i := STARTPAGE
 	for working {
 		func() { //I suspect that all those returns could be dealt with in some way. But lazy.
-			fmt.Println("Searching page", i)
+			log.Println("Searching page", i)
 			resp, err := http.Get(source + "&q=" + tag + "&page=" + strconv.Itoa(i)) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
 			defer resp.Body.Close()                                                  //and not forgetting to close it when it's done. And before we panic and die horribly.
 			if err != nil {
@@ -185,7 +185,7 @@ func (imgchan ImageCh) ParseTag(tag string, KEY string, STARTPAGE int, STOPPAGE 
 			}
 
 			if dats.Total == 0 {
-				fmt.Println("Pages are over") //Does not mean that process is over.
+				log.Println("Pages are over") //Does not mean that process is over.
 				working = false
 				return
 			} //exit due to finishing all pages
