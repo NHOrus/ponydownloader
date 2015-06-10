@@ -131,7 +131,7 @@ func (imgchan ImageCh) DlImg(done chan bool, elog *log.Logger, IMGDIR string) {
 					return
 				}
 timed := time.Since(start).Seconds()
-				log.Printf("Downloaded %d bytes in %.2fs, speed %.2f B/s\n", size, timed, float64(size)/timed)
+				log.Printf("Downloaded %d bytes in %.2fs, speed %s/s\n", size, timed, fmtbytes(float64(size)/timed))
 			}()
 		}
 
