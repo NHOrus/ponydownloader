@@ -48,7 +48,7 @@ func init() {
 
 func main() {
 
-	fmt.Println("Derpiboo.ru Downloader version 0.2.0")
+	fmt.Println("Derpiboo.ru Downloader version 0.3.6")
 
 	elog, logfile := settings.SetLog() //Setting up logging of errors
 
