@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/vaughan0/go-ini" //We need some simple way to parse ini files, here it is, externally.
+	//	"github.com/jessevdk/go-flags"
 )
 
 //Settings contain configuration used in ponydownloader
@@ -16,6 +17,17 @@ type Settings struct {
 	QDepth int
 	ImgDir string
 	Key    string
+}
+
+var opts struct {
+	ImageDir  string   `long:"dir" description:"Target Directory" default: IMGDIR ini-name:"downdir"`
+	QDepth    int      `short:"q" long:"queue" description:"Length of the queue buffer" default: QDEPTH ini-name:"queue_depth"`
+	Tag       []string `short:"t" long:"tag" description:"Tag to download, may be set multiple times"`
+	Key       string   `short:"k" long:"key" description:"Derpibooru API key" ini-name:"key"`
+	StartPage int      `short:"p" long:"startpage" description:"Starting page for search" default: 1`
+	StopPage  int      `short:"np" long:"stoppage description:"Stopping page for search, default - parse all search pages"`
+	Filter    bool     `short:"f" long:"filter" description:"If set, enables client-side filtering of downloaded images"`
+	Score     int      `long:"score" description:"Filter option, minimal score of image for it to be downloaded"`
 }
 
 //SetLog sets up logfile as I want it to: Copy to event.log, copy to commandline
