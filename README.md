@@ -87,7 +87,6 @@ config.ini
 ----------
 
 ```config.ini
-[main]
 key =  //your derpiboo.ru key
 downdir = img // in this directory your images would be saved
 queue_depth = 20 // depth of queue of images, waiting for download. 
