@@ -67,7 +67,7 @@ func (WSet Settings) WriteConfig(elog log.Logger) {
 		elog.Fatalln("Could  not create configuration file")
 	}
 
-	defset := []string{"[main]", "", "key = " + WSet.Key, "queue_depth = " + strconv.Itoa(WSet.QDepth), "downdir = " + WSet.ImgDir}
+	defset := []string{"key = " + WSet.Key, "queue_depth = " + strconv.Itoa(WSet.QDepth), "downdir = " + WSet.ImgDir}
 
 	_, err = fmt.Fprintln(config, strings.Join(defset, "\n"))
 
