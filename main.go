@@ -29,20 +29,6 @@ func init() {
 
 	Set.GetConfig(elog)
 
-	QDEPTH = Set.QDepth
-	KEY = Set.Key
-	IMGDIR = Set.ImgDir
-
-	//Here we are parsing all the flags. Command line argument hold priority to config.
-	flag.StringVar(&TAG, "t", TAG, "Tags to download")
-	flag.IntVar(&STARTPAGE, "p", STARTPAGE, "Starting page for search")
-	flag.IntVar(&STOPPAGE, "np", STOPPAGE, "Stopping page for search, 0 - parse all all search pages")
-	flag.StringVar(&KEY, "k", KEY, "Your key to derpibooru API")
-	flag.IntVar(&SCRFILTER, "scr", SCRFILTER, "Minimal score of image for it to be downloaded")
-	flag.BoolVar(&FILTERFLAG, "filter", FILTERFLAG, "If set (to true), enables client-side filtration of downloaded images")
-
-	flag.Parse()
-
 }
 
 func main() {

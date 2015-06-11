@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/vaughan0/go-ini" //We need some simple way to parse ini files, here it is, externally.
-	//	"github.com/jessevdk/go-flags"
+	flag	"github.com/jessevdk/go-flags"
 )
 
 //Settings contain configuration used in ponydownloader
@@ -20,14 +20,18 @@ type Settings struct {
 }
 
 var opts struct {
-	ImageDir  string   `long:"dir" description:"Target Directory" default: IMGDIR ini-name:"downdir"`
-	QDepth    int      `short:"q" long:"queue" description:"Length of the queue buffer" default: QDEPTH ini-name:"queue_depth"`
+	ImageDir  string   `long:"dir" description:"Target Directory" default:"img" ini-name:"downdir"`
+	QDepth    int      `short:"q" long:"queue" description:"Length of the queue buffer" default:"20" ini-name:"queue_depth"`
 	Tag       []string `short:"t" long:"tag" description:"Tag to download, may be set multiple times"`
 	Key       string   `short:"k" long:"key" description:"Derpibooru API key" ini-name:"key"`
-	StartPage int      `short:"p" long:"startpage" description:"Starting page for search" default: 1`
-	StopPage  int      `short:"np" long:"stoppage description:"Stopping page for search, default - parse all search pages"`
+	StartPage int      `short:"p" long:"startpage" description:"Starting page for search" default:"1"`
+	StopPage  int      `short:"n" long:"stoppage" description:"Stopping page for search, default - parse all search pages"`
 	Filter    bool     `short:"f" long:"filter" description:"If set, enables client-side filtering of downloaded images"`
 	Score     int      `long:"score" description:"Filter option, minimal score of image for it to be downloaded"`
+}
+
+func init(){
+	
 }
 
 //SetLog sets up logfile as I want it to: Copy to event.log, copy to commandline
@@ -90,7 +94,7 @@ func (WSet *Settings) GetConfig(elog log.Logger) {
 
 	//Getting stuff from config, overwriting hardwired defaults when needed
 
-	Key, ok := config.Get("main", "key")
+	Key, ok := config.Get("", "key")
 
 	if !ok || Key == "" {
 		log.Println("'key' variable missing from 'main' section. It is vital for server-side filtering") //Empty key or key does not exist. Derpibooru works with this, but default image filter filters too much. Use key to set your own!
@@ -98,7 +102,7 @@ func (WSet *Settings) GetConfig(elog log.Logger) {
 
 	WSet.Key = Key
 
-	QTemp, _ := config.Get("main", "queue_depth")
+	QTemp, _ := config.Get("", "queue_depth")
 
 	if QTemp != "" {
 		WSet.QDepth, err = strconv.Atoi(QTemp)
@@ -109,9 +113,19 @@ func (WSet *Settings) GetConfig(elog log.Logger) {
 		}
 	}
 
-	IDTemp, _ := config.Get("main", "downdir")
+	IDTemp, _ := config.Get("", "downdir")
 
 	if IDTemp != "" {
 		WSet.ImgDir = IDTemp
+	}
+	
+	err = flag.IniParse("config.ini", &opts)
+	if err != nil {
+		panic(err)
+	}
+	t, err := flag.Parse(&opts)
+	if err != nil {
+		fmt.Println(t)
+		panic(err)
 	}
 }
