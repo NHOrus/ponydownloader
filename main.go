@@ -8,7 +8,6 @@ import (
 	"strconv"
 
 	"github.com/NHOrus/ponydownloader/derpiapi" //Things we do with images and stuff
-	"github.com/NHOrus/ponydownloader/settings" //Here we are working with setting things up or down, depending.
 )
 
 //Default hardcoded variables
@@ -26,7 +25,7 @@ var (
 
 func init() {
 
-	Set := settings.Settings{QDepth: QDEPTH, ImgDir: IMGDIR, Key: KEY}
+	Set := Settings{QDepth: QDEPTH, ImgDir: IMGDIR, Key: KEY}
 
 	Set.GetConfig(elog)
 
@@ -50,7 +49,7 @@ func main() {
 
 	fmt.Println("Derpiboo.ru Downloader version 0.2.0")
 
-	elog, logfile := settings.SetLog() //Setting up logging of errors
+	elog, logfile := SetLog() //Setting up logging of errors
 
 	defer logfile.Close() //Almost forgot. Always close the file in the end.
 
