@@ -51,7 +51,7 @@ func (WSet Settings) WriteConfig(elog log.Logger) {
 		elog.Fatalln("Could  not create configuration file")
 	}
 
-	defset := []string{"[main]", "", "key = " + WSet.Key, "queue_depth = " + strconv.Itoa(WSet.QDepth), "downdir = " + WSet.ImgDir}
+	defset := []string{"key = " + WSet.Key, "queue_depth = " + strconv.Itoa(WSet.QDepth), "downdir = " + WSet.ImgDir}
 
 	_, err = fmt.Fprintln(config, strings.Join(defset, "\n"))
 
@@ -78,7 +78,7 @@ func (WSet *Settings) GetConfig(elog log.Logger) {
 
 	//Getting stuff from config, overwriting hardwired defaults when needed
 
-	Key, ok := config.Get("main", "key")
+	Key, ok := config.Get("", "key")
 
 	if !ok || Key == "" {
 		log.Println("'key' variable missing from 'main' section. It is vital for server-side filtering") //Empty key or key does not exist. Derpibooru works with this, but default image filter filters too much. Use key to set your own!
@@ -86,7 +86,7 @@ func (WSet *Settings) GetConfig(elog log.Logger) {
 
 	WSet.Key = Key
 
-	QTemp, _ := config.Get("main", "queue_depth")
+	QTemp, _ := config.Get("", "queue_depth")
 
 	if QTemp != "" {
 		WSet.QDepth, err = strconv.Atoi(QTemp)
@@ -97,7 +97,7 @@ func (WSet *Settings) GetConfig(elog log.Logger) {
 		}
 	}
 
-	IDTemp, _ := config.Get("main", "downdir")
+	IDTemp, _ := config.Get("", "downdir")
 
 	if IDTemp != "" {
 		WSet.ImgDir = IDTemp
