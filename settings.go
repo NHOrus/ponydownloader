@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/vaughan0/go-ini" //We need some simple way to parse ini files, here it is, externally.
-	flag	"github.com/jessevdk/go-flags"
 )
 
 //Settings contain configuration used in ponydownloader
@@ -30,8 +29,8 @@ var opts struct {
 	Score     int      `long:"score" description:"Filter option, minimal score of image for it to be downloaded"`
 }
 
-func init(){
-	
+func init() {
+
 }
 
 //SetLog sets up logfile as I want it to: Copy to event.log, copy to commandline
@@ -118,14 +117,5 @@ func (WSet *Settings) GetConfig(elog log.Logger) {
 	if IDTemp != "" {
 		WSet.ImgDir = IDTemp
 	}
-	
-	err = flag.IniParse("config.ini", &opts)
-	if err != nil {
-		panic(err)
-	}
-	t, err := flag.Parse(&opts)
-	if err != nil {
-		fmt.Println(t)
-		panic(err)
-	}
+
 }

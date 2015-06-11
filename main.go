@@ -1,13 +1,12 @@
 package main
 
 import (
-	"flag"
 	"fmt"
+	"github.com/NHOrus/ponydownloader/derpiapi" //Things we do with images and stuff
+	flag "github.com/jessevdk/go-flags"
 	"log"
 	"os"
 	"strconv"
-
-	"github.com/NHOrus/ponydownloader/derpiapi" //Things we do with images and stuff
 )
 
 //Default hardcoded variables
@@ -23,23 +22,37 @@ var (
 	FILTERFLAG = false    //Gah, not sure how to make it better.
 )
 
-func init() {
+func main() {
+	fmt.Println("Derpiboo.ru Downloader version 0.4.0")
 
 	Set := Settings{QDepth: QDEPTH, ImgDir: IMGDIR, Key: KEY}
 
+	err := flag.IniParse("config.ini", &opts)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = flag.Parse(&opts)
+	if err != nil {
+		flagError := err.(*flag.Error)
+		if flagError.Type == flag.ErrHelp {
+			return
+		}
+		if flagError.Type == flag.ErrUnknownFlag {
+			fmt.Println("Use --help to view all available options")
+			return
+		}
+
+		fmt.Printf("Error parsing flags: %s\n", err)
+		return
+	}
 	Set.GetConfig(elog)
-
-}
-
-func main() {
-
-	fmt.Println("Derpiboo.ru Downloader version 0.2.0")
 
 	elog, logfile := SetLog() //Setting up logging of errors
 
 	defer logfile.Close() //Almost forgot. Always close the file in the end.
 
-	if flag.NArg() == 0 && TAG == "" { //If no arguments after flags and empty/unchanged tag, what we should download? Sane end of line.
+	if len(os.Args) == 1 && TAG == "" { //If no arguments after flags and empty/unchanged tag, what we should download? Sane end of line.
 
 		log.SetPrefix("Done at ")                //We can not do this with elog!
 		log.Println("Nothing to download, bye!") //Need to reshuffle flow: now it could end before it starts.
@@ -47,7 +60,7 @@ func main() {
 	}
 
 	//Creating directory for downloads if it does not yet exist
-	err := os.MkdirAll(IMGDIR, 0755)
+	err = os.MkdirAll(IMGDIR, 0755)
 
 	if err != nil { //Execute bit means different thing for directories that for files. And I was stupid.
 		elog.Fatalln(err) //We can not create folder for images, end of line.
@@ -61,7 +74,7 @@ func main() {
 
 		//	Checking argument for being a number and then getting image data
 
-		imgid := flag.Arg(0) //0-indexed, unlike os.Args. os.Args[0] is path to program. It needs to be used later, when we are searching for what directory we are writing in
+		imgid := os.Args[1]
 		_, err := strconv.Atoi(imgid)
 
 		if err != nil {
