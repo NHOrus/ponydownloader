@@ -44,9 +44,9 @@ func infotochannel(dat Image, imgchan ImageCh) {
 }
 
 //ParseImg gets image ID and, fetches information about this image from Derpibooru and puts it into the channel.
-func (imgchan ImageCh) ParseImg(imgid string, KEY string, elog *log.Logger) {
+func (imgchan ImageCh) ParseImg(imgid int, KEY string, elog *log.Logger) {
 
-	source := "https://derpiboo.ru/images/" + imgid + ".json"
+	source := "https://derpiboo.ru/images/" + strconv.Itoa(imgid) + ".json"
 	if KEY != "" {
 		source = source + "?key=" + KEY
 	}
@@ -144,16 +144,16 @@ func (imgchan ImageCh) ParseTag(tag string, KEY string, STARTPAGE int, STOPPAGE 
 	source := "https://derpiboo.ru/search.json?" //yay hardwiring url strings!
 
 	if KEY != "" {
-		source = source + "&key=" + KEY
+		source = source + "key=" + KEY +"&"
 	}
 
-	log.Println("Searching as", source+"&q="+tag)
+	log.Println("Searching as", source + "q=" + tag)
 	var working = true
 	i := STARTPAGE
 	for working {
 		func() { //I suspect that all those returns could be dealt with in some way. But lazy.
 			log.Println("Searching page", i)
-			resp, err := http.Get(source + "&q=" + tag + "&page=" + strconv.Itoa(i)) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
+			resp, err := http.Get(source + "q=" + tag + "&page=" + strconv.Itoa(i)) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
 			defer resp.Body.Close()                                                  //and not forgetting to close it when it's done. And before we panic and die horribly.
 			if err != nil {
 				elog.Println("Error while getting search page", i)
@@ -192,7 +192,7 @@ func (imgchan ImageCh) ParseTag(tag string, KEY string, STARTPAGE int, STOPPAGE 
 			for _, dat := range dats.Images {
 				infotochannel(dat, imgchan)
 			}
-			if i == STOPPAGE {
+			if STOPPAGE != 0 && i > STOPPAGE { //stop page is included, but if not set? Work to the end of tag
 				working = false
 				return
 			}
