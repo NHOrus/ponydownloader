@@ -23,12 +23,12 @@ To download single image, simply invoke ponydownloader with image id as argument
 
 To download all images with desired flag , invoke `ponydownloader -t <flag>`
 
-One can manipulate start and stop pages for limiting amount of downloaded images or skipping images already present: `-p <star page>` `-np <stop page>` . Due to concurrent design of ponydownloader and insufficient documentation of Derpibooru API, queue may contain more images that response page from site and images ponydownloader currently saves may be from significantly earlier that page program declares as one being processed.
+One can manipulate start and stop pages for limiting amount of downloaded images or skipping images already present: `-p <star page>` `-n <stop page>` . Due to concurrent design of ponydownloader and insufficient documentation of Derpibooru API, queue may contain more images that response page from site and images ponydownloader currently saves may be from significantly earlier that page program declares as one being processed.
 
 To filter images one need to explicitly declare desire to do so by setting up flag `-filter` and then declare parameter and it's value.
-Currently only filter available is filter by score: `-scr <minimal score to accept`
+Currently only filter available is filter by score: `--score <minimal score to accept`
 
-Optional flag `-k` defines API key to use and overrides said key from configuration file. Derpibooru provides significant capability to exclude undesirable images server-side and API key allows one to switch from default settings to currently selected personal rule. One of the way to get API key is to look at your [account settings](https://derpiboo.ru/users/edit)
+Optional flag `-k` defines API key to use and overrides said key from configuration file. Key in configuration file gets rewritten. Derpibooru provides significant capability to exclude undesirable images server-side and API key allows one to switch from default settings to currently selected personal rule. One of the way to get API key is to look at your [account settings](https://derpiboo.ru/users/edit)
 
 #### Simple usage example:
 ```bash
@@ -37,22 +37,25 @@ Optional flag `-k` defines API key to use and overrides said key from configurat
 
 #### Complex usage example:
 ```bash
-./ponydownloader -filter -scr 15 -p 3 -np 7 -t princess+luna%2C+safe
+./ponydownloader -f --score 15 -p 3 -n 7 -t princess+luna%2C+safe
 ```
 At the moment of writing both samples were working, you would get output looking approximately like quote below and images in default directory `img`
 
 ```
-Derpiboo.ru Downloader version 0.2.0
-Happens at 2014/05/07 16:17:54 Program start
-Happens at 2014/05/07 16:17:54 Processing tags princess+luna%2C+safe
-Searching as http://derpiboo.ru/search.json?nofav=&nocomments=&q=princess+luna%2C+safe
-Searching page 3
-Happens at 2014/05/07 16:17:54 Starting worker
-Worker started; reading channel
-Happens at 2014/05/07 16:17:58 Saving as 617803.sun_and_moon_by_wildberry_poptart-d7h5e3b.png.png
-Happens at 2014/05/07 16:17:59 Saving as 617794.00_10_30_33_file.png
-...
-Happens at 2014/05/07 16:18:11 Filtering 617461.Untitled-11.jpg.jpg
+Derpiboo.ru Downloader version 0.4.0
+Happens at 2015/06/12 21:26:23 Program start
+Happens at 2015/06/12 21:26:23 Processing tags princess+luna%2C+safe
+Happens at 2015/06/12 21:26:23 Starting worker
+Happens at 2015/06/12 21:26:23 Searching as https://derpiboo.ru/search.json?&q=princess+luna%2C+safe
+Happens at 2015/06/12 21:26:23 Searching page 3
+Happens at 2015/06/12 21:26:23 Worker started; reading channel
+Happens at 2015/06/12 21:26:23 Saving as 912564.png
+Happens at 2015/06/12 21:26:24 Downloaded 336821 bytes in 0.28s, speed 1.15 MiB/s
+Happens at 2015/06/12 21:26:24 Saving as 912535.jpeg
+Happens at 2015/06/12 21:26:24 Downloaded 133826 bytes in 0.41s, speed 321.54 KiB/s
+Happens at 2015/06/12 21:26:24 Saving as 912526.png
+Happens at 2015/06/12 21:26:24 Downloaded 311033 bytes in 0.43s, speed 701.77 KiB/s
+
 ...
 ```
 
@@ -87,10 +90,10 @@ config.ini
 ----------
 
 ```config.ini
-[main]
 key =  //your derpiboo.ru key
 downdir = img // in this directory your images would be saved
 queue_depth = 20 // depth of queue of images, waiting for download. 
 ``` 
+
 I feel that optimal depth is around 10-20, else there would be slowdown when parser requests next search page from derpibooru and feeds it's content to worker. It depends upon downloading speed and server response time. Ponydownloader downloads search  pages and images simultaneously, one by one.
 If any line is empty, program would use default, build-in parameters. Empty `key` would end up with no API key being used.

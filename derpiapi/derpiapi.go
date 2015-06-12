@@ -144,16 +144,16 @@ func (imgchan ImageCh) ParseTag(tag string, KEY string, STARTPAGE int, STOPPAGE 
 	source := "https://derpiboo.ru/search.json?" //yay hardwiring url strings!
 
 	if KEY != "" {
-		source = source + "&key=" + KEY
+		source = source + "key=" + KEY +"&"
 	}
 
-	log.Println("Searching as", source+"&q="+tag)
+	log.Println("Searching as", source + "q=" + tag)
 	var working = true
 	i := STARTPAGE
 	for working {
 		func() { //I suspect that all those returns could be dealt with in some way. But lazy.
 			log.Println("Searching page", i)
-			resp, err := http.Get(source + "&q=" + tag + "&page=" + strconv.Itoa(i)) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
+			resp, err := http.Get(source + "q=" + tag + "&page=" + strconv.Itoa(i)) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
 			defer resp.Body.Close()                                                  //and not forgetting to close it when it's done. And before we panic and die horribly.
 			if err != nil {
 				elog.Println("Error while getting search page", i)
