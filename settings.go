@@ -9,13 +9,6 @@ import (
 	"strings"
 )
 
-//Settings contain configuration used in ponydownloader
-type Settings struct {
-	QDepth   int
-	ImageDir string
-	Key      string
-}
-
 var opts struct {
 	ImageDir  string `long:"dir" description:"Target Directory" default:"img" ini-name:"downdir"`
 	QDepth    int    `short:"q" long:"queue" description:"Length of the queue buffer" default:"20" ini-name:"queue_depth"`
@@ -25,10 +18,13 @@ var opts struct {
 	StopPage  int    `short:"n" long:"stoppage" description:"Stopping page for search, default - parse all search pages"`
 	Filter    bool   `short:"f" long:"filter" description:"If set, enables client-side filtering of downloaded images"`
 	Score     int    `long:"score" description:"Filter option, minimal score of image for it to be downloaded"`
+	Args      struct {
+		ID int `description:"Image ID to download" optional:"yes"`
+	} `positional-args:"yes"`
 }
 
 //SetLog sets up logfile as I want it to: Copy to event.log, copy to commandline
-func SetLog(retlog *log.Logger) (logfile *os.File) {
+func SetLog() (retlog *log.Logger, logfile *os.File) {
 
 	logfile, err := os.OpenFile("event.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644) //file for putting errors into
 
@@ -47,7 +43,7 @@ func SetLog(retlog *log.Logger) (logfile *os.File) {
 }
 
 //WriteConfig writes default, presumably sensible configuration into file.
-func WriteConfig(elog *log.Logger) {
+func WriteConfig() {
 	config, err := os.OpenFile("config.ini", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	defer func() {
 		err = config.Close()

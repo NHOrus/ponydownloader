@@ -44,9 +44,9 @@ func infotochannel(dat Image, imgchan ImageCh) {
 }
 
 //ParseImg gets image ID and, fetches information about this image from Derpibooru and puts it into the channel.
-func (imgchan ImageCh) ParseImg(imgid string, KEY string, elog *log.Logger) {
+func (imgchan ImageCh) ParseImg(imgid int, KEY string, elog *log.Logger) {
 
-	source := "https://derpiboo.ru/images/" + imgid + ".json"
+	source := "https://derpiboo.ru/images/" + strconv.Itoa(imgid) + ".json"
 	if KEY != "" {
 		source = source + "?key=" + KEY
 	}
