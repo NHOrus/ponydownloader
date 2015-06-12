@@ -192,7 +192,7 @@ func (imgchan ImageCh) ParseTag(tag string, KEY string, STARTPAGE int, STOPPAGE 
 			for _, dat := range dats.Images {
 				infotochannel(dat, imgchan)
 			}
-			if i == STOPPAGE {
+			if STOPPAGE != 0 && i > STOPPAGE { //stop page is included, but if not set? Work to the end of tag
 				working = false
 				return
 			}
