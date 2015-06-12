@@ -14,7 +14,7 @@ import (
 //Settings contain configuration used in ponydownloader
 type Settings struct {
 	QDepth int
-	ImgDir string
+	ImageDir string
 	Key    string
 }
 
@@ -66,7 +66,7 @@ func (WSet Settings) WriteConfig(elog log.Logger) {
 		elog.Fatalln("Could  not create configuration file")
 	}
 
-	defset := []string{"key = " + WSet.Key, "queue_depth = " + strconv.Itoa(WSet.QDepth), "downdir = " + WSet.ImgDir}
+	defset := []string{"key = " + WSet.Key, "queue_depth = " + strconv.Itoa(WSet.QDepth), "downdir = " + WSet.ImageDir}
 
 	_, err = fmt.Fprintln(config, strings.Join(defset, "\n"))
 
@@ -115,7 +115,7 @@ func (WSet *Settings) GetConfig(elog log.Logger) {
 	IDTemp, _ := config.Get("", "downdir")
 
 	if IDTemp != "" {
-		WSet.ImgDir = IDTemp
+		WSet.ImageDir = IDTemp
 	}
 
 }

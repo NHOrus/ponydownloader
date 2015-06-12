@@ -14,19 +14,19 @@ const (
 )
 
 func fmtbytes(b float64) string {
-	if b > 10*PiB {
+	if b > PiB {
 		return fmt.Sprintf("%.2f PiB", b/PiB)
 	}
-	if b > 10*TiB {
+	if b > TiB {
 		return fmt.Sprintf("%.2f TiB", b/TiB)
 	}
-	if b > 10*GiB {
+	if b > GiB {
 		return fmt.Sprintf("%.2f GiB", b/GiB)
 	}
-	if b > 10*MiB {
+	if b > MiB {
 		return fmt.Sprintf("%.2f MiB", b/MiB)
 	}
-	if b > 10*KiB {
+	if b > KiB {
 		return fmt.Sprintf("%.2f KiB", b/KiB)
 	}
 	return fmt.Sprintf("%.0f B", b)

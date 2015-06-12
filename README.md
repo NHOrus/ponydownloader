@@ -4,7 +4,7 @@ ponydownloader
 WARNING
 -------
 
-This app is dropped due to 1) loss of interest into ponies 2) block of derpibooru in my country. Sorry for those people who may have wanted more.
+This app under limited support due to loss of interest into ponies. Sorry for those people who may have wanted more.
 
 ---
 
