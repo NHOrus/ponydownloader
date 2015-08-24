@@ -99,40 +99,40 @@ func (imgchan ImageCh) DlImg(done chan bool, elog *log.Logger, IMGDIR string) {
 
 		if imgdata.Filename == "" {
 			elog.Println("Empty filename. Oops?") //something somewhere had gone wrong, not a cause to die, going to the next image
-		} else {
-
-			log.Println("Saving as", imgdata.Filename)
-
-			func() { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
-
-				output, err := os.Create(IMGDIR + string(os.PathSeparator) + imgdata.Filename) //And now, THE FILE!
-				if err != err {
-					elog.Println("Error when creating file for image" + strconv.Itoa(imgdata.Imgid))
-					elog.Println(err) //Either we got no permisson or no space, end of line
-					return
-				}
-				defer output.Close() //Not forgetting to deal with it after completing download
-
-				start := time.Now()
-
-				response, err := http.Get(imgdata.URL)
-				if err != nil {
-					elog.Println("Error when getting image", imgdata.Imgid)
-					elog.Println(err)
-					return
-				}
-				defer response.Body.Close() //Same, we shall not listen to the void when we finished getting image
-
-				size, err := io.Copy(output, response.Body) //	Writing things we got from Derpibooru into the file and into hasher
-				if err != nil {
-					elog.Println("Unable to write image on disk, id ", imgdata.Imgid)
-					elog.Println(err)
-					return
-				}
-				timed := time.Since(start).Seconds()
-				log.Printf("Downloaded %d bytes in %.2fs, speed %s/s\n", size, timed, fmtbytes(float64(size)/timed))
-			}()
+			continue
 		}
+
+		log.Println("Saving as", imgdata.Filename)
+
+		func() { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
+
+			output, err := os.Create(IMGDIR + string(os.PathSeparator) + imgdata.Filename) //And now, THE FILE!
+			if err != err {
+				elog.Println("Error when creating file for image" + strconv.Itoa(imgdata.Imgid))
+				elog.Println(err) //Either we got no permisson or no space, end of line
+				return
+			}
+			defer output.Close() //Not forgetting to deal with it after completing download
+
+			start := time.Now()
+
+			response, err := http.Get(imgdata.URL)
+			if err != nil {
+				elog.Println("Error when getting image", imgdata.Imgid)
+				elog.Println(err)
+				return
+			}
+			defer response.Body.Close() //Same, we shall not listen to the void when we finished getting image
+
+			size, err := io.Copy(output, response.Body) //	Writing things we got from Derpibooru into the file and into hasher
+			if err != nil {
+				elog.Println("Unable to write image on disk, id ", imgdata.Imgid)
+				elog.Println(err)
+				return
+			}
+			timed := time.Since(start).Seconds()
+			log.Printf("Downloaded %d bytes in %.2fs, speed %s/s\n", size, timed, fmtbytes(float64(size)/timed))
+		}()
 
 		//fmt.Println("\n", hex.EncodeToString(hash.Sum(nil)), "\n", imgdata.hash )
 
@@ -144,17 +144,17 @@ func (imgchan ImageCh) ParseTag(tag string, KEY string, STARTPAGE int, STOPPAGE 
 	source := "https://derpiboo.ru/search.json?" //yay hardwiring url strings!
 
 	if KEY != "" {
-		source = source + "key=" + KEY +"&"
+		source = source + "key=" + KEY + "&"
 	}
 
-	log.Println("Searching as", source + "q=" + tag)
+	log.Println("Searching as", source+"q="+tag)
 	var working = true
 	i := STARTPAGE
 	for working {
 		func() { //I suspect that all those returns could be dealt with in some way. But lazy.
 			log.Println("Searching page", i)
 			resp, err := http.Get(source + "q=" + tag + "&page=" + strconv.Itoa(i)) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
-			defer resp.Body.Close()                                                  //and not forgetting to close it when it's done. And before we panic and die horribly.
+			defer resp.Body.Close()                                                 //and not forgetting to close it when it's done. And before we panic and die horribly.
 			if err != nil {
 				elog.Println("Error while getting search page", i)
 				elog.Println(err)
