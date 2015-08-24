@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-
-	"github.com/NHOrus/ponydownloader/derpiapi" //Things we do with images and stuff
 	flag "github.com/jessevdk/go-flags"
 )
 
@@ -67,7 +65,7 @@ func main() {
 	}
 
 	//	Creating channels to pass info to downloader and to signal job well done
-	imgdat := make(derpiapi.ImageCh, opts.QDepth) //Better leave default queue depth. Experiment shown that depth about 20 provides optimal perfomance on my system
+	imgdat := make(ImageCh, opts.QDepth) //Better leave default queue depth. Experiment shown that depth about 20 provides optimal perfomance on my system
 	done := make(chan bool)
 
 	if opts.Tag == "" { //Because we can put imgid with flags. Why not?
@@ -85,10 +83,10 @@ func main() {
 
 	log.Println("Starting worker") //It would be funny if worker goroutine does not start
 
-	filtimgdat := make(derpiapi.ImageCh)
-	fflag := derpiapi.FilterSet{Scrfilter: opts.Score, Filterflag: opts.Filter}
+	filtimgdat := make(ImageCh)
+	fflag := FilterSet{Scrfilter: opts.Score, Filterflag: opts.Filter}
 
-	go derpiapi.FilterChannel(imgdat, filtimgdat, fflag) //see to move it into filter.Filter(inchan, outchan) where all filtration is done
+	go FilterChannel(imgdat, filtimgdat, fflag) //see to move it into filter.Filter(inchan, outchan) where all filtration is done
 
 	go filtimgdat.DlImg(done, elog, opts.ImageDir)
 
