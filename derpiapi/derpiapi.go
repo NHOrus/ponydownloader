@@ -137,7 +137,9 @@ func (imgchan ImageCh) DlImg(done chan bool, elog *log.Logger, IMGDIR string) {
 			if hash != imgdata.Hashval {
 			elog.Println("Hash mismatch, got ", hash, " instead of ", imgdata.Hashval)
 			}
-
+			
+			hasher.Reset()
+			
 			size, err := io.Copy(output, response.Body) //	Writing things we got from Derpibooru into the file and into hasher
 			if err != nil {
 				elog.Println("Unable to write image on disk, id ", imgdata.Imgid)
