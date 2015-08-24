@@ -3,6 +3,8 @@ package derpiapi
 import (
 	"encoding/json"
 	//	"fmt"
+	"crypto/sha512"
+	"encoding/hex"
 	"io"
 	"io/ioutil"
 	"log"
@@ -20,7 +22,7 @@ type Image struct {
 	Filename       string
 	Score          int    `json:"score"`
 	OriginalFormat string `json:"original_format"`
-	// Hashval     string `json:"sha512_hash"`
+	Hashval        string `json:"sha512_hash"`
 }
 
 //Search returns to us array of searched images...
@@ -88,6 +90,8 @@ func (imgchan ImageCh) DlImg(done chan bool, elog *log.Logger, IMGDIR string) {
 
 	log.Println("Worker started; reading channel") //nice notification that we are not forgotten
 
+	hasher := sha512.New()
+
 	for {
 
 		imgdata, more := <-imgchan
@@ -123,6 +127,16 @@ func (imgchan ImageCh) DlImg(done chan bool, elog *log.Logger, IMGDIR string) {
 				return
 			}
 			defer response.Body.Close() //Same, we shall not listen to the void when we finished getting image
+
+			if _, err := io.Copy(hasher, response.Body); err != nil {
+				elog.Println(err)
+				return
+			}
+			hash := hex.EncodeToString(hasher.Sum(nil))
+		
+			if hash != imgdata.Hashval {
+			elog.Println("Hash mismatch, got ", hash, " instead of ", imgdata.Hashval)
+			}
 
 			size, err := io.Copy(output, response.Body) //	Writing things we got from Derpibooru into the file and into hasher
 			if err != nil {
