@@ -2,11 +2,13 @@ package main
 
 //FilterChannel cuts off unneeded images
 func FilterChannel(in ImageCh) (out ImageCh) {
-
-	if opts.Filter {
+	//elog.Println("filtering")
+	if !opts.Filter {
+		//elog.Println("Filter is off")
 		return in
 	}
-	out = make(ImageCh)
+	//elog.Println("Filter is on")
+	out = make(ImageCh, 1)
 	go func() {
 		for imgdata := range in {
 
@@ -14,7 +16,7 @@ func FilterChannel(in ImageCh) (out ImageCh) {
 				out <- imgdata
 				continue
 			}
-			elog.Println("Filtering " + imgdata.Filename)
+			//elog.Println("Filtering " + imgdata.Filename)
 		}
 		close(out)
 	}()
