@@ -18,7 +18,7 @@ func fmtbytes(b float64) string {
 	case b < 0:
 		panic("Natural number is less than zero. Stuff is wrong")
 	case b > PiB:
-		return fmt.Sprintf("%.2f PiB", b/PiB)
+		return fmt.Sprintf("way too many B")
 	case b > TiB:
 		return fmt.Sprintf("%.2f TiB", b/TiB)
 	case b > GiB:

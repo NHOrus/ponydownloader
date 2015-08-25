@@ -84,10 +84,15 @@ func main() {
 
 	log.Println("Starting worker") //It would be funny if worker goroutine does not start
 
-	filtimgdat := make(ImageCh)
-	fflag := FilterSet{Scrfilter: opts.Score, Filterflag: opts.Filter}
+	var filtimgdat ImageCh
 
-	go FilterChannel(imgdat, filtimgdat, fflag) //see to move it into filter.Filter(inchan, outchan) where all filtration is done
+	if opts.Filter {
+		filtimgdat = make(ImageCh)
+		fflag := FilterSet{MinScore: opts.Score}
+		go FilterChannel(imgdat, filtimgdat, fflag) //see to move it into filter.Filter(inchan, outchan) where all filtration is done
+	} else {
+		filtimgdat = imgdat
+	}
 
 	go filtimgdat.DlImg(done, elog, opts.ImageDir)
 
