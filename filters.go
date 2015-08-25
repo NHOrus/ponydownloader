@@ -1,20 +1,22 @@
 package main
 
-//FilterSet describes parameters upon which we need to cut off unneeded images
-type FilterSet struct {
-	MinScore int //minimal score upon which to filter things
-}
-
 //FilterChannel cuts off unneeded images
-func FilterChannel(in <-chan Image, out chan<- Image, fset FilterSet) {
+func FilterChannel(in ImageCh) (out ImageCh) {
 
-	for imgdata := range in {
-
-		if imgdata.Score >= fset.MinScore {
-			out <- imgdata
-			continue
-		}
-		elog.Println("Filtering " + imgdata.Filename)
+	if opts.Filter {
+		return in
 	}
-	close(out)
+	out = make(ImageCh)
+	go func() {
+		for imgdata := range in {
+
+			if imgdata.Score >= opts.Score {
+				out <- imgdata
+				continue
+			}
+			elog.Println("Filtering " + imgdata.Filename)
+		}
+		close(out)
+	}()
+	return out
 }
