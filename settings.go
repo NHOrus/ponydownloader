@@ -19,7 +19,7 @@ var opts struct {
 	Filter    bool   `short:"f" long:"filter" description:"If set, enables client-side filtering of downloaded images"`
 	Score     int    `long:"score" description:"Filter option, minimal score of image for it to be downloaded"`
 	Args      struct {
-		ID int `description:"Image ID to download" optional:"yes"`
+		IDs []int `description:"Image IDs to download" optional:"yes"`
 	} `positional-args:"yes"`
 }
 

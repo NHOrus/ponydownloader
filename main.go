@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+
 	flag "github.com/jessevdk/go-flags"
 )
 
@@ -50,7 +51,7 @@ func main() {
 
 	}
 
-	if opts.Args.ID == 0 && opts.Tag == "" { //If no arguments after flags and empty/unchanged tag, what we should download? Sane end of line.
+	if len(opts.Args.IDs) == 0 && opts.Tag == "" { //If no arguments after flags and empty/unchanged tag, what we should download? Sane end of line.
 
 		log.SetPrefix("Done at ")                //We can not do this with elog!
 		log.Println("Nothing to download, bye!") //Need to reshuffle flow: now it could end before it starts.
@@ -70,8 +71,8 @@ func main() {
 
 	if opts.Tag == "" { //Because we can put imgid with flags. Why not?
 
-		log.Println("Processing image No", opts.Args.ID)
-		go imgdat.ParseImg(opts.Args.ID, opts.Key, elog) // Sending imgid to parser. Here validity is our problem
+		log.Println("Processing image No", opts.Args.IDs)
+		go imgdat.ParseImg(opts.Args.IDs, opts.Key, elog) // Sending imgid to parser. Here validity is our problem
 
 	} else {
 

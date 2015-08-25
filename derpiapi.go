@@ -46,39 +46,41 @@ func infotochannel(dat Image, imgchan ImageCh) {
 }
 
 //ParseImg gets image ID and, fetches information about this image from Derpibooru and puts it into the channel.
-func (imgchan ImageCh) ParseImg(imgid int, KEY string, elog *log.Logger) {
+func (imgchan ImageCh) ParseImg(imgids []int, KEY string, elog *log.Logger) {
 
-	source := "https://derpiboo.ru/images/" + strconv.Itoa(imgid) + ".json"
-	if KEY != "" {
-		source = source + "?key=" + KEY
+	for _, imgid := range imgids {
+		source := "https://derpiboo.ru/images/" + strconv.Itoa(imgid) + ".json"
+		if KEY != "" {
+			source = source + "?key=" + KEY
+		}
+
+		log.Println("Getting image info at:", source)
+
+		resp, err := http.Get(source) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
+		if err != nil {
+			elog.Println(err)
+			return
+		}
+
+		defer resp.Body.Close() //and not forgetting to close it when it's done
+
+		var dat Image
+
+		body, err := ioutil.ReadAll(resp.Body) //stolen from official documentation
+		if err != nil {
+			elog.Println(err)
+			return
+		}
+
+		if err := json.Unmarshal(body, &dat); //transforming json into native map
+
+		err != nil {
+			elog.Println(err)
+			return
+		}
+
+		infotochannel(dat, imgchan)
 	}
-
-	log.Println("Getting image info at:", source)
-
-	resp, err := http.Get(source) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
-	if err != nil {
-		elog.Println(err)
-		return
-	}
-
-	defer resp.Body.Close() //and not forgetting to close it when it's done
-
-	var dat Image
-
-	body, err := ioutil.ReadAll(resp.Body) //stolen from official documentation
-	if err != nil {
-		elog.Println(err)
-		return
-	}
-
-	if err := json.Unmarshal(body, &dat); //transforming json into native map
-
-	err != nil {
-		elog.Println(err)
-		return
-	}
-
-	infotochannel(dat, imgchan)
 
 	close(imgchan) //closing channel, we are done here
 
