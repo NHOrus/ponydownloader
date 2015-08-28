@@ -24,7 +24,7 @@ var opts struct {
 }
 
 //SetLog sets up logfile as I want it to: Copy to event.log, copy to commandline
-func SetLog() (retlog *log.Logger, logfile *os.File) {
+func SetLog() (retlog *log.Logger) {
 
 	logfile, err := os.OpenFile("event.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644) //file for putting errors into
 

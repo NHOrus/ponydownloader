@@ -33,7 +33,7 @@ type Search struct {
 type ImageCh chan Image
 
 //infotochannel gets unmarchalled JSON info and plugs it into channel so it would be processed in other places
-func infotochannel(dat Image, imgchan ImageCh) {
+func (dat Image) ToChannel(imgchan ImageCh) {
 	dat.Filename = strconv.Itoa(dat.Imgid) + "." + dat.OriginalFormat
 	dat.URL = "https:" + dat.URL
 	if dat.OriginalFormat == "svg" {
@@ -79,7 +79,7 @@ func (imgchan ImageCh) ParseImg(imgids []int, KEY string) {
 			return
 		}
 
-		infotochannel(dat, imgchan)
+		dat.ToChannel(imgchan)
 	}
 
 	close(imgchan) //closing channel, we are done here
@@ -205,7 +205,7 @@ func (imgchan ImageCh) ParseTag(tag string, KEY string, STARTPAGE int, STOPPAGE 
 			} //exit due to finishing all pages
 
 			for _, dat := range dats.Images {
-				infotochannel(dat, imgchan)
+				dat.ToChannel(imgchan)
 			}
 			if STOPPAGE != 0 && i > STOPPAGE { //stop page is included, but if not set? Work to the end of tag
 				working = false

@@ -10,7 +10,7 @@ import (
 
 //Default global variables
 var (
-	elog log.Logger //The logger for errors
+	elog *log.Logger //The logger for errors
 )
 
 func main() {
@@ -40,9 +40,7 @@ func main() {
 		return
 	}
 
-	elog, logfile := SetLog() //Setting up logging of errors
-
-	defer logfile.Close() //Almost forgot. Always close the file in the end.
+	elog = SetLog() //Setting up logging of errors
 
 	WriteConfig()
 
