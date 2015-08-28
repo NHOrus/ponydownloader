@@ -46,7 +46,7 @@ func infotochannel(dat Image, imgchan ImageCh) {
 }
 
 //ParseImg gets image ID and, fetches information about this image from Derpibooru and puts it into the channel.
-func (imgchan ImageCh) ParseImg(imgids []int, KEY string, elog *log.Logger) {
+func (imgchan ImageCh) ParseImg(imgids []int, KEY string) {
 
 	for _, imgid := range imgids {
 		source := "https://derpiboo.ru/images/" + strconv.Itoa(imgid) + ".json"
@@ -88,7 +88,7 @@ func (imgchan ImageCh) ParseImg(imgids []int, KEY string, elog *log.Logger) {
 }
 
 //DlImg downloads image on disk, given image data
-func (imgchan ImageCh) DlImg(done chan bool, elog *log.Logger, IMGDIR string) {
+func (imgchan ImageCh) DlImg(done chan bool, IMGDIR string) {
 
 	log.Println("Worker started; reading channel") //nice notification that we are not forgotten
 
@@ -154,7 +154,7 @@ func (imgchan ImageCh) DlImg(done chan bool, elog *log.Logger, IMGDIR string) {
 	}
 }
 
-func (imgchan ImageCh) ParseTag(tag string, KEY string, STARTPAGE int, STOPPAGE int, elog *log.Logger) {
+func (imgchan ImageCh) ParseTag(tag string, KEY string, STARTPAGE int, STOPPAGE int) {
 
 	source := "https://derpiboo.ru/search.json?" //yay hardwiring url strings!
 

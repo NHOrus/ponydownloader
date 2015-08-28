@@ -8,7 +8,7 @@ import (
 	flag "github.com/jessevdk/go-flags"
 )
 
-//Default hardcoded variables
+//Default global variables
 var (
 	elog log.Logger //The logger for errors
 )
@@ -72,21 +72,21 @@ func main() {
 	if opts.Tag == "" { //Because we can put imgid with flags. Why not?
 
 		log.Println("Processing image No", opts.Args.IDs)
-		go imgdat.ParseImg(opts.Args.IDs, opts.Key, elog) // Sending imgid to parser. Here validity is our problem
+		go imgdat.ParseImg(opts.Args.IDs, opts.Key) // Sending imgid to parser. Here validity is our problem
 
 	} else {
 
 		//	and here we send tags to getter/parser. Validity is server problem, mostly
 
 		log.Println("Processing tags", opts.Tag)
-		go imgdat.ParseTag(opts.Tag, opts.Key, opts.StartPage, opts.StopPage, elog)
+		go imgdat.ParseTag(opts.Tag, opts.Key, opts.StartPage, opts.StopPage)
 	}
 
 	log.Println("Starting worker") //It would be funny if worker goroutine does not start
 
 	filtimgdat := FilterChannel(imgdat) //see to move it into filter.Filter(inchan, outchan) where all filtration is done
 
-	go filtimgdat.DlImg(done, elog, opts.ImageDir)
+	go filtimgdat.DlImg(done, opts.ImageDir)
 
 	<-done
 	log.SetPrefix("Done at ")
