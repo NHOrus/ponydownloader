@@ -63,7 +63,7 @@ func (imgchan ImageCh) ParseImg() {
 		response, err := http.Get(source) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
 		if err != nil {
 			elog.Println(err)
-			return
+			continue
 		}
 
 		defer func() {
@@ -77,7 +77,7 @@ func (imgchan ImageCh) ParseImg() {
 		body, err := ioutil.ReadAll(response.Body) //stolen from official documentation
 		if err != nil {
 			elog.Println(err)
-			return
+			continue
 		}
 
 		if err := json.Unmarshal(body, &dat); //transforming json into native map
