@@ -52,6 +52,11 @@ func WriteConfig(iniopts Options) {
 	}
 
 	config, err := os.OpenFile("config.ini", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+
+	if err != nil {
+		elog.Fatalln("Could  not create configuration file")
+	}
+
 	defer func() {
 		err = config.Close()
 		if err != nil {
@@ -59,14 +64,10 @@ func WriteConfig(iniopts Options) {
 		}
 	}()
 
-	if err != nil {
-		elog.Fatalln("Could  not create configuration file")
-	}
-
 	tb := tabwriter.NewWriter(config, 10, 8, 0, ' ', 0)
-	fmt.Fprintf(tb, "key \t= %s\t\n", opts.Key)
-	fmt.Fprintf(tb, "queue_depth \t= %s\t\n", strconv.Itoa(opts.QDepth))
-	fmt.Fprintf(tb, "downdir \t= %s\t\n", opts.ImageDir)
+	fmt.Fprintf(tb, "key \t= %s\n", opts.Key)
+	fmt.Fprintf(tb, "queue_depth \t= %s\n", strconv.Itoa(opts.QDepth))
+	fmt.Fprintf(tb, "downdir \t= %s\n", opts.ImageDir)
 
 	err = tb.Flush()
 
@@ -76,7 +77,9 @@ func WriteConfig(iniopts Options) {
 }
 
 func (a *Options) compareStatic(b *Options) bool {
-	if a.ImageDir == b.ImageDir && a.QDepth == b.QDepth && a.Key == b.Key {
+	if a.ImageDir == b.ImageDir &&
+		a.QDepth == b.QDepth &&
+		a.Key == b.Key {
 		return true
 	}
 	return false
