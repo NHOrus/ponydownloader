@@ -182,7 +182,7 @@ func (imgchan ImageCh) ParseTag(tag string, KEY string, STARTPAGE int, STOPPAGE 
 
 	log.Println("Searching as", source+"q="+tag)
 
-	for i := STARTPAGE; i <= STOPPAGE; i++ {
+	for i := STARTPAGE; STOPPAGE == 0 || i <= STOPPAGE; i++ {
 		//I suspect that all those returns could be dealt with in some way. But lazy.
 		log.Println("Searching page", i)
 
