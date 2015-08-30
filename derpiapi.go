@@ -30,10 +30,14 @@ type Search struct {
 	Images []Image `json:"search"`
 }
 
+//ImageCh is a channel of image data. You can put images into channel by parsing
+//Derpibooru API by id(s) or  by tags and you can download images that are already
+//in channel
 type ImageCh chan Image
 
-//infotochannel gets unmarchalled JSON info and plugs it into channel so it would be processed in other places
-func (dat Image) ToChannel(imgchan ImageCh) {
+//Push gets unmarchalled JSON info, massages it and plugs it into channel so it
+//would be processed in other places
+func (imgchan ImageCh) push(dat Image) {
 	dat.Filename = strconv.Itoa(dat.Imgid) + "." + dat.OriginalFormat
 	dat.URL = "https:" + dat.URL
 	if dat.OriginalFormat == "svg" {
@@ -45,7 +49,7 @@ func (dat Image) ToChannel(imgchan ImageCh) {
 	imgchan <- dat
 }
 
-//ParseImg gets image ID and, fetches information about this image from Derpibooru and puts it into the channel.
+//ParseImg gets image IDs, fetches information about those images from Derpibooru and pushes them into the channel.
 func (imgchan ImageCh) ParseImg(imgids []int, KEY string) {
 
 	for _, imgid := range imgids {
@@ -79,7 +83,7 @@ func (imgchan ImageCh) ParseImg(imgids []int, KEY string) {
 			return
 		}
 
-		dat.ToChannel(imgchan)
+		imgchan.push(dat)
 	}
 
 	close(imgchan) //closing channel, we are done here
@@ -87,7 +91,7 @@ func (imgchan ImageCh) ParseImg(imgids []int, KEY string) {
 	return
 }
 
-//DlImg downloads image on disk, given image data
+//DlImg reads image data from channel and downloads specified images to disc
 func (imgchan ImageCh) DlImg(done chan bool, IMGDIR string) {
 
 	log.Println("Worker started; reading channel") //nice notification that we are not forgotten
@@ -154,6 +158,7 @@ func (imgchan ImageCh) DlImg(done chan bool, IMGDIR string) {
 	}
 }
 
+//ParseTag gets image tags, fetches information about all images it could from Derpibooru and pushes them into the channel.
 func (imgchan ImageCh) ParseTag(tag string, KEY string, STARTPAGE int, STOPPAGE int) {
 
 	source := "https://derpiboo.ru/search.json?" //yay hardwiring url strings!
@@ -205,7 +210,7 @@ func (imgchan ImageCh) ParseTag(tag string, KEY string, STARTPAGE int, STOPPAGE 
 			} //exit due to finishing all pages
 
 			for _, dat := range dats.Images {
-				dat.ToChannel(imgchan)
+				imgchan.push(dat)
 			}
 			if STOPPAGE != 0 && i > STOPPAGE { //stop page is included, but if not set? Work to the end of tag
 				working = false
