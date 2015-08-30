@@ -5,8 +5,8 @@ import (
 	"fmt"
 )
 
+//Binary byte sizes of common values
 const (
-	//KiB is Kibibyte. And so on.
 	KiB float64 = 1024
 	MiB         = 1024 * 1024
 	GiB         = 1024 * 1024 * 1024
