@@ -60,17 +60,21 @@ func (imgchan ImageCh) ParseImg(imgids []int, KEY string) {
 
 		log.Println("Getting image info at:", source)
 
-		resp, err := http.Get(source) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
+		response, err := http.Get(source) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
 		if err != nil {
 			elog.Println(err)
 			return
 		}
 
-		defer resp.Body.Close() //and not forgetting to close it when it's done
-
+		defer func() {
+			err = response.Body.Close() //and not forgetting to close it when it's done
+			if err != nil {
+				elog.Fatalln("Could  not close server response")
+			}
+		}()
 		var dat Image
 
-		body, err := ioutil.ReadAll(resp.Body) //stolen from official documentation
+		body, err := ioutil.ReadAll(response.Body) //stolen from official documentation
 		if err != nil {
 			elog.Println(err)
 			return
@@ -122,8 +126,12 @@ func (imgchan ImageCh) DlImg(done chan bool, IMGDIR string) {
 				elog.Println(err) //Either we got no permisson or no space, end of line
 				return
 			}
-			defer output.Close() //Not forgetting to deal with it after completing download
-
+			defer func() {
+				err = output.Close() //Not forgetting to deal with it after completing download
+				if err != nil {
+					elog.Fatalln("Could  not close downloaded file")
+				}
+			}()
 			start := time.Now()
 
 			response, err := http.Get(imgdata.URL)
@@ -132,7 +140,12 @@ func (imgchan ImageCh) DlImg(done chan bool, IMGDIR string) {
 				elog.Println(err)
 				return
 			}
-			defer response.Body.Close() //Same, we shall not listen to the void when we finished getting image
+			defer func() {
+				err = response.Body.Close() //Same, we shall not listen to the void when we finished getting image
+				if err != nil {
+					elog.Fatalln("Could  not close server response")
+				}
+			}()
 
 			size, err := io.Copy(output, io.TeeReader(response.Body, hasher)) //	Writing things we got from Derpibooru into the file and into hasher
 			if err != nil {
@@ -168,57 +181,58 @@ func (imgchan ImageCh) ParseTag(tag string, KEY string, STARTPAGE int, STOPPAGE 
 	}
 
 	log.Println("Searching as", source+"q="+tag)
-	var working = true
-	i := STARTPAGE
-	for working {
-		func() { //I suspect that all those returns could be dealt with in some way. But lazy.
-			log.Println("Searching page", i)
-			resp, err := http.Get(source + "q=" + tag + "&page=" + strconv.Itoa(i)) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
-			defer resp.Body.Close()                                                 //and not forgetting to close it when it's done. And before we panic and die horribly.
+
+	for i := STARTPAGE; i < STOPPAGE; i++ {
+		//I suspect that all those returns could be dealt with in some way. But lazy.
+		log.Println("Searching page", i)
+
+		response, err := http.Get(source + "q=" + tag + "&page=" + strconv.Itoa(i))
+		//Getting our nice http response. Needs checking for 404 and other responses that are... less expected
+
+		defer func() {
+			err = response.Body.Close() //and not forgetting to close it when it's done. And before we panic and die horribly.
 			if err != nil {
-				elog.Println("Error while getting search page", i)
-				elog.Println(err)
-				return
+				elog.Fatalln("Could  not close server response")
 			}
-
-			var dats Search //Because we got array incoming instead of single object, we using an slive of maps!
-
-			//fmt.Println(resp)
-
-			body, err := ioutil.ReadAll(resp.Body) //stolen from official documentation
-			if err != nil {
-				elog.Println("Error while reading search page", i)
-				elog.Println(err)
-				return
-			}
-
-			//fmt.Println(body)
-
-			err = json.Unmarshal(body, &dats) //transforming json into native slice of maps
-
-			if err != nil {
-				elog.Println("Error while parsing search page", i)
-				elog.Println(err)
-				return
-
-			}
-
-			if len(dats.Images) == 0 {
-				log.Println("Pages are over") //Does not mean that process is over.
-				working = false
-				return
-			} //exit due to finishing all pages
-
-			for _, dat := range dats.Images {
-				imgchan.push(dat)
-			}
-			if STOPPAGE != 0 && i > STOPPAGE { //stop page is included, but if not set? Work to the end of tag
-				working = false
-				return
-			}
-			i++
-
 		}()
+
+		if err != nil {
+			elog.Println("Error while getting search page", i)
+			elog.Println(err)
+			continue
+		}
+
+		var dats Search //Because we got array incoming instead of single object, we using an slive of maps!
+
+		//fmt.Println(resp)
+
+		body, err := ioutil.ReadAll(response.Body) //stolen from official documentation
+		if err != nil {
+			elog.Println("Error while reading search page", i)
+			elog.Println(err)
+			continue
+		}
+
+		//fmt.Println(body)
+
+		err = json.Unmarshal(body, &dats) //transforming json into native slice of maps
+
+		if err != nil {
+			elog.Println("Error while parsing search page", i)
+			elog.Println(err)
+			continue
+
+		}
+
+		if len(dats.Images) == 0 {
+			log.Println("Pages are over") //Does not mean that process is over.
+			break
+		} //exit due to finishing all pages
+
+		for _, dat := range dats.Images {
+			imgchan.push(dat)
+		}
+
 	}
 
 	close(imgchan)
