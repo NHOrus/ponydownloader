@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"hash"
 	//	"fmt"
 	"crypto/sha512"
 	"encoding/hex"
@@ -58,7 +59,7 @@ func (imgchan ImageCh) ParseImg() {
 			source = source + "?key=" + opts.Key
 		}
 
-		log.Println("Getting image info at:", source)
+		//log.Println("Getting image info at:", source)
 
 		response, err := http.Get(source) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
 		if err != nil {
@@ -84,7 +85,7 @@ func (imgchan ImageCh) ParseImg() {
 
 		err != nil {
 			elog.Println(err)
-			return
+			continue
 		}
 
 		imgchan.push(dat)
@@ -100,16 +101,9 @@ func (imgchan ImageCh) DlImg() {
 
 	log.Println("Worker started; reading channel") //nice notification that we are not forgotten
 
-	hasher := sha512.New()
+	hasher := sha512.New() //checksums will be done in this
 
-	for {
-
-		imgdata, more := <-imgchan
-
-		if !more { //checking that there is an image in channel
-			done <- true //well, there is no images in channel, it means we got them all, so synchronization is kicking in and ending the process
-			break        //Just in case, so it would not stupidly die when program finishes - it will die smartly
-		}
+	for imgdata := range imgchan {
 
 		if imgdata.Filename == "" {
 			elog.Println("Empty filename. Oops?") //something somewhere had gone wrong, not a cause to die, going to the next image
@@ -118,57 +112,60 @@ func (imgchan ImageCh) DlImg() {
 
 		log.Println("Saving as", imgdata.Filename)
 
-		func() { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
-
-			output, err := os.Create(opts.ImageDir + string(os.PathSeparator) + imgdata.Filename) //And now, THE FILE!
-			if err != err {
-				elog.Println("Error when creating file for image" + strconv.Itoa(imgdata.Imgid))
-				elog.Println(err) //Either we got no permisson or no space, end of line
-				return
-			}
-			defer func() {
-				err = output.Close() //Not forgetting to deal with it after completing download
-				if err != nil {
-					elog.Fatalln("Could  not close downloaded file")
-				}
-			}()
-			start := time.Now()
-
-			response, err := http.Get(imgdata.URL)
-			if err != nil {
-				elog.Println("Error when getting image", imgdata.Imgid)
-				elog.Println(err)
-				return
-			}
-			defer func() {
-				err = response.Body.Close() //Same, we shall not listen to the void when we finished getting image
-				if err != nil {
-					elog.Fatalln("Could  not close server response")
-				}
-			}()
-
-			size, err := io.Copy(output, io.TeeReader(response.Body, hasher)) //	Writing things we got from Derpibooru into the file and into hasher
-			if err != nil {
-				elog.Println("Unable to write image on disk, id ", imgdata.Imgid)
-				elog.Println(err)
-				return
-			}
-			timed := time.Since(start).Seconds()
-
-			hash := hex.EncodeToString(hasher.Sum(nil))
-
-			if hash != imgdata.Hashval {
-				elog.Println("Hash mismatch, got ", hash, " instead of ", imgdata.Hashval)
-			}
-
-			hasher.Reset()
-
-			log.Printf("Downloaded %d bytes in %.2fs, speed %s/s\n", size, timed, fmtbytes(float64(size)/timed))
-		}()
+		imgdata.saveImage(hasher)
 
 		//fmt.Println("\n", hex.EncodeToString(hash.Sum(nil)), "\n", imgdata.hash )
 
 	}
+	done <- true
+}
+
+func (imgdata Image) saveImage(hasher hash.Hash) { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
+
+	output, err := os.Create(opts.ImageDir + string(os.PathSeparator) + imgdata.Filename) //And now, THE FILE!
+	if err != err {
+		elog.Println("Error when creating file for image" + strconv.Itoa(imgdata.Imgid))
+		elog.Println(err) //Either we got no permisson or no space, end of line
+		return
+	}
+	defer func() {
+		err = output.Close() //Not forgetting to deal with it after completing download
+		if err != nil {
+			elog.Fatalln("Could  not close downloaded file")
+		}
+	}()
+	start := time.Now()
+
+	response, err := http.Get(imgdata.URL)
+	if err != nil {
+		elog.Println("Error when getting image", imgdata.Imgid)
+		elog.Println(err)
+		return
+	}
+	defer func() {
+		err = response.Body.Close() //Same, we shall not listen to the void when we finished getting image
+		if err != nil {
+			elog.Fatalln("Could  not close server response")
+		}
+	}()
+
+	size, err := io.Copy(output, io.TeeReader(response.Body, hasher)) //	Writing things we got from Derpibooru into the file and into hasher
+	if err != nil {
+		elog.Println("Unable to write image on disk, id ", imgdata.Imgid)
+		elog.Println(err)
+		return
+	}
+	timed := time.Since(start).Seconds()
+
+	hash := hex.EncodeToString(hasher.Sum(nil))
+
+	if hash != imgdata.Hashval {
+		elog.Println("Hash mismatch, got ", hash, " instead of ", imgdata.Hashval)
+	}
+
+	hasher.Reset()
+
+	log.Printf("Downloaded %d bytes in %.2fs, speed %s/s\n", size, timed, fmtbytes(float64(size)/timed))
 }
 
 //ParseTag gets image tags, fetches information about all images it could from Derpibooru and pushes them into the channel.
