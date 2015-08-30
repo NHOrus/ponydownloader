@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"strings"
+	"text/tabwriter"
 )
 
 var opts struct {
@@ -56,9 +56,12 @@ func WriteConfig() {
 		elog.Fatalln("Could  not create configuration file")
 	}
 
-	defset := []string{"key = " + opts.Key, "queue_depth = " + strconv.Itoa(opts.QDepth), "downdir = " + opts.ImageDir}
+	tb := tabwriter.NewWriter(config, 10, 8, 0, ' ', 0)
+	fmt.Fprintf(tb, "key \t= %s\t\n", opts.Key)
+	fmt.Fprintf(tb, "queue_depth \t= %s\t\n", strconv.Itoa(opts.QDepth))
+	fmt.Fprintf(tb, "downdir \t= %s\t\n", opts.ImageDir)
 
-	_, err = fmt.Fprintln(config, strings.Join(defset, "\n"))
+	err = tb.Flush()
 
 	if err != nil {
 		elog.Fatalln("Could  not write in configuration file")

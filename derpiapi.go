@@ -50,9 +50,9 @@ func (imgchan ImageCh) push(dat Image) {
 }
 
 //ParseImg gets image IDs, fetches information about those images from Derpibooru and pushes them into the channel.
-func (imgchan ImageCh) ParseImg(imgids []int) {
+func (imgchan ImageCh) ParseImg() {
 
-	for _, imgid := range imgids {
+	for _, imgid := range opts.Args.IDs {
 		source := "https://derpiboo.ru/images/" + strconv.Itoa(imgid) + ".json"
 		if opts.Key != "" {
 			source = source + "?key=" + opts.Key

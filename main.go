@@ -34,6 +34,7 @@ func main() {
 	args, err := flag.Parse(&opts)
 	if err != nil {
 		flagError := err.(*flag.Error)
+
 		switch flagError.Type {
 		case flag.ErrHelp:
 		case flag.ErrUnknownFlag:
@@ -73,7 +74,7 @@ func main() {
 	if opts.Tag == "" { //Because we can put imgid with flags. Why not?
 
 		log.Println("Processing image No", opts.Args.IDs)
-		go imgdat.ParseImg(opts.Args.IDs) // Sending imgid to parser. Here validity is our problem
+		go imgdat.ParseImg() // Sending imgid to parser. Here validity is our problem
 
 	} else {
 
