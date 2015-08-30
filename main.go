@@ -30,6 +30,7 @@ func main() {
 			fmt.Println("config.ini not found, using defaults")
 		}
 	}
+	var iniopts = opts
 
 	args, err := flag.Parse(&opts)
 	if err != nil {
@@ -47,7 +48,7 @@ func main() {
 
 	elog = SetLog() //Setting up logging of errors
 
-	WriteConfig()
+	WriteConfig(iniopts)
 
 	if len(args) != 0 {
 		elog.Println("Too many arguments, skipping following:", args)

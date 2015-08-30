@@ -9,7 +9,7 @@ import (
 	"text/tabwriter"
 )
 
-var opts struct {
+type Options struct {
 	ImageDir  string `long:"dir" description:"Target Directory" default:"img" ini-name:"downdir"`
 	QDepth    int    `short:"q" long:"queue" description:"Length of the queue buffer" default:"20" ini-name:"queue_depth"`
 	Tag       string `short:"t" long:"tag" description:"Tag to download"`
@@ -22,6 +22,8 @@ var opts struct {
 		IDs []int `description:"Image IDs to download" optional:"yes"`
 	} `positional-args:"yes"`
 }
+
+var opts Options
 
 //SetLog sets up logfile as I want it to: Copy to event.log, copy to commandline
 func SetLog() (retlog *log.Logger) {
@@ -43,7 +45,12 @@ func SetLog() (retlog *log.Logger) {
 }
 
 //WriteConfig writes default, presumably sensible configuration into file.
-func WriteConfig() {
+func WriteConfig(iniopts Options) {
+
+	if opts.compareStatic(&iniopts) == true {
+		return
+	}
+
 	config, err := os.OpenFile("config.ini", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	defer func() {
 		err = config.Close()
@@ -66,4 +73,11 @@ func WriteConfig() {
 	if err != nil {
 		elog.Fatalln("Could  not write in configuration file")
 	}
+}
+
+func (a *Options) compareStatic(b *Options) bool {
+	if a.ImageDir == b.ImageDir && a.QDepth == b.QDepth && a.Key == b.Key {
+		return true
+	}
+	return false
 }
