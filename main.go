@@ -14,7 +14,7 @@ var (
 )
 
 func main() {
-	fmt.Println("Derpiboo.ru Downloader version 0.4.0")
+	fmt.Println("Derpiboo.ru Downloader version 0.5.0")
 
 	err := flag.IniParse("config.ini", &opts)
 	if err != nil {
@@ -29,14 +29,13 @@ func main() {
 	args, err := flag.Parse(&opts)
 	if err != nil {
 		flagError := err.(*flag.Error)
-		if flagError.Type == flag.ErrHelp {
-			return
-		}
-		if flagError.Type == flag.ErrUnknownFlag {
+		switch flagError.Type {
+		case flag.ErrHelp:
+		case flag.ErrUnknownFlag:
 			fmt.Println("Use --help to view all available options")
-			return
+		default:
+			fmt.Printf("Error parsing flags: %s\n", err)
 		}
-		fmt.Printf("Error parsing flags: %s\n", err)
 		return
 	}
 
