@@ -50,12 +50,12 @@ func (imgchan ImageCh) push(dat Image) {
 }
 
 //ParseImg gets image IDs, fetches information about those images from Derpibooru and pushes them into the channel.
-func (imgchan ImageCh) ParseImg(imgids []int, KEY string) {
+func (imgchan ImageCh) ParseImg(imgids []int) {
 
 	for _, imgid := range imgids {
 		source := "https://derpiboo.ru/images/" + strconv.Itoa(imgid) + ".json"
-		if KEY != "" {
-			source = source + "?key=" + KEY
+		if opts.Key != "" {
+			source = source + "?key=" + opts.Key
 		}
 
 		log.Println("Getting image info at:", source)
@@ -96,7 +96,7 @@ func (imgchan ImageCh) ParseImg(imgids []int, KEY string) {
 }
 
 //DlImg reads image data from channel and downloads specified images to disc
-func (imgchan ImageCh) DlImg(done chan bool, IMGDIR string) {
+func (imgchan ImageCh) DlImg() {
 
 	log.Println("Worker started; reading channel") //nice notification that we are not forgotten
 
@@ -120,7 +120,7 @@ func (imgchan ImageCh) DlImg(done chan bool, IMGDIR string) {
 
 		func() { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
 
-			output, err := os.Create(IMGDIR + string(os.PathSeparator) + imgdata.Filename) //And now, THE FILE!
+			output, err := os.Create(opts.ImageDir + string(os.PathSeparator) + imgdata.Filename) //And now, THE FILE!
 			if err != err {
 				elog.Println("Error when creating file for image" + strconv.Itoa(imgdata.Imgid))
 				elog.Println(err) //Either we got no permisson or no space, end of line
@@ -172,21 +172,21 @@ func (imgchan ImageCh) DlImg(done chan bool, IMGDIR string) {
 }
 
 //ParseTag gets image tags, fetches information about all images it could from Derpibooru and pushes them into the channel.
-func (imgchan ImageCh) ParseTag(tag string, KEY string, STARTPAGE int, STOPPAGE int) {
+func (imgchan ImageCh) ParseTag() {
 
-	source := "https://derpiboo.ru/search.json?" //yay hardwiring url strings!
+	source := "https://derpiboo.ru/search.json?q=" + opts.Tag //yay hardwiring url strings!
 
-	if KEY != "" {
-		source = source + "key=" + KEY + "&"
+	if opts.Key != "" {
+		source = source + "&key=" + opts.Key
 	}
 
-	log.Println("Searching as", source+"q="+tag)
+	log.Println("Searching as", source)
 
-	for i := STARTPAGE; STOPPAGE == 0 || i <= STOPPAGE; i++ {
+	for i := opts.StartPage; opts.StopPage == 0 || i <= opts.StopPage; i++ {
 		//I suspect that all those returns could be dealt with in some way. But lazy.
 		log.Println("Searching page", i)
 
-		response, err := http.Get(source + "q=" + tag + "&page=" + strconv.Itoa(i))
+		response, err := http.Get(source + "&page=" + strconv.Itoa(i))
 		//Getting our nice http response. Needs checking for 404 and other responses that are... less expected
 
 		defer func() {

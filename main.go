@@ -11,7 +11,12 @@ import (
 //Default global variables
 var (
 	elog *log.Logger //The logger for errors
+	done chan bool
 )
+
+func init() {
+	done = make(chan bool)
+}
 
 func main() {
 	fmt.Println("Derpiboo.ru Downloader version 0.5.0")
@@ -64,26 +69,25 @@ func main() {
 
 	//	Creating channels to pass info to downloader and to signal job well done
 	imgdat := make(ImageCh, opts.QDepth) //Better leave default queue depth. Experiment shown that depth about 20 provides optimal perfomance on my system
-	done := make(chan bool)
 
 	if opts.Tag == "" { //Because we can put imgid with flags. Why not?
 
 		log.Println("Processing image No", opts.Args.IDs)
-		go imgdat.ParseImg(opts.Args.IDs, opts.Key) // Sending imgid to parser. Here validity is our problem
+		go imgdat.ParseImg(opts.Args.IDs) // Sending imgid to parser. Here validity is our problem
 
 	} else {
 
 		//	and here we send tags to getter/parser. Validity is server problem, mostly
 
 		log.Println("Processing tags", opts.Tag)
-		go imgdat.ParseTag(opts.Tag, opts.Key, opts.StartPage, opts.StopPage)
+		go imgdat.ParseTag()
 	}
 
 	log.Println("Starting worker") //It would be funny if worker goroutine does not start
 
 	filtimgdat := FilterChannel(imgdat) //see to move it into filter.Filter(inchan, outchan) where all filtration is done
 
-	go filtimgdat.DlImg(done, opts.ImageDir)
+	go filtimgdat.DlImg()
 
 	<-done
 	log.SetPrefix("Done at ")
