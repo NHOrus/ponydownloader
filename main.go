@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime"
+	"time"
+
+	"github.com/inconshreveable/mousetrap"
 
 	flag "github.com/jessevdk/go-flags"
 )
@@ -15,6 +19,14 @@ var (
 )
 
 func init() {
+	if runtime.GOOS == "windows" {
+		if mousetrap.StartedByExplorer() {
+			fmt.Println("Don't double-click ponydownloader")
+			fmt.Println("You need to open cmd.exe and run it from the command line!")
+			time.Sleep(5 * time.Second)
+			os.Exit(1)
+		}
+	}
 	done = make(chan bool)
 }
 
