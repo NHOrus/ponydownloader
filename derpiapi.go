@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/x509"
 	"encoding/json"
 	"hash"
 	//	"fmt"
@@ -63,8 +64,12 @@ func (imgchan ImageCh) ParseImg() {
 
 		response, err := http.Get(source) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
 		if err != nil {
-			elog.Println(err)
-			continue
+			if _, ok := err.(x509.UnknownAuthorityError); ok && opts.Unsafe {
+				log.Println("Warning: ", err)
+			} else {
+				elog.Println(err)
+				continue
+			}
 		}
 
 		defer func() {
@@ -138,9 +143,13 @@ func (imgdata Image) saveImage(hasher hash.Hash) { // To not hold all the files 
 	start := time.Now()
 	response, err := http.Get(imgdata.URL)
 	if err != nil {
-		elog.Println("Error when getting image", imgdata.Imgid)
-		elog.Println(err)
-		return
+		if _, ok := err.(x509.UnknownAuthorityError); ok && opts.Unsafe {
+			log.Println("Warning: ", err)
+		} else {
+			elog.Println("Error when getting image", imgdata.Imgid)
+			elog.Println(err)
+			return
+		}
 	}
 	defer func() {
 		err = response.Body.Close() //Same, we shall not listen to the void when we finished getting image
@@ -187,9 +196,13 @@ func (imgchan ImageCh) ParseTag() {
 		//Getting our nice http response. Needs checking for 404 and other responses that are... less expected
 
 		if err != nil {
-			elog.Println("Error while getting search page", i)
-			elog.Println(err)
-			continue
+			if _, ok := err.(x509.UnknownAuthorityError); ok && opts.Unsafe {
+				log.Println("Warning: ", err)
+			} else {
+				elog.Println("Error while getting search page", i)
+				elog.Println(err)
+				continue
+			}
 		}
 
 		defer func() {
