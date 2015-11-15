@@ -134,8 +134,8 @@ func (imgdata Image) saveImage(hasher hash.Hash) { // To not hold all the files 
 			elog.Fatalln("Could  not close downloaded file")
 		}
 	}()
-	start := time.Now()
 
+	start := time.Now()
 	response, err := http.Get(imgdata.URL)
 	if err != nil {
 		elog.Println("Error when getting image", imgdata.Imgid)
@@ -186,18 +186,18 @@ func (imgchan ImageCh) ParseTag() {
 		response, err := http.Get(source + "&page=" + strconv.Itoa(i))
 		//Getting our nice http response. Needs checking for 404 and other responses that are... less expected
 
+		if err != nil {
+			elog.Println("Error while getting search page", i)
+			elog.Println(err)
+			continue
+		}
+
 		defer func() {
 			err = response.Body.Close() //and not forgetting to close it when it's done. And before we panic and die horribly.
 			if err != nil {
 				elog.Fatalln("Could  not close server response")
 			}
 		}()
-
-		if err != nil {
-			elog.Println("Error while getting search page", i)
-			elog.Println(err)
-			continue
-		}
 
 		var dats Search //Because we got array incoming instead of single object, we using an slive of maps!
 
