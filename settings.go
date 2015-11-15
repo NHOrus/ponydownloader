@@ -18,6 +18,8 @@ type Options struct {
 	StopPage  int    `short:"n" long:"stoppage" description:"Stopping page for search, default - parse all search pages"`
 	Filter    bool   `short:"f" long:"filter" description:"If set, enables client-side filtering of downloaded images"`
 	Score     int    `long:"score" description:"Filter option, minimal score of image for it to be downloaded"`
+	Unsafe    bool   `long:"unsafe" description:"If set, trusts in unknown authority"`
+	NoHTTPS   bool   `long:"nohttps" description:"Disable HTTPS and try to download insecurely"`
 	Args      struct {
 		IDs []int `description:"Image IDs to download" optional:"yes"`
 	} `positional-args:"yes"`

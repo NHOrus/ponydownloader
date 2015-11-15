@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/x509"
 	"encoding/json"
 	"hash"
 	//	"fmt"
@@ -40,7 +41,7 @@ type ImageCh chan Image
 //would be processed in other places
 func (imgchan ImageCh) push(dat Image) {
 	dat.Filename = strconv.Itoa(dat.Imgid) + "." + dat.OriginalFormat
-	dat.URL = "https:" + dat.URL
+	dat.URL = prefix + dat.URL
 	if dat.OriginalFormat == "svg" {
 		i := strings.LastIndex(dat.URL, ".")
 		if i != -1 {
@@ -54,7 +55,7 @@ func (imgchan ImageCh) push(dat Image) {
 func (imgchan ImageCh) ParseImg() {
 
 	for _, imgid := range opts.Args.IDs {
-		source := "https://derpiboo.ru/images/" + strconv.Itoa(imgid) + ".json"
+		source := prefix + "//derpiboo.ru/images/" + strconv.Itoa(imgid) + ".json"
 		if opts.Key != "" {
 			source = source + "?key=" + opts.Key
 		}
@@ -63,8 +64,12 @@ func (imgchan ImageCh) ParseImg() {
 
 		response, err := http.Get(source) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
 		if err != nil {
-			elog.Println(err)
-			continue
+			if _, ok := err.(x509.UnknownAuthorityError); ok && opts.Unsafe {
+				log.Println("Warning: ", err)
+			} else {
+				elog.Println(err)
+				continue
+			}
 		}
 
 		defer func() {
@@ -142,9 +147,13 @@ func (imgdata Image) saveImage(hasher hash.Hash) { // To not hold all the files 
 	start := time.Now()
 	response, err := http.Get(imgdata.URL)
 	if err != nil {
-		elog.Println("Error when getting image", imgdata.Imgid)
-		elog.Println(err)
-		return
+		if _, ok := err.(x509.UnknownAuthorityError); ok && opts.Unsafe {
+			log.Println("Warning: ", err)
+		} else {
+			elog.Println("Error when getting image", imgdata.Imgid)
+			elog.Println(err)
+			return
+		}
 	}
 	defer func() {
 		err = response.Body.Close() //Same, we shall not listen to the void when we finished getting image
@@ -177,7 +186,7 @@ func (imgdata Image) saveImage(hasher hash.Hash) { // To not hold all the files 
 //ParseTag gets image tags, fetches information about all images it could from Derpibooru and pushes them into the channel.
 func (imgchan ImageCh) ParseTag() {
 
-	source := "https://derpiboo.ru/search.json?q=" + opts.Tag //yay hardwiring url strings!
+	source := prefix + "//derpiboo.ru/search.json?q=" + opts.Tag //yay hardwiring url strings!
 
 	if opts.Key != "" {
 		source = source + "&key=" + opts.Key
@@ -193,9 +202,13 @@ func (imgchan ImageCh) ParseTag() {
 		//Getting our nice http response. Needs checking for 404 and other responses that are... less expected
 
 		if err != nil {
-			elog.Println("Error while getting search page", i)
-			elog.Println(err)
-			continue
+			if _, ok := err.(x509.UnknownAuthorityError); ok && opts.Unsafe {
+				log.Println("Warning: ", err)
+			} else {
+				elog.Println("Error while getting search page", i)
+				elog.Println(err)
+				continue
+			}
 		}
 
 		defer func() {
@@ -227,6 +240,9 @@ func (imgchan ImageCh) ParseTag() {
 		if err != nil {
 			elog.Println("Error while parsing search page", i)
 			elog.Println(err)
+			if serr, ok := err.(*json.SyntaxError); ok {
+				log.Println("Occurred at offset:", serr.Offset)
+			}
 			continue
 
 		}

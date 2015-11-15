@@ -13,8 +13,9 @@ import (
 
 //Default global variables
 var (
-	elog *log.Logger //The logger for errors
-	done chan bool
+	elog   *log.Logger //The logger for errors
+	done   chan bool
+	prefix = "https:"
 )
 
 func init() {
@@ -69,6 +70,10 @@ func main() {
 		log.SetPrefix("Done at ")                //We can not do this with elog!
 		log.Println("Nothing to download, bye!") //Need to reshuffle flow: now it could end before it starts.
 		os.Exit(0)
+	}
+
+	if opts.NoHTTPS {
+		prefix = "http:"
 	}
 
 	//Creating directory for downloads if it does not yet exist
