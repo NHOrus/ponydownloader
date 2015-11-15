@@ -265,10 +265,21 @@ func okStatus(chk *http.Response) bool {
 	switch chk.StatusCode {
 	case http.StatusOK, http.StatusNotModified:
 		return true
-	case http.StatusGatewayTimeout:
-		elog.Println("Gateway timeout: ", chk.Status)
+	case http.StatusGatewayTimeout,
+		http.StatusInternalServerError,
+		http.StatusNotImplemented,
+		http.StatusBadGateway,
+		http.StatusServiceUnavailable,
+		http.StatusHTTPVersionNotSupported:
+		elog.Println("Server error: ", chk.Status)
 		return false
-	case http.StatusBadRequest, http.StatusTeapot, http.StatusUnauthorized, http.StatusForbidden, http.StatusNotFound, http.StatusRequestURITooLong, http.StatusExpectationFailed:
+	case http.StatusBadRequest,
+		http.StatusTeapot,
+		http.StatusUnauthorized,
+		http.StatusForbidden,
+		http.StatusNotFound,
+		http.StatusRequestURITooLong,
+		http.StatusExpectationFailed:
 		elog.Println("Incorrect request to server, error ", chk.Status)
 		elog.Println("Possible API changes")
 		return false
