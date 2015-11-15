@@ -31,30 +31,7 @@ func init() {
 func main() {
 	fmt.Println("Derpiboo.ru Downloader version 0.5.0")
 
-	err := flag.IniParse("config.ini", &opts)
-	if err != nil {
-		switch err.(type) {
-		default:
-			panic(err)
-		case *os.PathError:
-			fmt.Println("config.ini not found, using defaults")
-		}
-	}
-	var iniopts = opts
-
-	args, err := flag.Parse(&opts)
-	if err != nil {
-		flagError := err.(*flag.Error)
-
-		switch flagError.Type {
-		case flag.ErrHelp:
-		case flag.ErrUnknownFlag:
-			fmt.Println("Use --help to view all available options")
-		default:
-			fmt.Printf("Error parsing flags: %s\n", err)
-		}
-		return
-	}
+	args, iniopts := configSetup(&opts)
 
 	elog = SetLog() //Setting up logging of errors
 
@@ -77,7 +54,7 @@ func main() {
 	}
 
 	//Creating directory for downloads if it does not yet exist
-	err = os.MkdirAll(opts.ImageDir, 0755)
+	err := os.MkdirAll(opts.ImageDir, 0755)
 
 	if err != nil { //Execute bit means different thing for directories that for files. And I was stupid.
 		elog.Fatalln(err) //We can not create folder for images, end of line.
@@ -111,4 +88,33 @@ func main() {
 	log.Println("Finished")
 	//And we are done here! Hooray!
 	return
+}
+
+func configSetup(*Options) ([]string, Options) {
+	err := flag.IniParse("config.ini", &opts)
+	if err != nil {
+		switch err.(type) {
+		default:
+			panic(err)
+		case *os.PathError:
+			fmt.Println("config.ini not found, using defaults")
+		}
+	}
+	var iniopts = opts
+
+	args, err := flag.Parse(&opts)
+	if err != nil {
+		flagError := err.(*flag.Error)
+
+		switch flagError.Type {
+		case flag.ErrHelp:
+		case flag.ErrUnknownFlag:
+			fmt.Println("Use --help to view all available options")
+			os.Exit(0)
+		default:
+			fmt.Printf("Error parsing flags: %s\n", err)
+			os.Exit(1)
+		}
+	}
+	return args, iniopts
 }
