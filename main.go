@@ -108,6 +108,7 @@ func configSetup(*Options) ([]string, Options) {
 
 		switch flagError.Type {
 		case flag.ErrHelp:
+			fallthrough
 		case flag.ErrUnknownFlag:
 			fmt.Println("Use --help to view all available options")
 			os.Exit(0)
