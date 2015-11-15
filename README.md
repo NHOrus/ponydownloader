@@ -10,7 +10,7 @@ This app under limited support due to loss of interest into ponies. Sorry for th
 
 ---
 
-Ponydownloader seeks to provide useful command-line tool to download images from [Derpibooru](http://derpiboo.ru) using provided API
+Ponydownloader seeks to provide useful command-line tool to download images from [Derpibooru](https://derpibooru.org) using provided API
 
 Currently ponydownloader provides three bits of functionality: download by image id, download by tag and filter images you download by their score.
 
@@ -30,7 +30,7 @@ One can manipulate start and stop pages for limiting amount of downloaded images
 To filter images one need to explicitly declare desire to do so by setting up flag `-filter` and then declare parameter and it's value.
 Currently only filter available is filter by score: `--score <minimal score to accept`
 
-Optional flag `-k` defines API key to use and overrides said key from configuration file. Key in configuration file gets rewritten. Derpibooru provides significant capability to exclude undesirable images server-side and API key allows one to switch from default settings to currently selected personal rule. One of the way to get API key is to look at your [account settings](https://derpiboo.ru/users/edit)
+Optional flag `-k` defines API key to use and overrides said key from configuration file. Key in configuration file gets rewritten. Derpibooru provides significant capability to exclude undesirable images server-side and API key allows one to switch from default settings to currently selected personal rule. One of the way to get API key is to look at your [account settings](https://derpibooru.org/users/edit)
 
 #### Simple usage example:
 ```bash
@@ -44,11 +44,11 @@ Optional flag `-k` defines API key to use and overrides said key from configurat
 At the moment of writing both samples were working, you would get output looking approximately like quote below and images in default directory `img`
 
 ```
-Derpiboo.ru Downloader version 0.4.0
+Derpibooru.org Downloader version 0.5.3
 Happens at 2015/06/12 21:26:23 Program start
 Happens at 2015/06/12 21:26:23 Processing tags princess+luna%2C+safe
 Happens at 2015/06/12 21:26:23 Starting worker
-Happens at 2015/06/12 21:26:23 Searching as https://derpiboo.ru/search.json?&q=princess+luna%2C+safe
+Happens at 2015/06/12 21:26:23 Searching as https://derpibooru.org/search.json?&q=princess+luna%2C+safe
 Happens at 2015/06/12 21:26:23 Searching page 3
 Happens at 2015/06/12 21:26:23 Worker started; reading channel
 Happens at 2015/06/12 21:26:23 Saving as 912564.png
@@ -92,7 +92,7 @@ config.ini
 ----------
 
 ```config.ini
-key =  //your derpiboo.ru key
+key =  //your derpibooru.org key
 downdir = img // in this directory your images would be saved
 queue_depth = 20 // depth of queue of images, waiting for download. 
 ``` 

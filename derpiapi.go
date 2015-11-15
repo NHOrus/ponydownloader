@@ -55,7 +55,7 @@ func (imgchan ImageCh) push(dat Image) {
 func (imgchan ImageCh) ParseImg() {
 
 	for _, imgid := range opts.Args.IDs {
-		source := prefix + "//derpiboo.ru/images/" + strconv.Itoa(imgid) + ".json"
+		source := prefix + "//derpibooru.org/images/" + strconv.Itoa(imgid) + ".json"
 		if opts.Key != "" {
 			source = source + "?key=" + opts.Key
 		}
@@ -186,7 +186,7 @@ func (imgdata Image) saveImage(hasher hash.Hash) { // To not hold all the files 
 //ParseTag gets image tags, fetches information about all images it could from Derpibooru and pushes them into the channel.
 func (imgchan ImageCh) ParseTag() {
 
-	source := prefix + "//derpiboo.ru/search.json?q=" + opts.Tag //yay hardwiring url strings!
+	source := prefix + "//derpibooru.org/search.json?q=" + opts.Tag //yay hardwiring url strings!
 
 	if opts.Key != "" {
 		source = source + "&key=" + opts.Key
