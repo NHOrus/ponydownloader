@@ -29,7 +29,7 @@ func init() {
 }
 
 func main() {
-	fmt.Println("Derpiboo.ru Downloader version 0.5.0")
+	fmt.Println("Derpiboo.ru Downloader version 0.5.2")
 
 	args, iniopts := configSetup(&opts)
 
