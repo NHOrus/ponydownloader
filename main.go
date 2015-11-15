@@ -15,7 +15,7 @@ import (
 var (
 	elog   *log.Logger //The logger for errors
 	done   chan bool
-	prefix string = "https:"
+	prefix = "https:"
 )
 
 func init() {
@@ -72,7 +72,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	if opts.NoHTTPs {
+	if opts.NoHTTPS {
 		prefix = "http:"
 	}
 
