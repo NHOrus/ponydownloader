@@ -9,6 +9,7 @@ import (
 	"text/tabwriter"
 )
 
+//Options provide program-wide options. At maximum, we got one persistent global and one short-living copy for writing in config file
 type Options struct {
 	ImageDir  string `long:"dir" description:"Target Directory" default:"img" ini-name:"downdir"`
 	QDepth    int    `short:"q" long:"queue" description:"Length of the queue buffer" default:"20" ini-name:"queue_depth"`
@@ -49,7 +50,7 @@ func SetLog() (retlog *log.Logger) {
 //WriteConfig writes default, presumably sensible configuration into file.
 func WriteConfig(iniopts Options) {
 
-	if opts.compareStatic(&iniopts) == true {
+	if opts.compareStatic(&iniopts) { //If nothing to write, no double-writing files
 		return
 	}
 
@@ -57,6 +58,8 @@ func WriteConfig(iniopts Options) {
 
 	if err != nil {
 		elog.Fatalln("Could  not create configuration file")
+		//Need to check if log file is created before config file. Also, work around screams
+		//in case if nor log, nor config file could be created.
 	}
 
 	defer func() {
@@ -66,7 +69,7 @@ func WriteConfig(iniopts Options) {
 		}
 	}()
 
-	tb := tabwriter.NewWriter(config, 10, 8, 0, ' ', 0)
+	tb := tabwriter.NewWriter(config, 10, 8, 0, ' ', 0) //Tabs! Elastic! Pretty!
 	fmt.Fprintf(tb, "key \t= %s\n", opts.Key)
 	fmt.Fprintf(tb, "queue_depth \t= %s\n", strconv.Itoa(opts.QDepth))
 	fmt.Fprintf(tb, "downdir \t= %s\n", opts.ImageDir)
@@ -78,6 +81,7 @@ func WriteConfig(iniopts Options) {
 	}
 }
 
+//compareStatic compares only options I want to preserve across launches.
 func (a *Options) compareStatic(b *Options) bool {
 	if a.ImageDir == b.ImageDir &&
 		a.QDepth == b.QDepth &&

@@ -50,7 +50,7 @@ func main() {
 	}
 
 	if opts.NoHTTPS {
-		prefix = "http:"
+		prefix = "http:" //Horrible cludge that must be removed in favor of url.URL.Scheme
 	}
 
 	//Creating directory for downloads if it does not yet exist
@@ -70,15 +70,15 @@ func main() {
 
 	} else {
 
-		//	and here we send tags to getter/parser. Validity is server problem, mostly
-
+		// And here we send tags to getter/parser. Query and JSON validity is mostly server problem
+		// Server response validity is ours
 		log.Println("Processing tags", opts.Tag)
 		go imgdat.ParseTag()
 	}
 
 	log.Println("Starting worker") //It would be funny if worker goroutine does not start
 
-	filterInit(opts)
+	filterInit(opts)                    //Ining filters based on our given flags
 	filtimgdat := FilterChannel(imgdat) //see to move it into filter.Filter(inchan, outchan) where all filtration is done
 
 	go filtimgdat.DlImg()

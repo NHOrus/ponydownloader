@@ -2,9 +2,9 @@ package main
 
 import "log"
 
-type Filter func(ImageCh) ImageCh
+type filtrator func(ImageCh) ImageCh
 
-var filters []Filter
+var filters []filtrator
 
 func filterInit(opts Options) {
 	if !opts.Filter {
@@ -20,7 +20,7 @@ func nopFilter(in ImageCh) ImageCh {
 	return in
 }
 
-func scoreFilterGenerator(option Options) Filter {
+func scoreFilterGenerator(option Options) filtrator {
 	return func(in ImageCh) ImageCh {
 		out := make(ImageCh, 1)
 		go func() {

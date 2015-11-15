@@ -1,12 +1,11 @@
 package main
 
 import (
+	"crypto/sha512"
 	"crypto/x509"
+	"encoding/hex"
 	"encoding/json"
 	"hash"
-	//	"fmt"
-	"crypto/sha512"
-	"encoding/hex"
 	"io"
 	"io/ioutil"
 	"log"
@@ -60,7 +59,7 @@ func (imgchan ImageCh) ParseImg() {
 			source = source + "?key=" + opts.Key
 		}
 
-		//log.Println("Getting image info at:", source)
+		log.Println("Getting image info at:", source)
 
 		response, err := http.Get(source) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
 		if err != nil {
@@ -80,7 +79,7 @@ func (imgchan ImageCh) ParseImg() {
 		}()
 		var dat Image
 
-		if !okStatus(response) {
+		if !okHTTPStatus(response) {
 			continue
 		}
 
@@ -123,8 +122,6 @@ func (imgchan ImageCh) DlImg() {
 
 		imgdata.saveImage(hasher)
 
-		//fmt.Println("\n", hex.EncodeToString(hash.Sum(nil)), "\n", imgdata.hash )
-
 	}
 	done <- true
 }
@@ -144,10 +141,12 @@ func (imgdata Image) saveImage(hasher hash.Hash) { // To not hold all the files 
 		}
 	}()
 
-	start := time.Now()
+	start := time.Now() //timing download time. We can't begin it sooner, not sure if we can begin it later
+
 	response, err := http.Get(imgdata.URL)
+
 	if err != nil {
-		if _, ok := err.(x509.UnknownAuthorityError); ok && opts.Unsafe {
+		if _, ok := err.(x509.UnknownAuthorityError); ok && opts.Unsafe { //With flag to sidestep outdated root certificates
 			log.Println("Warning: ", err)
 		} else {
 			elog.Println("Error when getting image", imgdata.Imgid)
@@ -161,7 +160,7 @@ func (imgdata Image) saveImage(hasher hash.Hash) { // To not hold all the files 
 			elog.Fatalln("Could  not close server response")
 		}
 	}()
-	if !okStatus(response) {
+	if !okHTTPStatus(response) {
 		return
 	}
 	size, err := io.Copy(output, io.TeeReader(response.Body, hasher)) //	Writing things we got from Derpibooru into the file and into hasher
@@ -172,13 +171,13 @@ func (imgdata Image) saveImage(hasher hash.Hash) { // To not hold all the files 
 	}
 	timed := time.Since(start).Seconds()
 
-	hash := hex.EncodeToString(hasher.Sum(nil))
+	hash := hex.EncodeToString(hasher.Sum(nil)) //Ah, hexadecimals. It may be easier to convert hex to []byte, but whatever
 
 	if hash != imgdata.Hashval {
 		elog.Println("Hash mismatch, got ", hash, " instead of ", imgdata.Hashval)
 	}
 
-	hasher.Reset()
+	hasher.Reset() //cleanup, so we don't allocate each loop
 
 	log.Printf("Downloaded %d bytes in %.2fs, speed %s/s\n", size, timed, fmtbytes(float64(size)/timed))
 }
@@ -186,6 +185,7 @@ func (imgdata Image) saveImage(hasher hash.Hash) { // To not hold all the files 
 //ParseTag gets image tags, fetches information about all images it could from Derpibooru and pushes them into the channel.
 func (imgchan ImageCh) ParseTag() {
 
+	//Unlike main, I don't see how I could separate bits out to decrease complexity
 	source := prefix + "//derpibooru.org/search.json?q=" + opts.Tag //yay hardwiring url strings!
 
 	if opts.Key != "" {
@@ -195,14 +195,14 @@ func (imgchan ImageCh) ParseTag() {
 	log.Println("Searching as", source)
 
 	for i := opts.StartPage; opts.StopPage == 0 || i <= opts.StopPage; i++ {
-		//I suspect that all those returns could be dealt with in some way. But lazy.
 		log.Println("Searching page", i)
 
 		response, err := http.Get(source + "&page=" + strconv.Itoa(i))
-		//Getting our nice http response. Needs checking for 404 and other responses that are... less expected
+		//Getting our nice http response.
 
+		//This error check may be given it's own function, later. Not sure of best way to do it.
 		if err != nil {
-			if _, ok := err.(x509.UnknownAuthorityError); ok && opts.Unsafe {
+			if _, ok := err.(x509.UnknownAuthorityError); ok && opts.Unsafe { //With flag to sidestep outdated root certificates
 				log.Println("Warning: ", err)
 			} else {
 				elog.Println("Error while getting search page", i)
@@ -218,13 +218,9 @@ func (imgchan ImageCh) ParseTag() {
 			}
 		}()
 
-		if !okStatus(response) {
+		if !okHTTPStatus(response) { //Checking that we weren't given crap instead of candy
 			continue
 		}
-
-		var dats Search //Because we got array incoming instead of single object, we using an slive of maps!
-
-		//fmt.Println(resp)
 
 		body, err := ioutil.ReadAll(response.Body) //stolen from official documentation
 		if err != nil {
@@ -233,14 +229,13 @@ func (imgchan ImageCh) ParseTag() {
 			continue
 		}
 
-		//fmt.Println(body)
-
-		err = json.Unmarshal(body, &dats) //transforming json into native slice of maps
+		var dats Search                   //Because we got array incoming instead of single object, we using a slive of maps!
+		err = json.Unmarshal(body, &dats) //transforming json into native view
 
 		if err != nil {
 			elog.Println("Error while parsing search page", i)
 			elog.Println(err)
-			if serr, ok := err.(*json.SyntaxError); ok {
+			if serr, ok := err.(*json.SyntaxError); ok { //In case crap was still given, we are looking at it.
 				log.Println("Occurred at offset:", serr.Offset)
 			}
 			continue
@@ -261,7 +256,7 @@ func (imgchan ImageCh) ParseTag() {
 	close(imgchan)
 }
 
-func okStatus(chk *http.Response) bool {
+func okHTTPStatus(chk *http.Response) bool {
 	switch chk.StatusCode {
 	case http.StatusOK, http.StatusNotModified:
 		return true
