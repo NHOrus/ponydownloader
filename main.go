@@ -96,6 +96,7 @@ func main() {
 
 	log.Println("Starting worker") //It would be funny if worker goroutine does not start
 
+	filterInit(opts)
 	filtimgdat := FilterChannel(imgdat) //see to move it into filter.Filter(inchan, outchan) where all filtration is done
 
 	go filtimgdat.DlImg()
