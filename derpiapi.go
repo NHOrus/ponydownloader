@@ -75,6 +75,10 @@ func (imgchan ImageCh) ParseImg() {
 		}()
 		var dat Image
 
+		if !okStatus(response) {
+			continue
+		}
+
 		body, err := ioutil.ReadAll(response.Body) //stolen from official documentation
 		if err != nil {
 			elog.Println(err)
@@ -148,7 +152,9 @@ func (imgdata Image) saveImage(hasher hash.Hash) { // To not hold all the files 
 			elog.Fatalln("Could  not close server response")
 		}
 	}()
-
+	if !okStatus(response) {
+		return
+	}
 	size, err := io.Copy(output, io.TeeReader(response.Body, hasher)) //	Writing things we got from Derpibooru into the file and into hasher
 	if err != nil {
 		elog.Println("Unable to write image on disk, id ", imgdata.Imgid)
@@ -199,6 +205,10 @@ func (imgchan ImageCh) ParseTag() {
 			}
 		}()
 
+		if !okStatus(response) {
+			continue
+		}
+
 		var dats Search //Because we got array incoming instead of single object, we using an slive of maps!
 
 		//fmt.Println(resp)
@@ -233,4 +243,22 @@ func (imgchan ImageCh) ParseTag() {
 	}
 
 	close(imgchan)
+}
+
+func okStatus(chk *http.Response) bool {
+	switch chk.StatusCode {
+	case http.StatusOK, http.StatusNotModified:
+		return true
+	case http.StatusGatewayTimeout:
+		elog.Println("Gateway timeout: ", chk.Status)
+		return false
+	case http.StatusBadRequest, http.StatusTeapot, http.StatusUnauthorized, http.StatusForbidden, http.StatusNotFound, http.StatusRequestURITooLong, http.StatusExpectationFailed:
+		elog.Println("Incorrect request to server, error ", chk.Status)
+		elog.Println("Possible API changes")
+		return false
+	default:
+		elog.Println("Got something weird from server: ", chk.Status)
+		elog.Println("Continuing anyway")
+		return true
+	}
 }
