@@ -230,6 +230,9 @@ func (imgchan ImageCh) ParseTag() {
 		if err != nil {
 			elog.Println("Error while parsing search page", i)
 			elog.Println(err)
+			if serr, ok := err.(*json.SyntaxError); ok {
+				log.Println("Occurred at offset:", serr.Offset)
+			}
 			continue
 
 		}
