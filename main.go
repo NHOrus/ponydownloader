@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -13,7 +12,6 @@ import (
 
 //Default global variables
 var (
-	elog   *log.Logger //The logger for errors
 	done   chan bool
 	prefix = "https:"
 )
@@ -31,22 +29,20 @@ func init() {
 func main() {
 	fmt.Println("Derpibooru.org Downloader version 0.5.3")
 
-	args, iniopts := configSetup(&opts)
+	SetLog() //Setting up logging of errors
+	lInfo("Program start")
 
-	elog = SetLog() //Setting up logging of errors
+	args, iniopts := configSetup(&opts)
 
 	WriteConfig(iniopts)
 
 	if len(args) != 0 {
-		elog.Println("Too many arguments, skipping following:", args)
+		lErr("Too many arguments, skipping following:", args)
 
 	}
 
 	if len(opts.Args.IDs) == 0 && opts.Tag == "" { //If no arguments after flags and empty/unchanged tag, what we should download? Sane end of line.
-
-		log.SetPrefix("Done at ")                //We can not do this with elog!
-		log.Println("Nothing to download, bye!") //Need to reshuffle flow: now it could end before it starts.
-		os.Exit(0)
+		lDone("Nothing to download, bye!") //Need to reshuffle flow: now it could end before it starts.
 	}
 
 	if opts.NoHTTPS {
@@ -57,7 +53,7 @@ func main() {
 	err := os.MkdirAll(opts.ImageDir, 0755)
 
 	if err != nil { //Execute bit means different thing for directories that for files. And I was stupid.
-		elog.Fatalln(err) //We can not create folder for images, end of line.
+		lFatal(err) //We can not create folder for images, end of line.
 	}
 
 	//	Creating channels to pass info to downloader and to signal job well done
@@ -65,18 +61,18 @@ func main() {
 
 	if opts.Tag == "" { //Because we can put imgid with flags. Why not?
 
-		log.Println("Processing image No", opts.Args.IDs)
+		lInfo("Processing image No", opts.Args.IDs)
 		go imgdat.ParseImg() // Sending imgid to parser. Here validity is our problem
 
 	} else {
 
 		// And here we send tags to getter/parser. Query and JSON validity is mostly server problem
 		// Server response validity is ours
-		log.Println("Processing tags", opts.Tag)
+		lInfo("Processing tags", opts.Tag)
 		go imgdat.ParseTag()
 	}
 
-	log.Println("Starting worker") //It would be funny if worker goroutine does not start
+	lInfo("Starting worker") //It would be funny if worker goroutine does not start
 
 	filterInit(opts)                    //Ining filters based on our given flags
 	filtimgdat := FilterChannel(imgdat) //see to move it into filter.Filter(inchan, outchan) where all filtration is done
@@ -84,10 +80,8 @@ func main() {
 	go filtimgdat.DlImg()
 
 	<-done
-	log.SetPrefix("Done at ")
-	log.Println("Finished")
+	lDone("Finished")
 	//And we are done here! Hooray!
-	return
 }
 
 func configSetup(*Options) ([]string, Options) {
@@ -97,7 +91,7 @@ func configSetup(*Options) ([]string, Options) {
 		default:
 			panic(err)
 		case *os.PathError:
-			fmt.Println("config.ini not found, using defaults")
+			lWarn("config.ini not found, using defaults")
 		}
 	}
 	var iniopts = opts
@@ -113,7 +107,7 @@ func configSetup(*Options) ([]string, Options) {
 			fmt.Println("Use --help to view all available options")
 			os.Exit(0)
 		default:
-			fmt.Printf("Error parsing flags: %s\n", err)
+			lErr("Can't parse flags: %s\n", err)
 			os.Exit(1)
 		}
 	}

@@ -7,6 +7,8 @@ import (
 	"os"
 	"strconv"
 	"text/tabwriter"
+
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 //Options provide program-wide options. At maximum, we got one persistent global and one short-living copy for writing in config file
@@ -27,24 +29,57 @@ type Options struct {
 }
 
 var opts Options
+var (
+	doneLogger *log.Logger
+	infoLogger *log.Logger
+	errLogger  *log.Logger
+	warnLogger *log.Logger
+)
 
 //SetLog sets up logfile as I want it to: Copy to event.log, copy to commandline
-func SetLog() (retlog *log.Logger) {
+//Sometimes you just looks at wider net and feels that you must roll out your own solution
+func SetLog() {
 
-	logfile, err := os.OpenFile("event.log", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644) //file for putting errors into
-
-	if err != nil {
-		panic(err)
+	logfile := &lumberjack.Logger{
+		Filename:   "event.log",
+		MaxSize:    10, // megabytes
+		MaxBackups: 3,
+		MaxAge:     28, //days
 	}
-	//elog - recoverable errors. log - just things that happen
-	retlog = log.New(io.MultiWriter(logfile, os.Stderr), "Errors at ", log.LstdFlags) //Setting stuff for our logging: both errors and events.
 
-	log.SetPrefix("Happens at ")
-	log.SetFlags(log.LstdFlags)
-	log.SetOutput(io.MultiWriter(logfile, os.Stdout)) //we write in file and stdout
-	log.Println("Program start")
+	infoLog := io.MultiWriter(logfile, os.Stdout)
+	errLog := io.MultiWriter(logfile, os.Stderr)
 
-	return
+	doneLogger = log.New(infoLog, "Done at ", log.LstdFlags)
+	infoLogger = log.New(infoLog, "Happened at ", log.LstdFlags)
+	warnLogger = log.New(errLog, "Warning at ", log.LstdFlags|log.Lshortfile)
+	errLogger = log.New(errLog, "Error at ", log.LstdFlags|log.Lshortfile) //Setting stuff for our logging: both errors and events.
+}
+
+//Wrappers for loggers to simplify invocation and don't suffer premade packages
+func lInfo(v ...interface{}) {
+	infoLogger.Println(v...)
+}
+
+func lInfof(format string, v ...interface{}) {
+	infoLogger.Printf(format, v...)
+}
+
+func lDone(v ...interface{}) {
+	doneLogger.Println(v...)
+	os.Exit(0)
+}
+
+func lErr(v ...interface{}) {
+	errLogger.Println(v...)
+}
+
+func lFatal(v ...interface{}) {
+	errLogger.Fatalln(v...)
+}
+
+func lWarn(v ...interface{}) {
+	warnLogger.Println(v...)
 }
 
 //WriteConfig writes default, presumably sensible configuration into file.
@@ -57,7 +92,7 @@ func WriteConfig(iniopts Options) {
 	config, err := os.OpenFile("config.ini", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 
 	if err != nil {
-		elog.Fatalln("Could  not create configuration file")
+		lFatal("Could  not create configuration file")
 		//Need to check if log file is created before config file. Also, work around screams
 		//in case if nor log, nor config file could be created.
 	}
@@ -65,7 +100,7 @@ func WriteConfig(iniopts Options) {
 	defer func() {
 		err = config.Close()
 		if err != nil {
-			elog.Fatalln("Could  not close configuration file")
+			lFatal("Could  not close configuration file")
 		}
 	}()
 
@@ -77,7 +112,7 @@ func WriteConfig(iniopts Options) {
 	err = tb.Flush()
 
 	if err != nil {
-		elog.Fatalln("Could  not write in configuration file")
+		lFatal("Could  not write in configuration file")
 	}
 }
 

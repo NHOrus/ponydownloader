@@ -8,7 +8,6 @@ import (
 	"hash"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -59,14 +58,14 @@ func (imgchan ImageCh) ParseImg() {
 			source = source + "?key=" + opts.Key
 		}
 
-		log.Println("Getting image info at:", source)
+		lInfo("Getting image info at:", source)
 
 		response, err := http.Get(source) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
 		if err != nil {
 			if _, ok := err.(x509.UnknownAuthorityError); ok && opts.Unsafe {
-				log.Println("Warning: ", err)
+				lWarn(err)
 			} else {
-				elog.Println(err)
+				lErr(err)
 				continue
 			}
 		}
@@ -74,7 +73,7 @@ func (imgchan ImageCh) ParseImg() {
 		defer func() {
 			err = response.Body.Close() //and not forgetting to close it when it's done
 			if err != nil {
-				elog.Fatalln("Could  not close server response")
+				lFatal("Could not close server response")
 			}
 		}()
 		var dat Image
@@ -85,14 +84,14 @@ func (imgchan ImageCh) ParseImg() {
 
 		body, err := ioutil.ReadAll(response.Body) //stolen from official documentation
 		if err != nil {
-			elog.Println(err)
+			lErr(err)
 			continue
 		}
 
 		if err := json.Unmarshal(body, &dat); //transforming json into native map
 
 		err != nil {
-			elog.Println(err)
+			lErr(err)
 			continue
 		}
 
@@ -107,18 +106,18 @@ func (imgchan ImageCh) ParseImg() {
 //DlImg reads image data from channel and downloads specified images to disc
 func (imgchan ImageCh) DlImg() {
 
-	log.Println("Worker started; reading channel") //nice notification that we are not forgotten
+	lInfo("Worker started; reading channel") //nice notification that we are not forgotten
 
 	hasher := sha512.New() //checksums will be done in this
 
 	for imgdata := range imgchan {
 
 		if imgdata.Filename == "" {
-			elog.Println("Empty filename. Oops?") //something somewhere had gone wrong, not a cause to die, going to the next image
+			lErr("Empty filename. Oops?") //something somewhere had gone wrong, not a cause to die, going to the next image
 			continue
 		}
 
-		log.Println("Saving as", imgdata.Filename)
+		lInfo("Saving as", imgdata.Filename)
 
 		imgdata.saveImage(hasher)
 
@@ -130,14 +129,14 @@ func (imgdata Image) saveImage(hasher hash.Hash) { // To not hold all the files 
 
 	output, err := os.Create(opts.ImageDir + string(os.PathSeparator) + imgdata.Filename) //And now, THE FILE!
 	if err != err {
-		elog.Println("Error when creating file for image" + strconv.Itoa(imgdata.Imgid))
-		elog.Println(err) //Either we got no permisson or no space, end of line
+		lErr("Error when creating file for image: ", strconv.Itoa(imgdata.Imgid))
+		lErr(err) //Either we got no permisson or no space, end of line
 		return
 	}
 	defer func() {
 		err = output.Close() //Not forgetting to deal with it after completing download
 		if err != nil {
-			elog.Fatalln("Could  not close downloaded file")
+			lFatal("Could  not close downloaded file")
 		}
 	}()
 
@@ -147,17 +146,17 @@ func (imgdata Image) saveImage(hasher hash.Hash) { // To not hold all the files 
 
 	if err != nil {
 		if _, ok := err.(x509.UnknownAuthorityError); ok && opts.Unsafe { //With flag to sidestep outdated root certificates
-			log.Println("Warning: ", err)
+			lInfo("Warning: ", err)
 		} else {
-			elog.Println("Error when getting image", imgdata.Imgid)
-			elog.Println(err)
+			lErr("Error when getting image: ", strconv.Itoa(imgdata.Imgid))
+			lErr(err)
 			return
 		}
 	}
 	defer func() {
 		err = response.Body.Close() //Same, we shall not listen to the void when we finished getting image
 		if err != nil {
-			elog.Fatalln("Could  not close server response")
+			lFatal("Could  not close server response")
 		}
 	}()
 	if !okHTTPStatus(response) {
@@ -165,8 +164,8 @@ func (imgdata Image) saveImage(hasher hash.Hash) { // To not hold all the files 
 	}
 	size, err := io.Copy(output, io.TeeReader(response.Body, hasher)) //	Writing things we got from Derpibooru into the file and into hasher
 	if err != nil {
-		elog.Println("Unable to write image on disk, id ", imgdata.Imgid)
-		elog.Println(err)
+		lErr("Unable to write image on disk, id: ", strconv.Itoa(imgdata.Imgid))
+		lErr(err)
 		return
 	}
 	timed := time.Since(start).Seconds()
@@ -174,12 +173,12 @@ func (imgdata Image) saveImage(hasher hash.Hash) { // To not hold all the files 
 	hash := hex.EncodeToString(hasher.Sum(nil)) //Ah, hexadecimals. It may be easier to convert hex to []byte, but whatever
 
 	if hash != imgdata.Hashval {
-		elog.Println("Hash mismatch, got ", hash, " instead of ", imgdata.Hashval)
+		lWarn("Hash mismatch, got ", hash, " instead of ", imgdata.Hashval)
 	}
 
 	hasher.Reset() //cleanup, so we don't allocate each loop
 
-	log.Printf("Downloaded %d bytes in %.2fs, speed %s/s\n", size, timed, fmtbytes(float64(size)/timed))
+	lInfof("Downloaded %d bytes in %.2fs, speed %s/s\n", size, timed, fmtbytes(float64(size)/timed))
 }
 
 //ParseTag gets image tags, fetches information about all images it could from Derpibooru and pushes them into the channel.
@@ -192,10 +191,10 @@ func (imgchan ImageCh) ParseTag() {
 		source = source + "&key=" + opts.Key
 	}
 
-	log.Println("Searching as", source)
+	lInfo("Searching as", source)
 
 	for i := opts.StartPage; opts.StopPage == 0 || i <= opts.StopPage; i++ {
-		log.Println("Searching page", i)
+		lInfo("Searching page", i)
 
 		response, err := http.Get(source + "&page=" + strconv.Itoa(i))
 		//Getting our nice http response.
@@ -203,10 +202,10 @@ func (imgchan ImageCh) ParseTag() {
 		//This error check may be given it's own function, later. Not sure of best way to do it.
 		if err != nil {
 			if _, ok := err.(x509.UnknownAuthorityError); ok && opts.Unsafe { //With flag to sidestep outdated root certificates
-				log.Println("Warning: ", err)
+				lInfo("Warning: ", err)
 			} else {
-				elog.Println("Error while getting search page", i)
-				elog.Println(err)
+				lErr("Error while getting search page", i)
+				lErr(err)
 				continue
 			}
 		}
@@ -214,7 +213,7 @@ func (imgchan ImageCh) ParseTag() {
 		defer func() {
 			err = response.Body.Close() //and not forgetting to close it when it's done. And before we panic and die horribly.
 			if err != nil {
-				elog.Fatalln("Could  not close server response")
+				lFatal("Could  not close server response")
 			}
 		}()
 
@@ -224,8 +223,8 @@ func (imgchan ImageCh) ParseTag() {
 
 		body, err := ioutil.ReadAll(response.Body) //stolen from official documentation
 		if err != nil {
-			elog.Println("Error while reading search page", i)
-			elog.Println(err)
+			lErr("Error while reading search page", i)
+			lErr(err)
 			continue
 		}
 
@@ -233,17 +232,17 @@ func (imgchan ImageCh) ParseTag() {
 		err = json.Unmarshal(body, &dats) //transforming json into native view
 
 		if err != nil {
-			elog.Println("Error while parsing search page", i)
-			elog.Println(err)
+			lErr("Error while parsing search page", i)
+			lErr(err)
 			if serr, ok := err.(*json.SyntaxError); ok { //In case crap was still given, we are looking at it.
-				log.Println("Occurred at offset:", serr.Offset)
+				lErr("Occurred at offset: ", serr.Offset)
 			}
 			continue
 
 		}
 
 		if len(dats.Images) == 0 {
-			log.Println("Pages are over") //Does not mean that process is over.
+			lInfo("Pages are all over") //Does not mean that process is over.
 			break
 		} //exit due to finishing all pages
 
@@ -266,7 +265,7 @@ func okHTTPStatus(chk *http.Response) bool {
 		http.StatusBadGateway,
 		http.StatusServiceUnavailable,
 		http.StatusHTTPVersionNotSupported:
-		elog.Println("Server error: ", chk.Status)
+		lErr("Server error: ", chk.Status)
 		return false
 	case http.StatusBadRequest,
 		http.StatusTeapot,
@@ -275,12 +274,12 @@ func okHTTPStatus(chk *http.Response) bool {
 		http.StatusNotFound,
 		http.StatusRequestURITooLong,
 		http.StatusExpectationFailed:
-		elog.Println("Incorrect request to server, error ", chk.Status)
-		elog.Println("Possible API changes")
+		lErr("Incorrect request to server, error ", chk.Status)
+		lErr("Possible API changes")
 		return false
 	default:
-		elog.Println("Got something weird from server: ", chk.Status)
-		elog.Println("Continuing anyway")
+		lWarn("Got something weird from server: ", chk.Status)
+		lWarn("Continuing anyway")
 		return true
 	}
 }

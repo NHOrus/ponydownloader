@@ -1,18 +1,16 @@
 package main
 
-import "log"
-
 type filtrator func(ImageCh) ImageCh
 
 var filters []filtrator
 
 func filterInit(opts Options) {
 	if !opts.Filter {
-		log.Println("Filter is off")
+		lInfo("Filter is off")
 		filters = append(filters, nopFilter)
 		return
 	}
-	log.Println("Filter is on")
+	lInfo("Filter is on")
 	filters = append(filters, scoreFilterGenerator(opts))
 }
 
@@ -30,7 +28,7 @@ func scoreFilterGenerator(option Options) filtrator {
 					out <- imgdata
 					continue
 				}
-				log.Println("Filtering " + imgdata.Filename)
+				lInfo("Filtering " + imgdata.Filename)
 			}
 			close(out)
 		}()
