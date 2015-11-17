@@ -37,10 +37,8 @@ type Options struct {
 	} `positional-args:"yes"`
 }
 
-var opts Options
-
 //WriteConfig writes default, presumably sensible configuration into file.
-func WriteConfig(iniopts Settings) {
+func WriteConfig(opts, iniopts Settings) {
 
 	if opts.compareStatic(&iniopts) { //If nothing to write, no double-writing files
 		return
@@ -86,8 +84,8 @@ func (a *Settings) compareStatic(b *Settings) bool {
 //configSetup reads static config from file and runtime options from commandline
 //It also preserves static config for later comparsion with runtime to prevent
 //rewriting it when no changes are made
-func configSetup() ([]string, Settings) {
-	err := flag.IniParse("config.ini", &opts)
+func (opts *Options) configSetup() ([]string, Settings) {
+	err := flag.IniParse("config.ini", opts)
 	if err != nil {
 		switch err.(type) {
 		default:
@@ -98,7 +96,7 @@ func configSetup() ([]string, Settings) {
 	}
 	var iniopts = opts.Settings
 
-	args, err := flag.Parse(&opts)
+	args, err := flag.Parse(opts)
 	if err != nil {
 		flagError := err.(*flag.Error)
 

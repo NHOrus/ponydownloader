@@ -30,9 +30,11 @@ func main() {
 	SetLog() //Setting up logging of errors
 	lInfo("Program start")
 
-	args, iniopts := configSetup()
+	opts := new(Options)
 
-	WriteConfig(iniopts)
+	args, iniopts := opts.configSetup()
+
+	WriteConfig(opts.Settings, iniopts)
 
 	if len(args) != 0 {
 		lErr("Too many arguments, skipping following:", args)
@@ -60,14 +62,14 @@ func main() {
 	if opts.Tag == "" { //Because we can put imgid with flags. Why not?
 
 		lInfo("Processing image No", opts.Args.IDs)
-		go imgdat.ParseImg() // Sending imgid to parser. Here validity is our problem
+		go imgdat.ParseImg(opts.Args.IDs, opts.Key, opts.Unsafe) // Sending imgid to parser. Here validity is our problem
 
 	} else {
 
 		// And here we send tags to getter/parser. Query and JSON validity is mostly server problem
 		// Server response validity is ours
 		lInfo("Processing tags", opts.Tag)
-		go imgdat.ParseTag()
+		go imgdat.ParseTag(opts)
 	}
 
 	lInfo("Starting worker") //It would be funny if worker goroutine does not start
@@ -75,7 +77,7 @@ func main() {
 	filterInit(opts)                    //Ining filters based on our given flags
 	filtimgdat := FilterChannel(imgdat) //see to move it into filter.Filter(inchan, outchan) where all filtration is done
 
-	go filtimgdat.DlImg()
+	go filtimgdat.DlImg(opts)
 
 	<-done
 	lDone("Finished")

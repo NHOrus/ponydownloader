@@ -51,17 +51,17 @@ func (imgchan ImageCh) push(dat Image) {
 }
 
 //ParseImg gets image IDs, fetches information about those images from Derpibooru and pushes them into the channel.
-func (imgchan ImageCh) ParseImg() {
+func (imgchan ImageCh) ParseImg(ids []int, key string, unsafe bool) {
 
-	for _, imgid := range opts.Args.IDs {
+	for _, imgid := range ids {
 		source := prefix + "//derpibooru.org/images/" + strconv.Itoa(imgid) + ".json"
-		if opts.Key != "" {
-			source = source + "?key=" + opts.Key
+		if key != "" {
+			source = source + "?key=" + key
 		}
 
 		lInfo("Getting image info at:", source)
 
-		body, err := getRemoteJSON(source, opts.Unsafe)
+		body, err := getRemoteJSON(source, unsafe)
 		if err != nil {
 			lErr(err)
 			continue
@@ -83,7 +83,7 @@ func (imgchan ImageCh) ParseImg() {
 }
 
 //DlImg reads image data from channel and downloads specified images to disc
-func (imgchan ImageCh) DlImg() {
+func (imgchan ImageCh) DlImg(opts *Options) {
 
 	lInfo("Worker started; reading channel") //nice notification that we are not forgotten
 
@@ -98,13 +98,13 @@ func (imgchan ImageCh) DlImg() {
 
 		lInfo("Saving as", imgdata.Filename)
 
-		imgdata.saveImage(hasher)
+		imgdata.saveImage(hasher, opts)
 
 	}
 	done <- true
 }
 
-func (imgdata Image) saveImage(hasher hash.Hash) { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
+func (imgdata Image) saveImage(hasher hash.Hash, opts *Options) { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
 
 	output, err := os.Create(opts.ImageDir + string(os.PathSeparator) + imgdata.Filename) //And now, THE FILE!
 	if err != err {
@@ -161,7 +161,7 @@ func (imgdata Image) saveImage(hasher hash.Hash) { // To not hold all the files 
 }
 
 //ParseTag gets image tags, fetches information about all images it could from Derpibooru and pushes them into the channel.
-func (imgchan ImageCh) ParseTag() {
+func (imgchan ImageCh) ParseTag(opts *Options) {
 
 	//Unlike main, I don't see how I could separate bits out to decrease complexity
 	source := prefix + "//derpibooru.org/search.json?q=" + opts.Tag //yay hardwiring url strings!

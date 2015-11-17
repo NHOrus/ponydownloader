@@ -4,27 +4,27 @@ type filtrator func(ImageCh) ImageCh
 
 var filters []filtrator
 
-func filterInit(opts Options) {
+func filterInit(opts *Options) {
 	if !opts.Filter {
 		lInfo("Filter is off")
 		filters = append(filters, nopFilter)
 		return
 	}
 	lInfo("Filter is on")
-	filters = append(filters, scoreFilterGenerator(opts))
+	filters = append(filters, scoreFilterGenerator(opts.Score))
 }
 
 func nopFilter(in ImageCh) ImageCh {
 	return in
 }
 
-func scoreFilterGenerator(option Options) filtrator {
+func scoreFilterGenerator(score int) filtrator {
 	return func(in ImageCh) ImageCh {
 		out := make(ImageCh, 1)
 		go func() {
 			for imgdata := range in {
 
-				if imgdata.Score >= option.Score {
+				if imgdata.Score >= score {
 					out <- imgdata
 					continue
 				}
