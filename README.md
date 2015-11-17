@@ -44,7 +44,7 @@ Optional flag `-k` defines API key to use and overrides said key from configurat
 At the moment of writing both samples were working, you would get output looking approximately like quote below and images in default directory `img`
 
 ```
-Derpibooru.org Downloader version 0.5.3
+Derpibooru.org Downloader version 0.6.0
 Happens at 2015/06/12 21:26:23 Program start
 Happens at 2015/06/12 21:26:23 Processing tags princess+luna%2C+safe
 Happens at 2015/06/12 21:26:23 Starting worker

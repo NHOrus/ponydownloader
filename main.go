@@ -27,7 +27,7 @@ func init() {
 }
 
 func main() {
-	fmt.Println("Derpibooru.org Downloader version 0.5.3")
+	fmt.Println("Derpibooru.org Downloader version 0.6.0")
 
 	SetLog() //Setting up logging of errors
 	lInfo("Program start")
