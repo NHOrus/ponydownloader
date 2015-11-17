@@ -30,7 +30,7 @@ func main() {
 	SetLog() //Setting up logging of errors
 	lInfo("Program start")
 
-	args, iniopts := configSetup(&opts)
+	args, iniopts := configSetup()
 
 	WriteConfig(iniopts)
 

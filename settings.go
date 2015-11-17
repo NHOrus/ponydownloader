@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"text/tabwriter"
 
 	flag "github.com/jessevdk/go-flags"
@@ -18,9 +19,9 @@ type Settings struct {
 
 //Flags are runtime boolean flags
 type Flags struct {
-	Filter    bool   `short:"f" long:"filter" description:"If set, enables client-side filtering of downloaded images"`
-	Unsafe    bool   `long:"unsafe" description:"If set, trusts in unknown authority"`
-	NoHTTPS   bool   `long:"nohttps" description:"Disable HTTPS and try to download insecurely"`
+	Filter  bool `no-flag:" " short:"f" long:"filter" description:"If set, enables client-side filtering of downloaded images"`
+	Unsafe  bool `long:"unsafe" description:"If set, trusts in unknown authority"`
+	NoHTTPS bool `long:"nohttps" description:"Disable HTTPS and try to download insecurely"`
 }
 
 //Options provide program-wide options. At maximum, we got one persistent global and one short-living copy for writing in config file
@@ -85,7 +86,7 @@ func (a *Settings) compareStatic(b *Settings) bool {
 //configSetup reads static config from file and runtime options from commandline
 //It also preserves static config for later comparsion with runtime to prevent
 //rewriting it when no changes are made
-func configSetup(*Options) ([]string, Settings) {
+func configSetup() ([]string, Settings) {
 	err := flag.IniParse("config.ini", &opts)
 	if err != nil {
 		switch err.(type) {
@@ -110,6 +111,12 @@ func configSetup(*Options) ([]string, Settings) {
 		default:
 			lErr("Can't parse flags: %s\n", err)
 			os.Exit(1)
+		}
+	}
+
+	for _, arg := range os.Args {
+		if strings.Contains(arg, "--score") {
+			opts.Filter = true
 		}
 	}
 	return args, iniopts
