@@ -97,20 +97,7 @@ func (opts *Options) configSetup() ([]string, Settings) {
 	var iniopts = opts.Settings
 
 	args, err := flag.Parse(opts)
-	if err != nil {
-		flagError := err.(*flag.Error)
-
-		switch flagError.Type {
-		case flag.ErrHelp:
-			fallthrough
-		case flag.ErrUnknownFlag:
-			fmt.Println("Use --help to view all available options")
-			os.Exit(0)
-		default:
-			lErr("Can't parse flags: %s\n", err)
-			os.Exit(1)
-		}
-	}
+	checkFlagError(err)
 
 	for _, arg := range os.Args {
 		if strings.Contains(arg, "--score") {
@@ -120,9 +107,28 @@ func (opts *Options) configSetup() ([]string, Settings) {
 	return args, iniopts
 }
 
-func doOptions() ( opts *Options, args []string){
+func doOptions() (opts *Options, args []string) {
 	opts = new(Options)
 	args, iniopts := opts.configSetup()
 	WriteConfig(opts.Settings, iniopts)
 	return
+}
+
+func checkFlagError(err error) {
+	if err == nil {
+		return
+	}
+
+	flagError := err.(*flag.Error)
+
+	switch flagError.Type {
+	case flag.ErrHelp:
+		fallthrough
+	case flag.ErrUnknownFlag:
+		fmt.Println("Use --help to view all available options")
+		os.Exit(0)
+	default:
+		lErr("Can't parse flags: %s\n", err)
+		os.Exit(1)
+	}
 }
