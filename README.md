@@ -76,7 +76,7 @@ Simple way does not work any more - all the binaries should not be in git repo, 
  cd $GOPATH/src/github.com/NHOrus/ponydownloader
  go build
  cp config.ini.sample config.ini
- // edit in your key into config.ini
+ // edit in your key into config.ini or put it once as command line argument
  // run ponydownloader as explained earlier
 ``` 
 
@@ -92,9 +92,9 @@ config.ini
 ----------
 
 ```config.ini
-key =  //your derpibooru.org key
-downdir = img // in this directory your images would be saved
-queue_depth = 20 // depth of queue of images, waiting for download. 
+key 		=	  // your derpibooru.org key
+downdir 	= img // in this directory your images would be saved
+queue_depth = 20  // depth of queue of images, waiting for download. 
 ``` 
 
 I feel that optimal depth is around 10-20, else there would be slowdown when parser requests next search page from derpibooru and feeds it's content to worker. It depends upon downloading speed and server response time. Ponydownloader downloads search  pages and images simultaneously, one by one.
