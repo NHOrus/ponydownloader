@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -54,9 +55,9 @@ func lErr(v ...interface{}) {
 }
 
 func lFatal(v ...interface{}) {
-	errLogger.Fatalln(v...)
+	errLogger.Output(2, fmt.Sprintln(v...))
 }
 
 func lWarn(v ...interface{}) {
-	warnLogger.Println(v...)
+	warnLogger.Output(2, fmt.Sprintln(v...))
 }
