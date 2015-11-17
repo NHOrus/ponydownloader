@@ -10,7 +10,6 @@ import (
 
 //Default global variables
 var (
-	done   chan bool
 	prefix = "https:"
 )
 
@@ -21,7 +20,6 @@ func init() {
 		time.Sleep(5 * time.Second)
 		os.Exit(1)
 	}
-	done = make(chan bool)
 }
 
 func main() {
@@ -73,9 +71,8 @@ func main() {
 	filterInit(opts)                    //Ining filters based on our given flags
 	filtimgdat := FilterChannel(imgdat) //see to move it into filter.Filter(inchan, outchan) where all filtration is done
 
-	go filtimgdat.DlImg(opts)
+	filtimgdat.DlImg(opts) // Now that we got asynchronous list of images we want to get done, we can get them.
 
-	<-done
 	lDone("Finished")
 	//And we are done here! Hooray!
 }

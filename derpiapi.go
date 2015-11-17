@@ -101,7 +101,6 @@ func (imgchan ImageCh) DlImg(opts *Options) {
 		imgdata.saveImage(hasher, opts)
 
 	}
-	done <- true
 }
 
 func (imgdata Image) saveImage(hasher hash.Hash, opts *Options) { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
