@@ -55,9 +55,9 @@ func lErr(v ...interface{}) {
 }
 
 func lFatal(v ...interface{}) {
-	errLogger.Output(2, fmt.Sprintln(v...))
+	_ = errLogger.Output(2, fmt.Sprintln(v...)) //Following log package, ignoring error value
 }
 
 func lWarn(v ...interface{}) {
-	warnLogger.Output(2, fmt.Sprintln(v...))
+	_ = warnLogger.Output(2, fmt.Sprintln(v...)) ////Following log package, ignoring error value
 }
