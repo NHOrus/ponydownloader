@@ -83,7 +83,7 @@ func (imgchan ImageCh) ParseImg(ids []int, key string, unsafe bool) {
 }
 
 //DlImg reads image data from channel and downloads specified images to disc
-func (imgchan ImageCh) DlImg(opts *Options) {
+func (imgchan ImageCh) DlImg(opts *Settings, unsafe bool) {
 
 	lInfo("Worker started; reading channel") //nice notification that we are not forgotten
 
@@ -98,12 +98,12 @@ func (imgchan ImageCh) DlImg(opts *Options) {
 
 		lInfo("Saving as", imgdata.Filename)
 
-		imgdata.saveImage(hasher, opts)
+		imgdata.saveImage(hasher, opts, unsafe)
 
 	}
 }
 
-func (imgdata Image) saveImage(hasher hash.Hash, opts *Options) { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
+func (imgdata Image) saveImage(hasher hash.Hash, opts *Settings, unsafe bool) { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
 
 	output, err := os.Create(opts.ImageDir + string(os.PathSeparator) + imgdata.Filename) //And now, THE FILE!
 	if err != err {
@@ -123,7 +123,7 @@ func (imgdata Image) saveImage(hasher hash.Hash, opts *Options) { // To not hold
 	response, err := http.Get(imgdata.URL)
 
 	if err != nil {
-		if _, ok := err.(x509.UnknownAuthorityError); ok && opts.Unsafe { //With flag to sidestep outdated root certificates
+		if _, ok := err.(x509.UnknownAuthorityError); ok && unsafe { //With flag to sidestep outdated root certificates
 			lInfo("Warning: ", err)
 		} else {
 			lErr("Error when getting image: ", strconv.Itoa(imgdata.Imgid))
@@ -160,13 +160,13 @@ func (imgdata Image) saveImage(hasher hash.Hash, opts *Options) { // To not hold
 }
 
 //ParseTag gets image tags, fetches information about all images it could from Derpibooru and pushes them into the channel.
-func (imgchan ImageCh) ParseTag(opts *Options) {
+func (imgchan ImageCh) ParseTag(opts *TagOpts, key string, unsafe bool) {
 
 	//Unlike main, I don't see how I could separate bits out to decrease complexity
 	source := prefix + "//derpibooru.org/search.json?q=" + opts.Tag //yay hardwiring url strings!
 
-	if opts.Key != "" {
-		source = source + "&key=" + opts.Key
+	if key != "" {
+		source = source + "&key=" + key
 	}
 
 	lInfo("Searching as", source)
@@ -174,7 +174,7 @@ func (imgchan ImageCh) ParseTag(opts *Options) {
 	for i := opts.StartPage; opts.StopPage == 0 || i <= opts.StopPage; i++ {
 		lInfo("Searching page", i)
 
-		body, err := getRemoteJSON(source+"&page="+strconv.Itoa(i), opts.Unsafe)
+		body, err := getRemoteJSON(source+"&page="+strconv.Itoa(i), unsafe)
 		if err != nil {
 			lErr("Error while json from page ", i)
 			lErr(err)

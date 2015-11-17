@@ -67,15 +67,15 @@ func main() {
 		// And here we send tags to getter/parser. Query and JSON validity is mostly server problem
 		// Server response validity is ours
 		lInfo("Processing tags", opts.Tag)
-		go imgdat.ParseTag(opts)
+		go imgdat.ParseTag(opts.TagOpts, opts.Key, opts.Unsafe)
 	}
 
 	lInfo("Starting worker") //It would be funny if worker goroutine does not start
 
-	filterInit(opts)                    //Initiating filters based on our given flags
+	filterInit(opts.FiltOpts)           //Initiating filters based on our given flags
 	filtimgdat := FilterChannel(imgdat) //Actual filtration
 
-	filtimgdat.DlImg(opts) // Now that we got asynchronous list of images we want to get done, we can get them.
+	filtimgdat.DlImg(opts.Settings, opts.Unsafe) // Now that we got asynchronous list of images we want to get done, we can get them.
 
 	lDone("Finished")
 	//And we are done here! Hooray!

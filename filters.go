@@ -5,7 +5,7 @@ type filtrator func(ImageCh) ImageCh
 var filters []filtrator
 
 //If filter isn't on, skip. If any of filter parameters is given, filtration is on
-func filterInit(opts *Options) {
+func filterInit(opts *FiltOpts) {
 	if !opts.Filter {
 		lInfo("Filter is off")
 		filters = append(filters, nopFilter) //First class function and array of them
