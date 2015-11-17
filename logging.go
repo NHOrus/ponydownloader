@@ -41,6 +41,7 @@ func SetLog() {
 func lInfo(v ...interface{}) {
 	infoLogger.Println(v...)
 }
+
 //lInfof logs generic program flow with ability to format string beyond defaults
 //Used only to note downloading speed and timing
 func lInfof(format string, v ...interface{}) {
@@ -57,6 +58,7 @@ func lDone(v ...interface{}) {
 func lErr(v ...interface{}) {
 	errLogger.Println(v...)
 }
+
 //lFatal happens when suffer some kind of error and we can't recover
 func lFatal(v ...interface{}) {
 	_ = errLogger.Output(2, fmt.Sprintln(v...)) //Following log package, ignoring error value
