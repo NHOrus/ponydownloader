@@ -6,8 +6,6 @@ import (
 	"time"
 
 	"github.com/inconshreveable/mousetrap"
-
-	flag "github.com/jessevdk/go-flags"
 )
 
 //Default global variables
@@ -82,34 +80,4 @@ func main() {
 	<-done
 	lDone("Finished")
 	//And we are done here! Hooray!
-}
-
-func configSetup(*Options) ([]string, Options) {
-	err := flag.IniParse("config.ini", &opts)
-	if err != nil {
-		switch err.(type) {
-		default:
-			panic(err)
-		case *os.PathError:
-			lWarn("config.ini not found, using defaults")
-		}
-	}
-	var iniopts = opts
-
-	args, err := flag.Parse(&opts)
-	if err != nil {
-		flagError := err.(*flag.Error)
-
-		switch flagError.Type {
-		case flag.ErrHelp:
-			fallthrough
-		case flag.ErrUnknownFlag:
-			fmt.Println("Use --help to view all available options")
-			os.Exit(0)
-		default:
-			lErr("Can't parse flags: %s\n", err)
-			os.Exit(1)
-		}
-	}
-	return args, iniopts
 }

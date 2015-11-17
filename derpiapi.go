@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"hash"
 	"io"
 	"io/ioutil"
@@ -60,34 +61,12 @@ func (imgchan ImageCh) ParseImg() {
 
 		lInfo("Getting image info at:", source)
 
-		response, err := http.Get(source) //Getting our nice http response. Needs checking for 404 and other responses that are... less expected
-		if err != nil {
-			if _, ok := err.(x509.UnknownAuthorityError); ok && opts.Unsafe {
-				lWarn(err)
-			} else {
-				lErr(err)
-				continue
-			}
-		}
-
-		defer func() {
-			err = response.Body.Close() //and not forgetting to close it when it's done
-			if err != nil {
-				lFatal("Could not close server response")
-			}
-		}()
-		var dat Image
-
-		if !okHTTPStatus(response) {
-			continue
-		}
-
-		body, err := ioutil.ReadAll(response.Body) //stolen from official documentation
+		body, err := getRemoteJSON(source, opts.Unsafe)
 		if err != nil {
 			lErr(err)
 			continue
 		}
-
+		var dat Image
 		if err := json.Unmarshal(body, &dat); //transforming json into native map
 
 		err != nil {
@@ -196,34 +175,9 @@ func (imgchan ImageCh) ParseTag() {
 	for i := opts.StartPage; opts.StopPage == 0 || i <= opts.StopPage; i++ {
 		lInfo("Searching page", i)
 
-		response, err := http.Get(source + "&page=" + strconv.Itoa(i))
-		//Getting our nice http response.
-
-		//This error check may be given it's own function, later. Not sure of best way to do it.
+		body, err := getRemoteJSON(source+"&page="+strconv.Itoa(i), opts.Unsafe)
 		if err != nil {
-			if _, ok := err.(x509.UnknownAuthorityError); ok && opts.Unsafe { //With flag to sidestep outdated root certificates
-				lInfo("Warning: ", err)
-			} else {
-				lErr("Error while getting search page", i)
-				lErr(err)
-				continue
-			}
-		}
-
-		defer func() {
-			err = response.Body.Close() //and not forgetting to close it when it's done. And before we panic and die horribly.
-			if err != nil {
-				lFatal("Could  not close server response")
-			}
-		}()
-
-		if !okHTTPStatus(response) { //Checking that we weren't given crap instead of candy
-			continue
-		}
-
-		body, err := ioutil.ReadAll(response.Body) //stolen from official documentation
-		if err != nil {
-			lErr("Error while reading search page", i)
+			lErr("Error while json from page ", i)
 			lErr(err)
 			continue
 		}
@@ -282,4 +236,36 @@ func okHTTPStatus(chk *http.Response) bool {
 		lWarn("Continuing anyway")
 		return true
 	}
+}
+
+func getRemoteJSON(source string, unsafe bool) (body []byte, err error) {
+	response, err := http.Get(source)
+	//Getting our nice http response.
+
+	//This error check may be given it's own function, later. Not sure of best way to do it.
+	if err != nil {
+		if _, ok := err.(x509.UnknownAuthorityError); ok && unsafe { //With flag to sidestep outdated root certificates
+			lInfo("Warning: ", err)
+		} else {
+			return nil, err
+		}
+	}
+
+	defer func() {
+		err = response.Body.Close() //and not forgetting to close it when it's done. And before we panic and die horribly.
+		if err != nil {
+			lFatal("Could  not close server response")
+		}
+	}()
+
+	if !okHTTPStatus(response) { //Checking that we weren't given crap instead of candy
+		return nil, errors.New("Incorrect server response")
+	}
+
+	body, err = ioutil.ReadAll(response.Body) //stolen from official documentation
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
 }

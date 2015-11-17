@@ -5,6 +5,8 @@ import (
 	"os"
 	"strconv"
 	"text/tabwriter"
+
+	flag "github.com/jessevdk/go-flags"
 )
 
 //Options provide program-wide options. At maximum, we got one persistent global and one short-living copy for writing in config file
@@ -68,4 +70,37 @@ func (a *Options) compareStatic(b *Options) bool {
 		return true
 	}
 	return false
+}
+
+//configSetup reads static config from file and runtime options from commandline
+//It also preserves static config for later comparsion with runtime to prevent
+//rewriting it when no changes are made
+func configSetup(*Options) ([]string, Options) {
+	err := flag.IniParse("config.ini", &opts)
+	if err != nil {
+		switch err.(type) {
+		default:
+			panic(err)
+		case *os.PathError:
+			lWarn("config.ini not found, using defaults")
+		}
+	}
+	var iniopts = opts
+
+	args, err := flag.Parse(&opts)
+	if err != nil {
+		flagError := err.(*flag.Error)
+
+		switch flagError.Type {
+		case flag.ErrHelp:
+			fallthrough
+		case flag.ErrUnknownFlag:
+			fmt.Println("Use --help to view all available options")
+			os.Exit(0)
+		default:
+			lErr("Can't parse flags: %s\n", err)
+			os.Exit(1)
+		}
+	}
+	return args, iniopts
 }
