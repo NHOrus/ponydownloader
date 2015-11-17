@@ -27,20 +27,20 @@ func main() {
 
 	SetLog() //Setting up logging of errors
 
-	opts, args := doOptions()
-	
+	opts, lostArgs := doOptions()
+
 	lInfo("Program start")
-	if len(args) != 0 {
-		lErr("Too many arguments, skipping following:", args)
-
+	// Checking for extra arguments we got no idea what to do with
+	if len(lostArgs) != 0 {
+		lErr("Too many arguments, skipping following:", lostArgs)
 	}
-
-	if len(opts.Args.IDs) == 0 && opts.Tag == "" { //If no arguments after flags and empty/unchanged tag, what we should download? Sane end of line.
-		lDone("Nothing to download, bye!") //Need to reshuffle flow: now it could end before it starts.
+	//If no arguments after flags and empty/unchanged tag, what we should download? Sane end of line.
+	if len(opts.Args.IDs) == 0 && opts.Tag == "" {
+		lDone("Nothing to download, bye!")
 	}
 
 	if opts.NoHTTPS {
-		prefix = "http:" //Horrible cludge that must be removed in favor of url.URL.Scheme
+		prefix = "http:" //Horrible kludge that must be removed in favor of url.URL.Scheme
 	}
 
 	//Creating directory for downloads if it does not yet exist
@@ -51,12 +51,16 @@ func main() {
 	}
 
 	//	Creating channels to pass info to downloader and to signal job well done
-	imgdat := make(ImageCh, opts.QDepth) //Better leave default queue depth. Experiment shown that depth about 20 provides optimal perfomance on my system
+	imgdat := make(ImageCh, opts.QDepth) //Better leave default queue depth. Experiment shown that depth about 20 provides optimal performance on my system
 
-	if opts.Tag == "" { //Because we can put imgid with flags. Why not?
+	if opts.Tag == "" { //Because we can put Image ID with flags. Why not?
 
-		lInfo("Processing image No", opts.Args.IDs)
-		go imgdat.ParseImg(opts.Args.IDs, opts.Key, opts.Unsafe) // Sending imgid to parser. Here validity is our problem
+		if len(opts.Args.IDs) == 1 {
+			lInfo("Processing image №", opts.Args.IDs)
+		} else {
+			lInfo("Processing images №", opts.Args.IDs)
+		}
+		go imgdat.ParseImg(opts.Args.IDs, opts.Key, opts.Unsafe) // Sending Image ID to parser. Here validity is our problem
 
 	} else {
 
@@ -68,8 +72,8 @@ func main() {
 
 	lInfo("Starting worker") //It would be funny if worker goroutine does not start
 
-	filterInit(opts)                    //Ining filters based on our given flags
-	filtimgdat := FilterChannel(imgdat) //see to move it into filter.Filter(inchan, outchan) where all filtration is done
+	filterInit(opts)                    //Initiating filters based on our given flags
+	filtimgdat := FilterChannel(imgdat) //Actual filtration
 
 	filtimgdat.DlImg(opts) // Now that we got asynchronous list of images we want to get done, we can get them.
 

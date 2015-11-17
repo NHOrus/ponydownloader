@@ -39,25 +39,27 @@ Optional flag `-k` defines API key to use and overrides said key from configurat
 
 #### Complex usage example:
 ```bash
-./ponydownloader -f --score 15 -p 3 -n 7 -t princess+luna%2C+safe
+./ponydownloader -f --score 50 -p 3 -n 7 -t princess+luna%2C+safe
 ```
 At the moment of writing both samples were working, you would get output looking approximately like quote below and images in default directory `img`
 
 ```
 Derpibooru.org Downloader version 0.6.0
-Happens at 2015/06/12 21:26:23 Program start
-Happens at 2015/06/12 21:26:23 Processing tags princess+luna%2C+safe
-Happens at 2015/06/12 21:26:23 Starting worker
-Happens at 2015/06/12 21:26:23 Searching as https://derpibooru.org/search.json?&q=princess+luna%2C+safe
-Happens at 2015/06/12 21:26:23 Searching page 3
-Happens at 2015/06/12 21:26:23 Worker started; reading channel
-Happens at 2015/06/12 21:26:23 Saving as 912564.png
-Happens at 2015/06/12 21:26:24 Downloaded 336821 bytes in 0.28s, speed 1.15 MiB/s
-Happens at 2015/06/12 21:26:24 Saving as 912535.jpeg
-Happens at 2015/06/12 21:26:24 Downloaded 133826 bytes in 0.41s, speed 321.54 KiB/s
-Happens at 2015/06/12 21:26:24 Saving as 912526.png
-Happens at 2015/06/12 21:26:24 Downloaded 311033 bytes in 0.43s, speed 701.77 KiB/s
-
+Happened at 2015/11/17 16:08:28 Program start
+Happened at 2015/11/17 16:08:28 Processing tags princess+luna%2C+safe
+Happened at 2015/11/17 16:08:28 Starting worker
+Happened at 2015/11/17 16:08:28 Filter is on
+Happened at 2015/11/17 16:08:28 Worker started; reading channel
+Happened at 2015/11/17 16:08:28 Searching as https://derpibooru.org/search.json?q=princess+luna%2C+safe
+Happened at 2015/11/17 16:08:28 Searching page 3
+Happened at 2015/11/17 16:08:28 Filtering 1020863.jpeg
+Happened at 2015/11/17 16:08:28 Saving as 1020830.png
+Happened at 2015/11/17 16:08:29 Downloaded 1634245 bytes in 0.88s, speed 1.76 MiB/s
+Happened at 2015/11/17 16:08:29 Saving as 1020688.png
+Happened at 2015/11/17 16:08:29 Downloaded 95298 bytes in 0.06s, speed 1.58 MiB/s
+Happened at 2015/11/17 16:08:29 Saving as 1020684.png
+Happened at 2015/11/17 16:08:29 Downloaded 117766 bytes in 0.06s, speed 1.92 MiB/s
+Happened at 2015/11/17 16:08:29 Saving as 1020682.png
 ...
 ```
 
@@ -67,9 +69,11 @@ There are two way to install this program: definitely working/developer way and 
 
 ##### Path of less resistance.
 
-Simple way does not work any more - all the binaries should not be in git repo, removed completely.
+If you trust me, Github Releases should contain latest release version, [here](https://github.com/NHOrus/ponydownloader/releases) Copy ponydownloader-*your_os*-*your_architecture* in a folder you want to run it from or somewhere in your path. Enjoy. You may need to pass correct values of target directory for downloads and your API key through CLI or config.ini
 
-##### Path of more compilation (*NIX, console)
+Binaries may be outdated. My cross-compilation system may work not as well as intended. Binaries may be malicious, knowingly or unknowingly.
+
+##### Path of more compilation (any system with Go installed, console)
 
 ```
  go get -d git@github.com:NHOrus/ponydownloader.git

@@ -128,7 +128,6 @@ func checkFlagError(err error) {
 		fmt.Println("Use --help to view all available options")
 		os.Exit(0)
 	default:
-		lErr("Can't parse flags: %s\n", err)
-		os.Exit(1)
+		lFatal("Can't parse flags: %s\n", err)
 	}
 }

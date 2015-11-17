@@ -11,7 +11,7 @@ const (
 	MiB         = 1024 * 1024
 	GiB         = 1024 * 1024 * 1024
 	TiB         = 1024 * 1024 * 1024 * 1024
-	PiB         = 1024 * 1024 * 1024 * 1024 * 1024 //This may be too futureproof
+	PiB         = 1024 * 1024 * 1024 * 1024 * 1024 //This may be too future-proof
 )
 
 func fmtbytes(b float64) string {

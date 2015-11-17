@@ -16,8 +16,8 @@ var (
 	warnLogger *log.Logger
 )
 
-//SetLog sets up logfile as I want it to: Copy to event.log, copy to commandline
-//Sometimes you just looks at wider net and feels that you must roll out your own solution
+//SetLog sets up logfile as I want it to: Copy to event.log, copy to command line
+//Sometimes you just looks at available packages and feels that you must roll out your own solution
 func SetLog() {
 
 	logfile := &lumberjack.Logger{
@@ -37,27 +37,33 @@ func SetLog() {
 }
 
 //Wrappers for loggers to simplify invocation and don't suffer premade packages
+//lInfo logs generic necessary program flow
 func lInfo(v ...interface{}) {
 	infoLogger.Println(v...)
 }
-
+//lInfof logs generic program flow with ability to format string beyond defaults
+//Used only to note downloading speed and timing
 func lInfof(format string, v ...interface{}) {
 	infoLogger.Printf(format, v...)
 }
 
+//lDone notes that we are finished and there is nothing left to do, sane way
 func lDone(v ...interface{}) {
 	doneLogger.Println(v...)
 	os.Exit(0)
 }
 
+//lErr notes non-fatal error and usually continues trying to crunch on
 func lErr(v ...interface{}) {
 	errLogger.Println(v...)
 }
-
+//lFatal happens when suffer some kind of error and we can't recover
 func lFatal(v ...interface{}) {
 	_ = errLogger.Output(2, fmt.Sprintln(v...)) //Following log package, ignoring error value
+	os.Exit(1)
 }
 
+//lWarn is when there is no noticeable error, but something suspicious still happed
 func lWarn(v ...interface{}) {
 	_ = warnLogger.Output(2, fmt.Sprintln(v...)) ////Following log package, ignoring error value
 }
