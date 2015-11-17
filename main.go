@@ -28,14 +28,10 @@ func main() {
 	fmt.Println("Derpibooru.org Downloader version 0.6.0")
 
 	SetLog() //Setting up logging of errors
+
+	opts, args := doOptions()
+	
 	lInfo("Program start")
-
-	opts := new(Options)
-
-	args, iniopts := opts.configSetup()
-
-	WriteConfig(opts.Settings, iniopts)
-
 	if len(args) != 0 {
 		lErr("Too many arguments, skipping following:", args)
 

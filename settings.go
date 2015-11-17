@@ -119,3 +119,10 @@ func (opts *Options) configSetup() ([]string, Settings) {
 	}
 	return args, iniopts
 }
+
+func doOptions() ( opts *Options, args []string){
+	opts = new(Options)
+	args, iniopts := opts.configSetup()
+	WriteConfig(opts.Settings, iniopts)
+	return
+}
