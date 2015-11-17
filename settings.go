@@ -9,18 +9,28 @@ import (
 	flag "github.com/jessevdk/go-flags"
 )
 
-//Options provide program-wide options. At maximum, we got one persistent global and one short-living copy for writing in config file
-type Options struct {
-	ImageDir  string `long:"dir" description:"Target Directory" default:"img" ini-name:"downdir"`
-	QDepth    int    `short:"q" long:"queue" description:"Length of the queue buffer" default:"20" ini-name:"queue_depth"`
-	Tag       string `short:"t" long:"tag" description:"Tag to download"`
-	Key       string `short:"k" long:"key" description:"Derpibooru API key" ini-name:"key"`
-	StartPage int    `short:"p" long:"startpage" description:"Starting page for search" default:"1"`
-	StopPage  int    `short:"n" long:"stoppage" description:"Stopping page for search, default - parse all search pages"`
+//Settings are concrete and stored in configuration file
+type Settings struct {
+	ImageDir string `long:"dir" description:"Target Directory" default:"img" ini-name:"downdir"`
+	QDepth   int    `short:"q" long:"queue" description:"Length of the queue buffer" default:"20" ini-name:"queue_depth"`
+	Key      string `short:"k" long:"key" description:"Derpibooru API key" ini-name:"key"`
+}
+
+//Flags are runtime boolean flags
+type Flags struct {
 	Filter    bool   `short:"f" long:"filter" description:"If set, enables client-side filtering of downloaded images"`
-	Score     int    `long:"score" description:"Filter option, minimal score of image for it to be downloaded"`
 	Unsafe    bool   `long:"unsafe" description:"If set, trusts in unknown authority"`
 	NoHTTPS   bool   `long:"nohttps" description:"Disable HTTPS and try to download insecurely"`
+}
+
+//Options provide program-wide options. At maximum, we got one persistent global and one short-living copy for writing in config file
+type Options struct {
+	Settings
+	Flags
+	Tag       string `short:"t" long:"tag" description:"Tag to download"`
+	StartPage int    `short:"p" long:"startpage" description:"Starting page for search" default:"1"`
+	StopPage  int    `short:"n" long:"stoppage" description:"Stopping page for search, default - parse all search pages"`
+	Score     int    `long:"score" description:"Filter option, minimal score of image for it to be downloaded"`
 	Args      struct {
 		IDs []int `description:"Image IDs to download" optional:"yes"`
 	} `positional-args:"yes"`
@@ -29,7 +39,7 @@ type Options struct {
 var opts Options
 
 //WriteConfig writes default, presumably sensible configuration into file.
-func WriteConfig(iniopts Options) {
+func WriteConfig(iniopts Settings) {
 
 	if opts.compareStatic(&iniopts) { //If nothing to write, no double-writing files
 		return
@@ -63,7 +73,7 @@ func WriteConfig(iniopts Options) {
 }
 
 //compareStatic compares only options I want to preserve across launches.
-func (a *Options) compareStatic(b *Options) bool {
+func (a *Settings) compareStatic(b *Settings) bool {
 	if a.ImageDir == b.ImageDir &&
 		a.QDepth == b.QDepth &&
 		a.Key == b.Key {
@@ -75,7 +85,7 @@ func (a *Options) compareStatic(b *Options) bool {
 //configSetup reads static config from file and runtime options from commandline
 //It also preserves static config for later comparsion with runtime to prevent
 //rewriting it when no changes are made
-func configSetup(*Options) ([]string, Options) {
+func configSetup(*Options) ([]string, Settings) {
 	err := flag.IniParse("config.ini", &opts)
 	if err != nil {
 		switch err.(type) {
@@ -85,7 +95,7 @@ func configSetup(*Options) ([]string, Options) {
 			lWarn("config.ini not found, using defaults")
 		}
 	}
-	var iniopts = opts
+	var iniopts = opts.Settings
 
 	args, err := flag.Parse(&opts)
 	if err != nil {
