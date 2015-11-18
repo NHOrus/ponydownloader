@@ -43,6 +43,9 @@ func main() {
 		prefix = "http:" //Horrible kludge that must be removed in favor of url.URL.Scheme
 	}
 
+	if opts.UnsafeHTTPS {
+		makeHTTPSUnsafe()
+	}
 	//Creating directory for downloads if it does not yet exist
 	err := os.MkdirAll(opts.ImageDir, 0755)
 

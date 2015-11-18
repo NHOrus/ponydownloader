@@ -20,7 +20,8 @@ type Settings struct {
 
 //FlagOpts are runtime boolean flags
 type FlagOpts struct {
-	NoHTTPS bool `long:"nohttps" description:"Disable HTTPS and try to download insecurely"`
+	NoHTTPS     bool `long:"nohttps" description:"Disable HTTPS and try to download insecurely"`
+	UnsafeHTTPS bool `long:"unsafe-https" description:"Disable HTTPS security verification"`
 }
 
 //FiltOpts are filtration parameters

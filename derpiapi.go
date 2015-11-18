@@ -1,17 +1,19 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"os"
 	"path"
 	"strconv"
 	"strings"
 	"time"
-//	"github.com/davecgh/go-spew/spew"
+	//	"github.com/davecgh/go-spew/spew"
 )
 
 //Image contains data we got from API that we are using to filter and fetch said image next
@@ -131,7 +133,7 @@ func (imgdata Image) saveImage(opts *Settings) { // To not hold all the files op
 	if !okHTTPStatus(response) {
 		return
 	}
-	
+
 	size, err := io.Copy(output, response.Body) //
 	if err != nil {
 		lErr("Unable to write image on disk, id: ", strconv.Itoa(imgdata.Imgid))
@@ -263,4 +265,16 @@ func getRemoteJSON(source string) (body []byte, err error) {
 	}
 
 	return body, nil
+}
+
+func makeHTTPSUnsafe() {
+	http.DefaultClient.Transport = &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		Dial: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+		}).Dial,
+		TLSHandshakeTimeout: 10 * time.Second,
+		TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
+	}
 }
