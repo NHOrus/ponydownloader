@@ -130,6 +130,7 @@ func (imgdata Image) saveImage(opts *Settings) { // To not hold all the files op
 	if !okHTTPStatus(response) {
 		return
 	}
+
 	size, err := io.Copy(output, response.Body) //
 	if err != nil {
 		lErr("Unable to write image on disk, id: ", strconv.Itoa(imgdata.Imgid))
@@ -139,6 +140,15 @@ func (imgdata Image) saveImage(opts *Settings) { // To not hold all the files op
 	timed := time.Since(start).Seconds()
 
 	lInfof("Downloaded %d bytes in %.2fs, speed %s/s\n", size, timed, fmtbytes(float64(size)/timed))
+
+	expsize, err := strconv.ParseInt(response.Header["Content-Length"][0], 10, 64)
+	if err != nil {
+		lErr("Unable to get expected filesize")
+		return
+	}
+	if expsize != size {
+		lErr("Unable to download full image")
+	}
 }
 
 //ParseTag gets image tags, fetches information about all images it could from Derpibooru and pushes them into the channel.
