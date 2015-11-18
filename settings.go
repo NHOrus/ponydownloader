@@ -113,7 +113,7 @@ func (opts *Options) configSetup() ([]string, *Settings) {
 			lWarn("config.ini not found, using defaults")
 		}
 	}
-	var iniopts = opts.Settings
+	inisets := *opts.Settings
 
 	args, err := flag.Parse(opts)
 	checkFlagError(err)
@@ -123,7 +123,7 @@ func (opts *Options) configSetup() ([]string, *Settings) {
 			opts.Filter = true
 		}
 	}
-	return args, iniopts
+	return args, &inisets
 }
 
 func getOptions() (opts *Options, args []string) {
