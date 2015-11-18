@@ -20,7 +20,6 @@ type Settings struct {
 
 //FlagOpts are runtime boolean flags
 type FlagOpts struct {
-	Unsafe  bool `long:"unsafe" description:"If set, trusts in unknown authority"`
 	NoHTTPS bool `long:"nohttps" description:"Disable HTTPS and try to download insecurely"`
 }
 

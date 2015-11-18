@@ -2,7 +2,6 @@ package main
 
 import (
 	"crypto/sha512"
-	"crypto/x509"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -51,7 +50,7 @@ func (imgchan ImageCh) push(dat Image) {
 }
 
 //ParseImg gets image IDs, fetches information about those images from Derpibooru and pushes them into the channel.
-func (imgchan ImageCh) ParseImg(ids []int, key string, unsafe bool) {
+func (imgchan ImageCh) ParseImg(ids []int, key string) {
 
 	for _, imgid := range ids {
 		source := prefix + "//derpibooru.org/images/" + strconv.Itoa(imgid) + ".json"
@@ -61,7 +60,7 @@ func (imgchan ImageCh) ParseImg(ids []int, key string, unsafe bool) {
 
 		lInfo("Getting image info at:", source)
 
-		body, err := getRemoteJSON(source, unsafe)
+		body, err := getRemoteJSON(source)
 		if err != nil {
 			lErr(err)
 			continue
@@ -83,7 +82,7 @@ func (imgchan ImageCh) ParseImg(ids []int, key string, unsafe bool) {
 }
 
 //DlImg reads image data from channel and downloads specified images to disc
-func (imgchan ImageCh) DlImg(opts *Settings, unsafe bool) {
+func (imgchan ImageCh) DlImg(opts *Settings) {
 
 	lInfo("Worker started; reading channel") //nice notification that we are not forgotten
 
@@ -98,12 +97,12 @@ func (imgchan ImageCh) DlImg(opts *Settings, unsafe bool) {
 
 		lInfo("Saving as", imgdata.Filename)
 
-		imgdata.saveImage(hasher, opts, unsafe)
+		imgdata.saveImage(hasher, opts)
 
 	}
 }
 
-func (imgdata Image) saveImage(hasher hash.Hash, opts *Settings, unsafe bool) { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
+func (imgdata Image) saveImage(hasher hash.Hash, opts *Settings) { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
 
 	output, err := os.Create(opts.ImageDir + string(os.PathSeparator) + imgdata.Filename) //And now, THE FILE!
 	if err != err {
@@ -123,13 +122,9 @@ func (imgdata Image) saveImage(hasher hash.Hash, opts *Settings, unsafe bool) { 
 	response, err := http.Get(imgdata.URL)
 
 	if err != nil {
-		if _, ok := err.(x509.UnknownAuthorityError); ok && unsafe { //With flag to sidestep outdated root certificates
-			lInfo("Warning: ", err)
-		} else {
-			lErr("Error when getting image: ", strconv.Itoa(imgdata.Imgid))
-			lErr(err)
-			return
-		}
+		lErr("Error when getting image: ", strconv.Itoa(imgdata.Imgid))
+		lErr(err)
+		return
 	}
 	defer func() {
 		err = response.Body.Close() //Same, we shall not listen to the void when we finished getting image
@@ -160,7 +155,7 @@ func (imgdata Image) saveImage(hasher hash.Hash, opts *Settings, unsafe bool) { 
 }
 
 //ParseTag gets image tags, fetches information about all images it could from Derpibooru and pushes them into the channel.
-func (imgchan ImageCh) ParseTag(opts *TagOpts, key string, unsafe bool) {
+func (imgchan ImageCh) ParseTag(opts *TagOpts, key string) {
 
 	//Unlike main, I don't see how I could separate bits out to decrease complexity
 	source := prefix + "//derpibooru.org/search.json?q=" + opts.Tag //yay hardwiring url strings!
@@ -174,7 +169,7 @@ func (imgchan ImageCh) ParseTag(opts *TagOpts, key string, unsafe bool) {
 	for i := opts.StartPage; opts.StopPage == 0 || i <= opts.StopPage; i++ {
 		lInfo("Searching page", i)
 
-		body, err := getRemoteJSON(source+"&page="+strconv.Itoa(i), unsafe)
+		body, err := getRemoteJSON(source + "&page=" + strconv.Itoa(i))
 		if err != nil {
 			lErr("Error while json from page ", i)
 			lErr(err)
@@ -237,17 +232,14 @@ func okHTTPStatus(chk *http.Response) bool {
 	}
 }
 
-func getRemoteJSON(source string, unsafe bool) (body []byte, err error) {
+func getRemoteJSON(source string) (body []byte, err error) {
 	response, err := http.Get(source)
 	//Getting our nice http response.
 
 	//This error check may be given it's own function, later. Not sure of best way to do it.
 	if err != nil {
-		if _, ok := err.(x509.UnknownAuthorityError); ok && unsafe { //With flag to sidestep outdated root certificates
-			lInfo("Warning: ", err)
-		} else {
-			return nil, err
-		}
+		return nil, err
+
 	}
 
 	defer func() {
