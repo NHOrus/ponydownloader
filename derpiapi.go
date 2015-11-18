@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -35,7 +36,7 @@ type ImageCh chan Image
 //would be processed in other places
 func (imgchan ImageCh) push(dat Image) {
 	dat.Filename = strconv.Itoa(dat.Imgid) + "." + dat.OriginalFormat
-	dat.URL = prefix + dat.URL
+	dat.URL = prefix + "/" + path.Dir(dat.URL) + "/" + dat.Filename
 	if dat.OriginalFormat == "svg" {
 		i := strings.LastIndex(dat.URL, ".")
 		if i != -1 {
@@ -78,7 +79,7 @@ func (imgchan ImageCh) ParseImg(ids []int, key string) {
 }
 
 //DlImg reads image data from channel and downloads specified images to disc
-func (imgchan ImageCh) DlImg(opts *Settings) {
+func (imgchan ImageCh) downloadImages(opts *Settings) {
 
 	lInfo("Worker started; reading channel") //nice notification that we are not forgotten
 
