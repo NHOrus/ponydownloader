@@ -48,10 +48,16 @@ type Options struct {
 	} `positional-args:"yes"`
 }
 
-//WriteConfig writes default, presumably sensible configuration into file.
-func (sets *Settings) WriteConfig(oldsets *Settings) {
+func getOptions() (opts *Options, args []string) {
+	opts = new(Options)
+	args, inisets := opts.configSetup()
+	opts.Settings.checkedWriteIni(inisets)
+	return
+}
 
-	if sets.compareStatic(oldsets) { //If nothing to write, no double-writing files
+//checkedWriteIni writes default, presumably sensible configuration into file without overwriting old one if unchanged
+func (sets *Settings) checkedWriteIni(oldsets *Settings) {
+	if sets.isEqual(oldsets) { //If nothing to write, no double-writing files
 		return
 	}
 
@@ -59,8 +65,6 @@ func (sets *Settings) WriteConfig(oldsets *Settings) {
 
 	if err != nil {
 		lFatal("Could  not create configuration file")
-		//Need to check if log file is created before config file. Also, work around screams
-		//in case if nor log, nor config file could be created.
 	}
 
 	defer func() {
@@ -77,6 +81,7 @@ func (sets *Settings) WriteConfig(oldsets *Settings) {
 	}
 }
 
+//prettyWriteIni Uses tabwriter to make pretty ini file with
 func (sets Settings) prettyWriteIni(inifile io.Writer) error {
 	tb := tabwriter.NewWriter(inifile, 10, 8, 0, ' ', 0) //Tabs! Elastic! Pretty!
 
@@ -88,7 +93,7 @@ func (sets Settings) prettyWriteIni(inifile io.Writer) error {
 }
 
 //compareStatic compares only options I want to preserve across launches.
-func (sets *Settings) compareStatic(b *Settings) bool {
+func (sets *Settings) isEqual(b *Settings) bool {
 	if b == nil {
 		return false
 	}
@@ -108,15 +113,15 @@ func (opts *Options) configSetup() ([]string, *Settings) {
 	if err != nil {
 		switch err.(type) {
 		default:
-			panic(err)
+			lFatal(err)
 		case *os.PathError:
 			lWarn("config.ini not found, using defaults")
 		}
 	}
-	inisets := *opts.Settings
+	inisets := *opts.Settings //copy value instead of reference - or we will get no results later
 
 	args, err := flag.Parse(opts)
-	checkFlagError(err)
+	checkFlagError(err) //Here we scream if something goes wrong and provide help if something goes meh.
 
 	for _, arg := range os.Args {
 		if strings.Contains(arg, "--score") {
@@ -124,13 +129,6 @@ func (opts *Options) configSetup() ([]string, *Settings) {
 		}
 	}
 	return args, &inisets
-}
-
-func getOptions() (opts *Options, args []string) {
-	opts = new(Options)
-	args, inisets := opts.configSetup()
-	opts.Settings.WriteConfig(inisets)
-	return
 }
 
 func checkFlagError(err error) {
@@ -142,7 +140,7 @@ func checkFlagError(err error) {
 
 	switch flagError.Type {
 	case flag.ErrHelp:
-		fallthrough
+		os.Exit(0) //Why fall through when asked for help? Just exit with suggestion
 	case flag.ErrUnknownFlag:
 		fmt.Println("Use --help to view all available options")
 		os.Exit(0)
