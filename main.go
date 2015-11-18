@@ -27,7 +27,7 @@ func main() {
 
 	SetLog() //Setting up logging of errors
 
-	opts, lostArgs := doOptions()
+	opts, lostArgs := getOptions()
 
 	lInfo("Program start")
 	// Checking for extra arguments we got no idea what to do with

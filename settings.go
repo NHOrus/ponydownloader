@@ -70,7 +70,7 @@ func (sets *Settings) WriteConfig(oldsets *Settings) {
 		}
 	}()
 
-	sets.prettyWriteIni(inifile)
+	err = sets.prettyWriteIni(inifile)
 
 	if err != nil {
 		lFatal("Could  not write in configuration file")
@@ -79,7 +79,7 @@ func (sets *Settings) WriteConfig(oldsets *Settings) {
 
 func (sets Settings) prettyWriteIni(inifile io.Writer) error {
 	tb := tabwriter.NewWriter(inifile, 10, 8, 0, ' ', 0) //Tabs! Elastic! Pretty!
-	
+
 	fmt.Fprintf(tb, "key \t= %s\n", sets.Key)
 	fmt.Fprintf(tb, "queue_depth \t= %s\n", strconv.Itoa(sets.QDepth))
 	fmt.Fprintf(tb, "downdir \t= %s\n", sets.ImageDir)
@@ -88,10 +88,13 @@ func (sets Settings) prettyWriteIni(inifile io.Writer) error {
 }
 
 //compareStatic compares only options I want to preserve across launches.
-func (opts *Settings) compareStatic(b *Settings) bool {
-	if opts.ImageDir == b.ImageDir &&
-		opts.QDepth == b.QDepth &&
-		opts.Key == b.Key {
+func (sets *Settings) compareStatic(b *Settings) bool {
+	if b == nil {
+		return false
+	}
+	if sets.ImageDir == b.ImageDir &&
+		sets.QDepth == b.QDepth &&
+		sets.Key == b.Key {
 		return true
 	}
 	return false
@@ -123,10 +126,10 @@ func (opts *Options) configSetup() ([]string, *Settings) {
 	return args, iniopts
 }
 
-func doOptions() (opts *Options, args []string) {
+func getOptions() (opts *Options, args []string) {
 	opts = new(Options)
-	args, iniopts := opts.configSetup()
-	opts.Settings.WriteConfig(iniopts)
+	args, inisets := opts.configSetup()
+	opts.Settings.WriteConfig(inisets)
 	return
 }
 
