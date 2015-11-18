@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -54,7 +55,7 @@ func (sets *Settings) WriteConfig(oldsets *Settings) {
 		return
 	}
 
-	config, err := os.OpenFile("config.ini", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	inifile, err := os.OpenFile("config.ini", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 
 	if err != nil {
 		lFatal("Could  not create configuration file")
@@ -63,29 +64,34 @@ func (sets *Settings) WriteConfig(oldsets *Settings) {
 	}
 
 	defer func() {
-		err = config.Close()
+		err = inifile.Close()
 		if err != nil {
 			lFatal("Could  not close configuration file")
 		}
 	}()
 
-	tb := tabwriter.NewWriter(config, 10, 8, 0, ' ', 0) //Tabs! Elastic! Pretty!
-	fmt.Fprintf(tb, "key \t= %s\n", sets.Key)
-	fmt.Fprintf(tb, "queue_depth \t= %s\n", strconv.Itoa(sets.QDepth))
-	fmt.Fprintf(tb, "downdir \t= %s\n", sets.ImageDir)
-
-	err = tb.Flush()
+	sets.prettyWriteIni(inifile)
 
 	if err != nil {
 		lFatal("Could  not write in configuration file")
 	}
 }
 
+func (sets Settings) prettyWriteIni(inifile io.Writer) error {
+	tb := tabwriter.NewWriter(inifile, 10, 8, 0, ' ', 0) //Tabs! Elastic! Pretty!
+	
+	fmt.Fprintf(tb, "key \t= %s\n", sets.Key)
+	fmt.Fprintf(tb, "queue_depth \t= %s\n", strconv.Itoa(sets.QDepth))
+	fmt.Fprintf(tb, "downdir \t= %s\n", sets.ImageDir)
+
+	return tb.Flush()
+}
+
 //compareStatic compares only options I want to preserve across launches.
-func (a *Settings) compareStatic(b *Settings) bool {
-	if a.ImageDir == b.ImageDir &&
-		a.QDepth == b.QDepth &&
-		a.Key == b.Key {
+func (opts *Settings) compareStatic(b *Settings) bool {
+	if opts.ImageDir == b.ImageDir &&
+		opts.QDepth == b.QDepth &&
+		opts.Key == b.Key {
 		return true
 	}
 	return false
