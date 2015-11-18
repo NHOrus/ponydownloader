@@ -1,11 +1,8 @@
 package main
 
 import (
-	"crypto/sha512"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"hash"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -22,7 +19,6 @@ type Image struct {
 	Filename       string
 	Score          int    `json:"score"`
 	OriginalFormat string `json:"original_format"`
-	Hashval        string `json:"sha512_hash"`
 }
 
 //Search returns to us array of searched images...
@@ -86,8 +82,6 @@ func (imgchan ImageCh) DlImg(opts *Settings) {
 
 	lInfo("Worker started; reading channel") //nice notification that we are not forgotten
 
-	hasher := sha512.New() //checksums will be done in this
-
 	for imgdata := range imgchan {
 
 		if imgdata.Filename == "" {
@@ -97,12 +91,12 @@ func (imgchan ImageCh) DlImg(opts *Settings) {
 
 		lInfo("Saving as", imgdata.Filename)
 
-		imgdata.saveImage(hasher, opts)
+		imgdata.saveImage(opts)
 
 	}
 }
 
-func (imgdata Image) saveImage(hasher hash.Hash, opts *Settings) { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
+func (imgdata Image) saveImage(opts *Settings) { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
 
 	output, err := os.Create(opts.ImageDir + string(os.PathSeparator) + imgdata.Filename) //And now, THE FILE!
 	if err != err {
@@ -135,21 +129,13 @@ func (imgdata Image) saveImage(hasher hash.Hash, opts *Settings) { // To not hol
 	if !okHTTPStatus(response) {
 		return
 	}
-	size, err := io.Copy(output, io.TeeReader(response.Body, hasher)) //	Writing things we got from Derpibooru into the file and into hasher
+	size, err := io.Copy(output, response.Body) //
 	if err != nil {
 		lErr("Unable to write image on disk, id: ", strconv.Itoa(imgdata.Imgid))
 		lErr(err)
 		return
 	}
 	timed := time.Since(start).Seconds()
-
-	hash := hex.EncodeToString(hasher.Sum(nil)) //Ah, hexadecimals. It may be easier to convert hex to []byte, but whatever
-
-	if hash != imgdata.Hashval {
-		lWarn("Hash mismatch, got ", hash, " instead of ", imgdata.Hashval)
-	}
-
-	hasher.Reset() //cleanup, so we don't allocate each loop
 
 	lInfof("Downloaded %d bytes in %.2fs, speed %s/s\n", size, timed, fmtbytes(float64(size)/timed))
 }
