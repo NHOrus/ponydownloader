@@ -59,9 +59,9 @@ func main() {
 	if opts.Tag == "" { //Because we can put Image ID with flags. Why not?
 
 		if len(opts.Args.IDs) == 1 {
-			lInfo("Processing image №", opts.Args.IDs)
+			lInfo("Processing image №", opts.Args.IDs[0])
 		} else {
-			lInfo("Processing images №", opts.Args.IDs)
+			lInfo("Processing images №", debracket(opts.Args.IDs))
 		}
 		go imgdat.ParseImg(opts.Args.IDs, opts.Key) // Sending Image ID to parser. Here validity is our problem
 
