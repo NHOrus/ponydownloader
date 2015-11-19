@@ -3,7 +3,7 @@ package main
 import (
 	"crypto/tls"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net"
@@ -256,7 +256,7 @@ func getRemoteJSON(source string) (body []byte, err error) {
 	}()
 
 	if !okHTTPStatus(response) { //Checking that we weren't given crap instead of candy
-		return nil, errors.New("Incorrect server response")
+		return nil, fmt.Errorf("Incorrect server response")
 	}
 
 	body, err = ioutil.ReadAll(response.Body) //stolen from official documentation
