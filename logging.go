@@ -58,6 +58,7 @@ var lErr = errLogger.Println
 var lFatal = errLogger.Fatal
 
 //lWarn is when there is no noticeable error, but something suspicious still happed
+
 var lWarn = warnLogger.Println
 
 //prettifying return, so brackets will go away
