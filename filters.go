@@ -22,7 +22,7 @@ func nopFilter(in ImageCh) ImageCh {
 
 func scoreFilterGenerator(score int) filtrator {
 	return func(in ImageCh) ImageCh {
-		out := make(ImageCh, 1) //minimal buffer, so nothing should grind to a halt, hopefully, when image is consumed
+		out := make(ImageCh)
 		go func() {
 			for imgdata := range in {
 
