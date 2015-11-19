@@ -78,7 +78,7 @@ func main() {
 	filterInit(opts.FiltOpts)           //Initiating filters based on our given flags
 	filtimgdat := FilterChannel(imgdat) //Actual filtration
 
-	filtimgdat.downloadImages(opts.Settings) // Now that we got asynchronous list of images we want to get done, we can get them.
+	filtimgdat.downloadImages(opts.Config) // Now that we got asynchronous list of images we want to get done, we can get them.
 
 	lDone("Finished")
 	//And we are done here! Hooray!

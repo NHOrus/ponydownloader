@@ -82,7 +82,7 @@ func (imgchan ImageCh) ParseImg(ids []int, key string) {
 }
 
 //DlImg reads image data from channel and downloads specified images to disc
-func (imgchan ImageCh) downloadImages(opts *Settings) {
+func (imgchan ImageCh) downloadImages(opts *Config) {
 
 	lInfo("Worker started; reading channel") //nice notification that we are not forgotten
 
@@ -100,7 +100,7 @@ func (imgchan ImageCh) downloadImages(opts *Settings) {
 	}
 }
 
-func (imgdata Image) saveImage(opts *Settings) { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
+func (imgdata Image) saveImage(opts *Config) { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
 
 	output, err := os.Create(opts.ImageDir + string(os.PathSeparator) + imgdata.Filename) //And now, THE FILE!
 	if err != err {

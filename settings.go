@@ -11,8 +11,8 @@ import (
 	flag "github.com/jessevdk/go-flags"
 )
 
-//Settings are concrete and stored in configuration file
-type Settings struct {
+//Config are concrete and stored in configuration file
+type Config struct {
 	ImageDir string `long:"dir" description:"Target Directory" default:"img" ini-name:"downdir"`
 	QDepth   int    `short:"q" long:"queue" description:"Length of the queue buffer" default:"20" ini-name:"queue_depth"`
 	Key      string `short:"k" long:"key" description:"Derpibooru API key" ini-name:"key"`
@@ -39,7 +39,7 @@ type TagOpts struct {
 
 //Options provide program-wide options. At maximum, we got one persistent global and one short-living copy for writing in config file
 type Options struct {
-	*Settings
+	*Config
 	*FlagOpts
 	*FiltOpts
 	*TagOpts
@@ -50,13 +50,16 @@ type Options struct {
 
 func getOptions() (opts *Options, args []string) {
 	opts = new(Options)
-	args, inisets := opts.configSetup()
-	opts.Settings.checkedWriteIni(inisets)
+	args, inisets := opts.Setup()
+	opts.Config.checkedWriteIni(inisets)
 	return
 }
 
-//checkedWriteIni writes default, presumably sensible configuration into file without overwriting old one if unchanged
-func (sets *Settings) checkedWriteIni(oldsets *Settings) {
+//checkedWriteIni writes configuration into file without overwriting old one if unchanged
+//As i totally forgot how it does so if configuration file is empty:
+//nil and zero values and emtpy strings get overwritten by defaults when reading command line
+//as old values are now different, defaults got written into the file
+func (sets *Config) checkedWriteIni(oldsets *Config) {
 	if sets.isEqual(oldsets) { //If nothing to write, no double-writing files
 		return
 	}
@@ -82,18 +85,18 @@ func (sets *Settings) checkedWriteIni(oldsets *Settings) {
 }
 
 //prettyWriteIni Uses tabwriter to make pretty ini file with
-func (sets Settings) prettyWriteIni(inifile io.Writer) error {
+func (sets *Config) prettyWriteIni(inifile io.Writer) error {
 	tb := tabwriter.NewWriter(inifile, 10, 8, 0, ' ', 0) //Tabs! Elastic! Pretty!
 
 	fmt.Fprintf(tb, "key \t= %s\n", sets.Key)
 	fmt.Fprintf(tb, "queue_depth \t= %s\n", strconv.Itoa(sets.QDepth))
 	fmt.Fprintf(tb, "downdir \t= %s\n", sets.ImageDir)
 
-	return tb.Flush()
+	return tb.Flush() //Returns and passes error upstairs
 }
 
 //compareStatic compares only options I want to preserve across launches.
-func (sets *Settings) isEqual(b *Settings) bool {
+func (sets *Config) isEqual(b *Config) bool {
 	if b == nil {
 		return false
 	}
@@ -105,10 +108,10 @@ func (sets *Settings) isEqual(b *Settings) bool {
 	return false
 }
 
-//configSetup reads static config from file and runtime options from commandline
+//Setup reads static config from file and runtime options from commandline
 //It also preserves static config for later comparsion with runtime to prevent
 //rewriting it when no changes are made
-func (opts *Options) configSetup() ([]string, *Settings) {
+func (opts *Options) Setup() ([]string, *Config) {
 	err := flag.IniParse("config.ini", opts)
 	if err != nil {
 		switch err.(type) {
@@ -118,7 +121,7 @@ func (opts *Options) configSetup() ([]string, *Settings) {
 			lWarn("config.ini not found, using defaults")
 		}
 	}
-	inisets := *opts.Settings //copy value instead of reference - or we will get no results later
+	inisets := *opts.Config //copy value instead of reference - or we will get no results later
 
 	args, err := flag.Parse(opts)
 	checkFlagError(err) //Here we scream if something goes wrong and provide help if something goes meh.
