@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -39,11 +40,15 @@ func SetLog() {
 
 //Wrappers for loggers to simplify invocation and don't suffer premade packages
 //lInfo logs generic necessary program flow
-var lInfo = infoLogger.Println
+func lInfo(v ...interface{}) {
+	infoLogger.Println(v...)
+}
 
 //lInfof logs generic program flow with ability to format string beyond defaults
 //Used only to note downloading speed and timing
-var lInfof = infoLogger.Printf
+func lInfof(format string, v ...interface{}) {
+	infoLogger.Printf(format, v...)
+}
 
 //lDone notes that we are finished and there is nothing left to do, sane way
 func lDone(v ...interface{}) {
@@ -52,14 +57,17 @@ func lDone(v ...interface{}) {
 }
 
 //lErr notes non-fatal error and usually continues trying to crunch on
-var lErr = errLogger.Println
+func lErr(v ...interface{}) {
+	errLogger.Println(v...)
+}
 
 //lFatal happens when suffer some kind of error and we can't recover
-var lFatal = errLogger.Fatal
+func lFatal(v ...interface{}) {
+	_ = errLogger.Output(2, fmt.Sprintln(v...)) //Following log package, ignoring error value
+	os.Exit(1)
+}
 
 //lWarn is when there is no noticeable error, but something suspicious still happed
-
-var lWarn = warnLogger.Println
 
 //prettifying return, so brackets will go away
 func debracket(slice []int) string {
@@ -68,4 +76,8 @@ func debracket(slice []int) string {
 		stringSlice[idx] = strconv.Itoa(num)
 	}
 	return strings.Join(stringSlice, ", ")
+}
+
+func lWarn(v ...interface{}) {
+	_ = warnLogger.Output(2, fmt.Sprintln(v...)) ////Following log package, ignoring error value
 }
