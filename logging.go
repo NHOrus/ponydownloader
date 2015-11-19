@@ -20,7 +20,7 @@ var (
 
 //SetLog sets up logfile as I want it to: Copy to event.log, copy to command line
 //Sometimes you just looks at available packages and feels that you must roll out your own solution
-func SetLog() {
+func init() {
 
 	logfile := &lumberjack.Logger{
 		Filename:   "event.log",

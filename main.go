@@ -25,8 +25,6 @@ func init() {
 func main() {
 	fmt.Println("Derpibooru.org Downloader version 0.6.0")
 
-	SetLog() //Setting up logging of errors
-
 	opts, lostArgs := getOptions()
 
 	lInfo("Program start")
