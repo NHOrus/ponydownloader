@@ -115,7 +115,7 @@ func checkUserResponse() bool {
 	var response string
 	for i := 0; i < 10; i++ {
 		time.Sleep(3 * time.Second)
-		n, err := fmt.Scanln(&response)
+		n, _ := fmt.Scanln(&response)
 		r := strings.ToLower(response)
 		if n != 1 {
 			continue
