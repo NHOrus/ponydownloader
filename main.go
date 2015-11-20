@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/signal"
 	"time"
 
 	"github.com/inconshreveable/mousetrap"
@@ -76,8 +77,36 @@ func main() {
 	filterInit(opts.FiltOpts)           //Initiating filters based on our given flags
 	filtimgdat := FilterChannel(imgdat) //Actual filtration
 
-	filtimgdat.downloadImages(opts.Config) // Now that we got asynchronous list of images we want to get done, we can get them.
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt)
+
+	filtimgdat.dispatch(sig).downloadImages(opts.Config) // Now that we got asynchronous list of images we want to get done, we can get them.
 
 	lDone("Finished")
 	//And we are done here! Hooray!
+}
+
+func (imgchan ImageCh) dispatch(sig <-chan os.Signal) (outch ImageCh) {
+	outch = make(ImageCh)
+	go func() {
+		for {
+			select {
+			case <-sig:
+				close(outch)
+				<-sig
+				lDone("Download interrupted by user's command")
+			default:
+				select {
+				case img, ok := <-imgchan:
+					if !ok {
+						close(outch)
+						imgchan = nil
+						break
+					}
+					outch <- img
+				}
+			}
+		}
+	}()
+	return outch
 }
