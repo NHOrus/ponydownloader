@@ -88,25 +88,27 @@ func main() {
 
 func (imgchan ImageCh) dispatch(sig <-chan os.Signal) (outch ImageCh) {
 	outch = make(ImageCh)
-	go func() {
-		for {
+	go imgchan.dispatcher(sig, outch)
+	return outch
+}
+
+func (imgchan ImageCh) dispatcher(sig <-chan os.Signal, outch ImageCh) {
+	for {
+		select {
+		case <-sig:
+			close(outch)
+			<-sig
+			lDone("Download interrupted by user's command")
+		default:
 			select {
-			case <-sig:
-				close(outch)
-				<-sig
-				lDone("Download interrupted by user's command")
-			default:
-				select {
-				case img, ok := <-imgchan:
-					if !ok {
-						close(outch)
-						imgchan = nil
-						break
-					}
-					outch <- img
+			case img, ok := <-imgchan:
+				if !ok {
+					close(outch)
+					imgchan = nil
+					return
 				}
+				outch <- img
 			}
 		}
-	}()
-	return outch
+	}
 }
