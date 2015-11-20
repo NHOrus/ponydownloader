@@ -79,7 +79,7 @@ func (imgchan ImageCh) ParseImg(ids []int, key string) {
 func (imgchan ImageCh) downloadImages(opts *Config) {
 
 	lInfo("Worker started; reading channel") //nice notification that we are not forgotten
-
+	var n, size int
 	for imgdata := range imgchan {
 
 		if imgdata.Filename == "" {
@@ -89,12 +89,13 @@ func (imgchan ImageCh) downloadImages(opts *Config) {
 
 		lInfo("Saving as", imgdata.Filename)
 
-		imgdata.saveImage(opts)
-
+		size += imgdata.saveImage(opts)
+		n++
 	}
+	lInfof("Downloaded %d images, for a total of %s", n, fmtbytes(float64(size)))
 }
 
-func (imgdata Image) saveImage(opts *Config) { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
+func (imgdata Image) saveImage(opts *Config) (size int) { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
 
 	output, err := os.Create(opts.ImageDir + string(os.PathSeparator) + imgdata.Filename) //And now, THE FILE!
 	if err != err {
@@ -119,7 +120,7 @@ func (imgdata Image) saveImage(opts *Config) { // To not hold all the files open
 		return
 	}
 
-	size, err := output.Write(body) //
+	size, err = output.Write(body) //
 	if err != nil {
 		lErr("Unable to write image on disk, id: ", strconv.Itoa(imgdata.Imgid))
 		lErr(err)
@@ -142,7 +143,9 @@ func (imgdata Image) saveImage(opts *Config) { // To not hold all the files open
 	}
 	if expsize != size {
 		lErr("Unable to download full image")
+		return 0
 	}
+	return
 }
 
 //ParseTag gets image tags, fetches information about all images it could from Derpibooru and pushes them into the channel.
