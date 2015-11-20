@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -117,24 +116,15 @@ func (imgdata Image) saveImage(opts *Config) { // To not hold all the files open
 
 	start := time.Now() //timing download time. We can't begin it sooner, not sure if we can begin it later
 
-	response, err := http.Get(imgdata.URL)
+	body, header, err := getImage(imgdata.URL)
 
 	if err != nil {
 		lErr("Error when getting image: ", strconv.Itoa(imgdata.Imgid))
 		lErr(err)
 		return
 	}
-	defer func() {
-		err = response.Body.Close() //Same, we shall not listen to the void when we finished getting image
-		if err != nil {
-			lFatal("Could  not close server response")
-		}
-	}()
-	if !okHTTPStatus(response) {
-		return
-	}
 
-	size, err := io.Copy(output, response.Body) //
+	size, err := output.Write(body) //
 	if err != nil {
 		lErr("Unable to write image on disk, id: ", strconv.Itoa(imgdata.Imgid))
 		lErr(err)
@@ -144,13 +134,13 @@ func (imgdata Image) saveImage(opts *Config) { // To not hold all the files open
 
 	lInfof("Downloaded %d bytes in %.2fs, speed %s/s\n", size, timed, fmtbytes(float64(size)/timed))
 
-	sizestring, prs := response.Header["Content-Length"]
+	sizestring, prs := header["Content-Length"]
 	if !prs {
 		lErr("Filesize not provided")
 		return
 	}
 
-	expsize, err := strconv.ParseInt(sizestring[0], 10, 64)
+	expsize, err := strconv.Atoi(sizestring[0])
 	if err != nil {
 		lErr("Unable to get expected filesize")
 		return
@@ -277,4 +267,28 @@ func makeHTTPSUnsafe() {
 		TLSHandshakeTimeout: 10 * time.Second,
 		TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
 	}
+}
+
+func getImage(source string) ([]byte, http.Header, error) {
+	response, err := http.Get(source)
+	if err != nil {
+		return nil, nil, err
+
+	}
+	defer func() {
+		err = response.Body.Close() //Same, we shall not listen to the void when we finished getting image
+		if err != nil {
+			lFatal("Could  not close server response")
+		}
+	}()
+	if !okHTTPStatus(response) {
+		return nil, nil, fmt.Errorf("Incorrect server response")
+	}
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return body, response.Header, err
 }
