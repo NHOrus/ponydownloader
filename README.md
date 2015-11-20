@@ -27,10 +27,11 @@ To download all images with desired flag , invoke `ponydownloader -t <flag>`
 
 One can manipulate start and stop pages for limiting amount of downloaded images or skipping images already present: `-p <star page>` `-n <stop page>` . Due to concurrent design of ponydownloader and insufficient documentation of Derpibooru API, queue may contain more images that response page from site and images ponydownloader currently saves may be from significantly earlier that page program declares as one being processed.
 
-To filter images one need to explicitly declare desire to do so by setting up flag `-filter` and then declare parameter and it's value.
-Currently only filter available is filter by score: `--score <minimal score to accept`
+Currently only filter available is filter by score: `--score ` then minimal score to accept.
 
 Optional flag `-k` defines API key to use and overrides said key from configuration file. Key in configuration file gets rewritten. Derpibooru provides significant capability to exclude undesirable images server-side and API key allows one to switch from default settings to currently selected personal rule. One of the way to get API key is to look at your [account settings](https://derpibooru.org/users/edit)
+
+Full list of flags returned by `--help` command
 
 #### Simple usage example:
 ```bash
