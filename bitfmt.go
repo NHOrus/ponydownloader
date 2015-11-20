@@ -6,11 +6,12 @@ import (
 
 //Binary byte sizes of common values
 const (
-	KiB float64 = 1024
-	MiB         = 1024 * 1024
-	GiB         = 1024 * 1024 * 1024
-	TiB         = 1024 * 1024 * 1024 * 1024
-	PiB         = 1024 * 1024 * 1024 * 1024 * 1024 //This may be too future-proof
+	_           = iota
+	KiB float64 = 1 << (10 * iota)
+	MiB
+	GiB
+	TiB
+	PiB
 )
 
 func fmtbytes(b float64) string {
