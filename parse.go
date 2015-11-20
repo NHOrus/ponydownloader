@@ -24,6 +24,17 @@ type Search struct {
 	Images []Image `json:"search"`
 }
 
+func (imgdata *Image) isDeepEqual(b Image) bool {
+	if b.Imgid == imgdata.Imgid &&
+		b.URL == imgdata.URL &&
+		b.Filename == imgdata.Filename &&
+		b.Score == imgdata.Score &&
+		b.OriginalFormat == imgdata.OriginalFormat {
+		return true
+	}
+	return false
+}
+
 //ImageCh is a channel of image data. You can put images into channel by parsing
 //Derpibooru API by id(s) or  by tags and you can download images that are already
 //in channel
