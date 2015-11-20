@@ -1,4 +1,3 @@
-// bitfmt.go
 package main
 
 import (
