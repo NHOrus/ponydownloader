@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -92,6 +93,13 @@ func okHTTPStatus(chk *http.Response) bool {
 }
 
 func makeHTTPSUnsafe() {
+	lWarn("Disabling HTTPS trust check is unsafe and may lead to your data being monitored, stolen or falsified by third party")
+	lWarn("Are you really want to continue? [Yes/No]")
+	if !checkUserResponse() {
+		lInfo("Continuing in safe mode")
+		return
+	}
+	lWarn("Continuing in unsafe mode")
 	http.DefaultClient.Transport = &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		Dial: (&net.Dialer{
@@ -101,4 +109,25 @@ func makeHTTPSUnsafe() {
 		TLSHandshakeTimeout: 10 * time.Second,
 		TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
 	}
+}
+
+func checkUserResponse() bool {
+	var response string
+	for i := 0; i < 10; i++ {
+		time.Sleep(3 * time.Second)
+		n, err := fmt.Scanln(&response)
+		r := strings.ToLower(response)
+		if n != 1 {
+			continue
+		}
+		if r == "y" || r == "yes" {
+			return true
+		}
+		if r == "n" || r == "no" {
+			return false
+		}
+
+	}
+	return false
+
 }
