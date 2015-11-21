@@ -27,7 +27,9 @@ To download all images with desired flag , invoke `ponydownloader -t <flag>`
 
 One can manipulate start and stop pages for limiting amount of downloaded images or skipping images already present: `-p <star page>` `-n <stop page>` . Due to concurrent design of ponydownloader and insufficient documentation of Derpibooru API, queue may contain more images that response page from site and images ponydownloader currently saves may be from significantly earlier that page program declares as one being processed.
 
-Currently only filter available is filter by score: `--score ` then minimal score to accept.
+Currently filters available are:
+-  filter by score: `--score ` then minimal score to accept.
+-  filter by favorites: `--faves ` then minimal number of people who favored the to accept.
 
 Optional flag `-k` defines API key to use and overrides said key from configuration file. Key in configuration file gets rewritten. Derpibooru provides significant capability to exclude undesirable images server-side and API key allows one to switch from default settings to currently selected personal rule. One of the way to get API key is to look at your [account settings](https://derpibooru.org/users/edit)
 
@@ -40,12 +42,12 @@ Full list of flags returned by `--help` command
 
 #### Complex usage example:
 ```bash
-./ponydownloader -f --score 50 -p 3 -n 7 -t princess+luna%2C+safe
+./ponydownloader --score 50 -p 3 -n 7 -t princess+luna%2C+safe
 ```
 At the moment of writing both samples were working, you would get output looking approximately like quote below and images in default directory `img`
 
 ```
-Derpibooru.org Downloader version 0.6.0
+Derpibooru.org Downloader version 0.6.1
 Happened at 2015/11/17 16:08:28 Program start
 Happened at 2015/11/17 16:08:28 Processing tags princess+luna%2C+safe
 Happened at 2015/11/17 16:08:28 Starting worker
