@@ -3,9 +3,12 @@ package main
 import (
 	"crypto/tls"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -37,30 +40,6 @@ func getRemoteJSON(source string) (body []byte, err error) {
 	}
 
 	return body, nil
-}
-
-func getImage(source string) ([]byte, http.Header, error) {
-	response, err := http.Get(source)
-	if err != nil {
-		return nil, nil, err
-
-	}
-	defer func() {
-		err = response.Body.Close() //Same, we shall not listen to the void when we finished getting image
-		if err != nil {
-			lFatal("Could  not close server response")
-		}
-	}()
-	if !okHTTPStatus(response) {
-		return nil, nil, fmt.Errorf("Incorrect server response")
-	}
-
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return body, response.Header, err
 }
 
 func okHTTPStatus(chk *http.Response) bool {
@@ -130,4 +109,86 @@ func checkUserResponse() bool {
 	}
 	return false
 
+}
+func (imgdata Image) saveImage(opts *Config) (size int64) { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
+
+	filepath := opts.ImageDir + string(os.PathSeparator) + imgdata.Filename
+
+	output, _ := os.Open(filepath) //this opening is fast and loose, because we loose nothing if check for no errors
+
+	fstat, err := output.Stat()
+	if err != nil {
+		lErr("Can't get file stats")
+	}
+	_ = output.Close()
+
+	start := time.Now() //timing download time. We can't begin it sooner, not sure if we can begin it later
+
+	response, err := http.Get(imgdata.URL)
+
+	if err != nil {
+		lErr("Error when getting image: ", strconv.Itoa(imgdata.Imgid))
+		lErr(err)
+		return
+	}
+
+	defer func() {
+		err = response.Body.Close() //Same, we shall not listen to the void when we finished getting image
+		if err != nil {
+			lFatal("Could  not close server response")
+		}
+	}()
+
+	if !okHTTPStatus(response) {
+		return
+	}
+
+	sizestring, prs := response.Header["Content-Length"]
+	if !prs {
+		lErr("Filesize not provided")
+	}
+	expsize, err := strconv.ParseInt(sizestring[0], 10, 64)
+	if err != nil {
+		lErr("Unable to get expected filesize")
+	}
+	lInfo(expsize, fstat.Size())
+	if expsize == fstat.Size() {
+		lInfo("Skipping: no-clobber")
+		return 0
+	}
+
+	if err != nil {
+		lErr("Error when getting image: ", strconv.Itoa(imgdata.Imgid))
+		lErr(err)
+		return
+	}
+
+	output, err = os.Create(filepath) //And now, THE FILE! New, truncated, ready to write
+	if err != nil {
+		lErr("Error when creating file for image: ", strconv.Itoa(imgdata.Imgid))
+		lErr(err) //Either we got no permisson or no space, end of line
+		return
+	}
+	defer func() {
+		err = output.Close() //Not forgetting to deal with it after completing download
+		if err != nil {
+			lFatal("Could  not close downloaded file")
+		}
+	}()
+
+	size, err = io.Copy(output, response.Body) //Preventing creation of temporary buffer in memory
+	if err != nil {
+		lErr("Unable to write image on disk, id: ", strconv.Itoa(imgdata.Imgid))
+		lErr(err)
+		return
+	}
+	timed := time.Since(start).Seconds()
+
+	lInfof("Downloaded %d bytes in %.2fs, speed %s/s\n", size, timed, fmtbytes(float64(size)/timed))
+
+	if expsize != size {
+		lErr("Unable to download full image")
+		return 0
+	}
+	return
 }

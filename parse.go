@@ -2,10 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"os"
 	"path"
 	"strconv"
-	"time"
 	//	"github.com/davecgh/go-spew/spew"
 )
 
@@ -98,7 +96,8 @@ func (imgchan ImageCh) ParseImg(ids []int, key string) {
 func (imgchan ImageCh) downloadImages(opts *Config) {
 
 	lInfo("Worker started; reading channel") //nice notification that we are not forgotten
-	var n, size int
+	var n int
+	var size int64
 	for imgdata := range imgchan {
 
 		if imgdata.Filename == "" {
@@ -112,72 +111,6 @@ func (imgchan ImageCh) downloadImages(opts *Config) {
 		n++
 	}
 	lInfof("Downloaded %d images, for a total of %s", n, fmtbytes(float64(size)))
-}
-
-func (imgdata Image) saveImage(opts *Config) (size int) { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
-
-	filepath := opts.ImageDir + string(os.PathSeparator) + imgdata.Filename
-
-	output, _ := os.Open(filepath) //And now, THE FILE! New, truncated, ready to write
-
-	fstat, err := output.Stat()
-	if err != nil {
-		lErr("Can't get file stats")
-	}
-	output.Close()
-
-	start := time.Now() //timing download time. We can't begin it sooner, not sure if we can begin it later
-
-	body, header, err := getImage(imgdata.URL)
-
-	sizestring, prs := header["Content-Length"]
-	if !prs {
-		lErr("Filesize not provided")
-	}
-	expsize, err := strconv.Atoi(sizestring[0])
-	if err != nil {
-		lErr("Unable to get expected filesize")
-	}
-	lInfo(expsize, fstat.Size())
-	if int64(expsize) == fstat.Size() {
-		lInfo("Skipping: no-clobber")
-		return 0
-	}
-
-	if err != nil {
-		lErr("Error when getting image: ", strconv.Itoa(imgdata.Imgid))
-		lErr(err)
-		return
-	}
-
-	output, err = os.Create(filepath) //And now, THE FILE! New, truncated, ready to write
-	if err != nil {
-		lErr("Error when creating file for image: ", strconv.Itoa(imgdata.Imgid))
-		lErr(err) //Either we got no permisson or no space, end of line
-		return
-	}
-	defer func() {
-		err = output.Close() //Not forgetting to deal with it after completing download
-		if err != nil {
-			lFatal("Could  not close downloaded file")
-		}
-	}()
-
-	size, err = output.Write(body) //
-	if err != nil {
-		lErr("Unable to write image on disk, id: ", strconv.Itoa(imgdata.Imgid))
-		lErr(err)
-		return
-	}
-	timed := time.Since(start).Seconds()
-
-	lInfof("Downloaded %d bytes in %.2fs, speed %s/s\n", size, timed, fmtbytes(float64(size)/timed))
-
-	if expsize != size {
-		lErr("Unable to download full image")
-		return 0
-	}
-	return
 }
 
 //ParseTag gets image tags, fetches information about all images it could from Derpibooru and pushes them into the channel.
