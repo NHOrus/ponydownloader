@@ -116,7 +116,41 @@ func (imgchan ImageCh) downloadImages(opts *Config) {
 
 func (imgdata Image) saveImage(opts *Config) (size int) { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
 
-	output, err := os.Create(opts.ImageDir + string(os.PathSeparator) + imgdata.Filename) //And now, THE FILE!
+	filepath := opts.ImageDir + string(os.PathSeparator) + imgdata.Filename
+
+	output, _ := os.Open(filepath) //And now, THE FILE! New, truncated, ready to write
+
+	fstat, err := output.Stat()
+	if err != nil {
+		lErr("Can't get file stats")
+	}
+	output.Close()
+
+	start := time.Now() //timing download time. We can't begin it sooner, not sure if we can begin it later
+
+	body, header, err := getImage(imgdata.URL)
+
+	sizestring, prs := header["Content-Length"]
+	if !prs {
+		lErr("Filesize not provided")
+	}
+	expsize, err := strconv.Atoi(sizestring[0])
+	if err != nil {
+		lErr("Unable to get expected filesize")
+	}
+	lInfo(expsize, fstat.Size())
+	if int64(expsize) == fstat.Size() {
+		lInfo("Skipping: no-clobber")
+		return 0
+	}
+
+	if err != nil {
+		lErr("Error when getting image: ", strconv.Itoa(imgdata.Imgid))
+		lErr(err)
+		return
+	}
+
+	output, err = os.Create(filepath) //And now, THE FILE! New, truncated, ready to write
 	if err != nil {
 		lErr("Error when creating file for image: ", strconv.Itoa(imgdata.Imgid))
 		lErr(err) //Either we got no permisson or no space, end of line
@@ -129,16 +163,6 @@ func (imgdata Image) saveImage(opts *Config) (size int) { // To not hold all the
 		}
 	}()
 
-	start := time.Now() //timing download time. We can't begin it sooner, not sure if we can begin it later
-
-	body, header, err := getImage(imgdata.URL)
-
-	if err != nil {
-		lErr("Error when getting image: ", strconv.Itoa(imgdata.Imgid))
-		lErr(err)
-		return
-	}
-
 	size, err = output.Write(body) //
 	if err != nil {
 		lErr("Unable to write image on disk, id: ", strconv.Itoa(imgdata.Imgid))
@@ -149,17 +173,6 @@ func (imgdata Image) saveImage(opts *Config) (size int) { // To not hold all the
 
 	lInfof("Downloaded %d bytes in %.2fs, speed %s/s\n", size, timed, fmtbytes(float64(size)/timed))
 
-	sizestring, prs := header["Content-Length"]
-	if !prs {
-		lErr("Filesize not provided")
-		return
-	}
-
-	expsize, err := strconv.Atoi(sizestring[0])
-	if err != nil {
-		lErr("Unable to get expected filesize")
-		return
-	}
 	if expsize != size {
 		lErr("Unable to download full image")
 		return 0
