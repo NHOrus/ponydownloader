@@ -50,10 +50,10 @@ type ImageCh chan Image
 
 //Push gets unmarchalled JSON info, massages it and plugs it into channel so it
 //would be processed in other places
-func (imgchan ImageCh) push(dat RawImage) {
+func trim(dat RawImage) Image {
 
 	tfn := strconv.Itoa(dat.Imgid) + "." + dat.OriginalFormat
-	imgchan <- Image{
+	return Image{
 		Imgid:    dat.Imgid,
 		Filename: tfn,
 		URL:      prefix + "/" + path.Dir(dat.URL) + "/" + tfn,
@@ -86,7 +86,7 @@ func (imgchan ImageCh) ParseImg(ids []int, key string) {
 			continue
 		}
 
-		imgchan.push(dat)
+		imgchan <- trim(dat)
 	}
 
 	close(imgchan) //closing channel, we are done here
@@ -208,7 +208,7 @@ func (imgchan ImageCh) ParseTag(opts *TagOpts, key string) {
 		} //exit due to finishing all pages
 
 		for _, dat := range dats.Images {
-			imgchan.push(dat)
+			imgchan <- trim(dat)
 		}
 
 	}
