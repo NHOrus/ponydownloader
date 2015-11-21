@@ -5,23 +5,31 @@ import (
 	"os"
 	"path"
 	"strconv"
-	"strings"
 	"time"
 	//	"github.com/davecgh/go-spew/spew"
 )
 
-//Image contains data we got from API that we are using to filter and fetch said image next
-type Image struct {
+
+//RawImage contains data we got from API that needs to be modified before further usage
+type RawImage struct {
 	Imgid          int    `json:"id_number"`
 	URL            string `json:"image"`
-	Filename       string
 	Score          int    `json:"score"`
 	OriginalFormat string `json:"original_format"`
+	Faves          int    `json:"faves"`
+}
+//Image contains data needed to filter fetch and save image
+type Image struct {
+	Imgid    int
+	URL      string
+	Filename string
+	Score    int
+	Faves    int
 }
 
 //Search returns to us array of searched images...
 type Search struct {
-	Images []Image `json:"search"`
+	Images []RawImage `json:"search"`
 }
 
 func (imgdata *Image) isDeepEqual(b Image) bool {
@@ -29,7 +37,7 @@ func (imgdata *Image) isDeepEqual(b Image) bool {
 		b.URL == imgdata.URL &&
 		b.Filename == imgdata.Filename &&
 		b.Score == imgdata.Score &&
-		b.OriginalFormat == imgdata.OriginalFormat {
+		b.Faves == imgdata.Faves {
 		return true
 	}
 	return false
@@ -42,16 +50,16 @@ type ImageCh chan Image
 
 //Push gets unmarchalled JSON info, massages it and plugs it into channel so it
 //would be processed in other places
-func (imgchan ImageCh) push(dat Image) {
-	dat.Filename = strconv.Itoa(dat.Imgid) + "." + dat.OriginalFormat
-	dat.URL = prefix + "/" + path.Dir(dat.URL) + "/" + dat.Filename
-	if dat.OriginalFormat == "svg" {
-		i := strings.LastIndex(dat.URL, ".")
-		if i != -1 {
-			dat.URL = dat.URL[:i] + ".svg" //Was afraid to extract things I needed from the date field, so extracting them from URL.
-		}
+func (imgchan ImageCh) push(dat RawImage) {
+	
+	tfn := strconv.Itoa(dat.Imgid) + "." + dat.OriginalFormat
+	imgchan <- Image{
+		Imgid:    dat.Imgid,
+		Filename: tfn,
+		URL:      prefix + "/" + path.Dir(dat.URL) + tfn,
+		Score:    dat.Score,
+		Faves:    dat.Faves,
 	}
-	imgchan <- dat
 }
 
 //ParseImg gets image IDs, fetches information about those images from Derpibooru and pushes them into the channel.
@@ -70,7 +78,7 @@ func (imgchan ImageCh) ParseImg(ids []int, key string) {
 			lErr(err)
 			continue
 		}
-		var dat Image
+		var dat RawImage
 		if err := json.Unmarshal(body, &dat); //transforming json into native map
 
 		err != nil {
