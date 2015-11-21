@@ -56,7 +56,7 @@ func (imgchan ImageCh) push(dat RawImage) {
 	imgchan <- Image{
 		Imgid:    dat.Imgid,
 		Filename: tfn,
-		URL:      prefix + "/" + path.Dir(dat.URL) + tfn,
+		URL:      prefix + "/" + path.Dir(dat.URL) + "/" + tfn,
 		Score:    dat.Score,
 		Faves:    dat.Faves,
 	}
