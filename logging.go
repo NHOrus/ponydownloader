@@ -58,7 +58,7 @@ func lDone(v ...interface{}) {
 
 //lErr notes non-fatal error and usually continues trying to crunch on
 func lErr(v ...interface{}) {
-	errLogger.Println(v...)
+	_ = errLogger.Output(2, fmt.Sprintln(v...)) //Following log package, ignoring error value
 }
 
 //lFatal happens when suffer some kind of error and we can't recover

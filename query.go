@@ -117,8 +117,8 @@ func (imgdata Image) saveImage(opts *Config) (size int64) { // To not hold all t
 	output, _ := os.Open(filepath) //this opening is fast and loose, because we loose nothing if check for no errors
 
 	fstat, err := output.Stat()
-	if err != nil {
-		lErr("Can't get file stats")
+	if err != nil && err != os.ErrNotExist && err != os.ErrInvalid {
+		lErr("Can't get file stats: ", err)
 	}
 	_ = output.Close()
 
@@ -151,8 +151,8 @@ func (imgdata Image) saveImage(opts *Config) (size int64) { // To not hold all t
 	if err != nil {
 		lErr("Unable to get expected filesize")
 	}
-	lInfo(expsize, fstat.Size())
-	if expsize == fstat.Size() {
+	
+	if fstat != nil && expsize == fstat.Size() {
 		lInfo("Skipping: no-clobber")
 		return 0
 	}
