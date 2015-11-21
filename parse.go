@@ -9,7 +9,6 @@ import (
 	//	"github.com/davecgh/go-spew/spew"
 )
 
-
 //RawImage contains data we got from API that needs to be modified before further usage
 type RawImage struct {
 	Imgid          int    `json:"id_number"`
@@ -18,6 +17,7 @@ type RawImage struct {
 	OriginalFormat string `json:"original_format"`
 	Faves          int    `json:"faves"`
 }
+
 //Image contains data needed to filter fetch and save image
 type Image struct {
 	Imgid    int
@@ -51,7 +51,7 @@ type ImageCh chan Image
 //Push gets unmarchalled JSON info, massages it and plugs it into channel so it
 //would be processed in other places
 func (imgchan ImageCh) push(dat RawImage) {
-	
+
 	tfn := strconv.Itoa(dat.Imgid) + "." + dat.OriginalFormat
 	imgchan <- Image{
 		Imgid:    dat.Imgid,

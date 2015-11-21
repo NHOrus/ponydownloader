@@ -12,7 +12,12 @@ func filterInit(opts *FiltOpts) {
 		return
 	}
 	lInfo("Filter is on")
-	filters = append(filters, scoreFilterGenerator(opts.Score))
+	if opts.ScoreF {
+		filters = append(filters, scoreFilterGenerator(opts.Score))
+	}
+	if opts.FavesF {
+		filters = append(filters, favesFilterGenerator(opts.Faves))
+	}
 }
 
 //Do nothing
@@ -45,4 +50,22 @@ func FilterChannel(in ImageCh) (out ImageCh) {
 		out = filter(out)
 	}
 	return
+}
+
+func favesFilterGenerator(faves int) filtrator {
+	return func(in ImageCh) ImageCh {
+		out := make(ImageCh)
+		go func() {
+			for imgdata := range in {
+
+				if imgdata.Faves >= faves { //Capturing score inside lambda, to prevent passing it around each invocation
+					out <- imgdata
+					continue
+				}
+				lInfo("Filtering " + imgdata.Filename)
+			}
+			close(out)
+		}()
+		return out
+	}
 }

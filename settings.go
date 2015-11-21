@@ -26,8 +26,11 @@ type FlagOpts struct {
 
 //FiltOpts are filtration parameters
 type FiltOpts struct {
-	Filter bool `no-flag:" " short:"f" long:"filter" description:"If set, enables client-side filtering of downloaded images"`
+	Filter bool `no-flag:" "`
 	Score  int  `long:"score" description:"Filter option, minimal score of image for it to be downloaded"`
+	ScoreF bool `no-flag:" "`
+	Faves  int  `long:"faves" description:"Filter option, minimal amount of people who favored image for it to be downloaded"`
+	FavesF bool `no-flag:" "`
 }
 
 //TagOpts are options relevant to searching by tags
@@ -128,9 +131,14 @@ func (opts *Options) Setup() ([]string, *Config) {
 
 	for _, arg := range os.Args {
 		if strings.Contains(arg, "--score") {
-			opts.Filter = true
+			opts.ScoreF = true
+		}
+		if strings.Contains(arg, "--faves") {
+			opts.FavesF = true
 		}
 	}
+	opts.Filter = opts.ScoreF || opts.FavesF
+
 	return args, &inisets
 }
 
