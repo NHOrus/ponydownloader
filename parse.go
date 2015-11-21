@@ -109,7 +109,7 @@ func (imgchan ImageCh) downloadImages(opts *Config) {
 func (imgdata Image) saveImage(opts *Config) (size int) { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
 
 	output, err := os.Create(opts.ImageDir + string(os.PathSeparator) + imgdata.Filename) //And now, THE FILE!
-	if err != err {
+	if err != nil {
 		lErr("Error when creating file for image: ", strconv.Itoa(imgdata.Imgid))
 		lErr(err) //Either we got no permisson or no space, end of line
 		return
