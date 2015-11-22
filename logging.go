@@ -44,6 +44,12 @@ func lInfo(v ...interface{}) {
 	infoLogger.Println(v...)
 }
 
+func lCondInfo(on bool, v ...interface{}) {
+	if on {
+		infoLogger.Println(v...)
+	}
+}
+
 //lInfof logs generic program flow with ability to format string beyond defaults
 //Used only to note downloading speed and timing
 func lInfof(format string, v ...interface{}) {
