@@ -1,3 +1,5 @@
+//Command ponydownloader uses Derpibooru.org API to download pony images
+//by ID or by tags, with some client-side filtration ability
 package main
 
 import (
