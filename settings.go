@@ -95,7 +95,7 @@ func (sets *Config) prettyWriteIni(inifile io.Writer) error {
 	fmt.Fprintf(tb, "key \t= %s\n", sets.Key)
 	fmt.Fprintf(tb, "queue_depth \t= %s\n", strconv.Itoa(sets.QDepth))
 	fmt.Fprintf(tb, "downdir \t= %s\n", sets.ImageDir)
-	fmt.Fprintf(tb, "logfilter \t = %t\n", sets.LogFilters)
+	fmt.Fprintf(tb, "logfilter \t= %t\n", sets.LogFilters)
 
 	return tb.Flush() //Returns and passes error upstairs
 }
@@ -107,7 +107,8 @@ func (sets *Config) isEqual(b *Config) bool {
 	}
 	if sets.ImageDir == b.ImageDir &&
 		sets.QDepth == b.QDepth &&
-		sets.Key == b.Key {
+		sets.Key == b.Key &&
+		sets.LogFilters == b.LogFilters {
 		return true
 	}
 	return false
