@@ -18,10 +18,10 @@ func TestDispatcherThrough(t *testing.T) {
 			t.Fatal("Out channel is closed prematurely")
 		}
 		if tval.Imgid == 0 &&
-		tval.URL == "" &&
-		tval.Filename == "" &&
-		tval.Score == 0 &&
-		tval.Faves == 0 {
+			tval.URL == "" &&
+			tval.Filename == "" &&
+			tval.Score == 0 &&
+			tval.Faves == 0 {
 		} else {
 			t.Error("Pass through dispatcher mangles image")
 		}
@@ -38,7 +38,7 @@ func TestDispatcherClose(t *testing.T) {
 	go in.dispatcher(sig, out)
 
 	close(in)
-	_, ok := <- out
+	_, ok := <-out
 	if ok {
 		t.Error("Channel open and passes data when it should be closed. Or blocking")
 	}

@@ -151,7 +151,7 @@ func (imgdata Image) saveImage(opts *Config) (size int64) { // To not hold all t
 	if err != nil {
 		lErr("Unable to get expected filesize")
 	}
-	
+
 	if fstat != nil && expsize == fstat.Size() {
 		lInfo("Skipping: no-clobber")
 		return 0

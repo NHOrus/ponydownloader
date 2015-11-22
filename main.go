@@ -76,8 +76,8 @@ func main() {
 
 	lInfo("Starting worker") //It would be funny if worker goroutine does not start
 
-	filterInit(opts.FiltOpts)           //Initiating filters based on our given flags
-	filtimgdat := FilterChannel(imgdat) //Actual filtration
+	filterInit(opts.FiltOpts, opts.Config.LogFilters) //Initiating filters based on our given flags
+	filtimgdat := FilterChannel(imgdat)               //Actual filtration
 
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt)

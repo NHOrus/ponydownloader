@@ -13,9 +13,10 @@ import (
 
 //Config are concrete and stored in configuration file
 type Config struct {
-	ImageDir string `long:"dir" description:"Target Directory" default:"img" ini-name:"downdir"`
-	QDepth   int    `short:"q" long:"queue" description:"Length of the queue buffer" default:"20" ini-name:"queue_depth"`
-	Key      string `short:"k" long:"key" description:"Derpibooru API key" ini-name:"key"`
+	ImageDir   string `long:"dir" description:"Target Directory" default:"img" ini-name:"downdir"`
+	QDepth     int    `short:"q" long:"queue" description:"Length of the queue buffer" default:"20" ini-name:"queue_depth"`
+	Key        string `short:"k" long:"key" description:"Derpibooru API key" ini-name:"key"`
+	LogFilters bool   `long:"logfilter" description:"Enable logging of filtered images" ini-name:"logfilter"`
 }
 
 //FlagOpts are runtime boolean flags
@@ -94,6 +95,7 @@ func (sets *Config) prettyWriteIni(inifile io.Writer) error {
 	fmt.Fprintf(tb, "key \t= %s\n", sets.Key)
 	fmt.Fprintf(tb, "queue_depth \t= %s\n", strconv.Itoa(sets.QDepth))
 	fmt.Fprintf(tb, "downdir \t= %s\n", sets.ImageDir)
+	fmt.Fprintf(tb, "logfilter \t = %t\n", sets.LogFilters)
 
 	return tb.Flush() //Returns and passes error upstairs
 }

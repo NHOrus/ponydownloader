@@ -5,18 +5,18 @@ type filtrator func(ImageCh) ImageCh
 var filters []filtrator
 
 //If filter isn't on, skip. If any of filter parameters is given, filtration is on
-func filterInit(opts *FiltOpts) {
+func filterInit(opts *FiltOpts, enableLog bool) {
 	if !opts.Filter {
-		lInfo("Filter is off")
+		lCondInfo(enableLog, "Filter is off")
 		filters = append(filters, nopFilter) //First class function and array of them
 		return
 	}
-	lInfo("Filter is on")
+	lCondInfo(enableLog, "Filter is on")
 	if opts.ScoreF {
-		filters = append(filters, scoreFilterGenerator(opts.Score))
+		filters = append(filters, scoreFilterGenerator(opts.Score, enableLog))
 	}
 	if opts.FavesF {
-		filters = append(filters, favesFilterGenerator(opts.Faves))
+		filters = append(filters, favesFilterGenerator(opts.Faves, enableLog))
 	}
 }
 
@@ -25,7 +25,7 @@ func nopFilter(in ImageCh) ImageCh {
 	return in
 }
 
-func scoreFilterGenerator(score int) filtrator {
+func scoreFilterGenerator(score int, enableLog bool) filtrator {
 	return func(in ImageCh) ImageCh {
 		out := make(ImageCh)
 		go func() {
@@ -35,7 +35,7 @@ func scoreFilterGenerator(score int) filtrator {
 					out <- imgdata
 					continue
 				}
-				lInfo("Filtering " + imgdata.Filename)
+				lCondInfo(enableLog, "Filtering "+imgdata.Filename)
 			}
 			close(out)
 		}()
@@ -52,7 +52,7 @@ func FilterChannel(in ImageCh) (out ImageCh) {
 	return
 }
 
-func favesFilterGenerator(faves int) filtrator {
+func favesFilterGenerator(faves int, enableLog bool) filtrator {
 	return func(in ImageCh) ImageCh {
 		out := make(ImageCh)
 		go func() {
@@ -62,7 +62,7 @@ func favesFilterGenerator(faves int) filtrator {
 					out <- imgdata
 					continue
 				}
-				lInfo("Filtering " + imgdata.Filename)
+				lCondInfo(enableLog, "Filtering "+imgdata.Filename)
 			}
 			close(out)
 		}()
