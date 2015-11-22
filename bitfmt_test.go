@@ -31,4 +31,12 @@ func TestAllMagnitudes(t *testing.T) {
 	if fmtbytes(a) != "8.43 GiB" {
 		t.Error("Kilobyte formatting error, wanted 8.43 GiB, got ", fmtbytes(a))
 	}
+	a = 9049210880 * 1024
+	if fmtbytes(a) != "8.43 TiB" {
+		t.Error("Kilobyte formatting error, wanted 8.43 TiB, got ", fmtbytes(a))
+	}
+	a = 9049210880 * 1024 * 1024
+	if fmtbytes(a) != "way too many B" {
+		t.Error("Kilobyte formatting error, wanted 8.43 GiB, got ", fmtbytes(a))
+	}
 }

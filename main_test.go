@@ -17,7 +17,12 @@ func TestDispatcherThrough(t *testing.T) {
 		if !ok {
 			t.Fatal("Out channel is closed prematurely")
 		}
-		if !tval.isDeepEqual(Image{}) {
+		if tval.Imgid == 0 &&
+		tval.URL == "" &&
+		tval.Filename == "" &&
+		tval.Score == 0 &&
+		tval.Faves == 0 {
+		} else {
 			t.Error("Pass through dispatcher mangles image")
 		}
 	default:
