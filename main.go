@@ -95,7 +95,7 @@ func (imgchan ImageCh) dispatch(sig <-chan os.Signal) (outch ImageCh) {
 func (imgchan ImageCh) dispatcher(sig <-chan os.Signal, outch ImageCh) {
 	for {
 		select {
-		case <-sig:
+		case <-sig: //can't test this branch due to lDone killing our test
 			close(outch)
 			<-sig
 			lDone("Download interrupted by user's command")
