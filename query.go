@@ -110,7 +110,7 @@ func checkUserResponse() bool {
 	return false
 
 }
-func (imgdata Image) saveImage(opts *Config) (size int64) { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
+func (imgdata Image) saveImage(opts *Config) (size int64, ok bool) { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
 
 	filepath := opts.ImageDir + string(os.PathSeparator) + imgdata.Filename
 
@@ -141,7 +141,7 @@ func (imgdata Image) saveImage(opts *Config) (size int64) { // To not hold all t
 
 	if expsize == fsize {
 		lInfo("Skipping: no-clobber")
-		return 0
+		return
 	}
 
 	if err != nil {
@@ -175,7 +175,7 @@ func (imgdata Image) saveImage(opts *Config) (size int64) { // To not hold all t
 
 	if expsize != size {
 		lErr("Unable to download full image")
-		return 0
+		return
 	}
 	return
 }

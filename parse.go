@@ -96,8 +96,11 @@ func (imgchan ImageCh) downloadImages(opts *Config) {
 
 		lInfo("Saving as", imgdata.Filename)
 
-		size += imgdata.saveImage(opts)
-		n++
+		tsize, ok := imgdata.saveImage(opts)
+		size += tsize
+		if ok {
+			n++
+		}
 	}
 	lInfof("Downloaded %d images, for a total of %s", n, fmtbytes(float64(size)))
 }
