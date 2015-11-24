@@ -6,12 +6,8 @@ var filters []filtrator
 
 //If filter isn't on, skip. If any of filter parameters is given, filtration is on
 func filterInit(opts *FiltOpts, enableLog bool) {
-	if !opts.Filter {
-		lCondInfo(enableLog, "Filter is off")
-		filters = append(filters, nopFilter) //First class function and array of them
-		return
-	}
-	lCondInfo(enableLog, "Filter is on")
+	filters = append(filters, nopFilter)
+	
 	if opts.ScoreF {
 		filters = append(filters, filterGenerator(func(i Image) bool { return i.Score >= opts.Score }, enableLog))
 	}

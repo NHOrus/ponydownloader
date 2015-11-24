@@ -27,7 +27,6 @@ type FlagOpts struct {
 
 //FiltOpts are filtration parameters
 type FiltOpts struct {
-	Filter bool `no-flag:" "`
 	Score  int  `long:"score" description:"Filter option, minimal score of image for it to be downloaded"`
 	ScoreF bool `no-flag:" "`
 	Faves  int  `long:"faves" description:"Filter option, minimal amount of people who favored image for it to be downloaded"`
@@ -140,8 +139,6 @@ func (opts *Options) Setup() ([]string, *Config) {
 			opts.FavesF = true
 		}
 	}
-	opts.Filter = opts.ScoreF || opts.FavesF
-
 	return args, &inisets
 }
 
