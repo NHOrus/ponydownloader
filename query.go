@@ -188,20 +188,10 @@ func (imgdata Image) saveImage(opts *Config) (size int64) { // To not hold all t
 }
 
 func getFileSize(path string) int64 {
-	output, err := os.Open(path) //this opening is fast and loose, because we loose nothing if check for no errors
-	
+	fstat, err := os.Stat(path)
 	if err != nil {
 		return 0
 	}
-	defer output.Close()
+	return fstat.Size()
 
-	fstat, err := output.Stat()
-	if err != nil {
-		return 0
-	}
-
-	if fstat != nil {
-		return fstat.Size()
-	}
-	return 0
 }
