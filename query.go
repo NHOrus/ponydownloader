@@ -114,13 +114,7 @@ func (imgdata Image) saveImage(opts *Config) (size int64) { // To not hold all t
 
 	filepath := opts.ImageDir + string(os.PathSeparator) + imgdata.Filename
 
-	output, _ := os.Open(filepath) //this opening is fast and loose, because we loose nothing if check for no errors
-
-	fstat, err := output.Stat()
-	if err != nil && err != os.ErrNotExist && err != os.ErrInvalid {
-		lErr("Can't get file stats: ", err)
-	}
-	_ = output.Close()
+	fsize := getFileSize(filepath)
 
 	start := time.Now() //timing download time. We can't begin it sooner, not sure if we can begin it later
 
@@ -152,7 +146,7 @@ func (imgdata Image) saveImage(opts *Config) (size int64) { // To not hold all t
 		lErr("Unable to get expected filesize")
 	}
 
-	if fstat != nil && expsize == fstat.Size() {
+	if expsize == fsize {
 		lInfo("Skipping: no-clobber")
 		return 0
 	}
@@ -163,7 +157,7 @@ func (imgdata Image) saveImage(opts *Config) (size int64) { // To not hold all t
 		return
 	}
 
-	output, err = os.Create(filepath) //And now, THE FILE! New, truncated, ready to write
+	output, err := os.Create(filepath) //And now, THE FILE! New, truncated, ready to write
 	if err != nil {
 		lErr("Error when creating file for image: ", strconv.Itoa(imgdata.Imgid))
 		lErr(err) //Either we got no permisson or no space, end of line
@@ -191,4 +185,23 @@ func (imgdata Image) saveImage(opts *Config) (size int64) { // To not hold all t
 		return 0
 	}
 	return
+}
+
+func getFileSize(path string) int64 {
+	output, err := os.Open(path) //this opening is fast and loose, because we loose nothing if check for no errors
+	
+	if err != nil {
+		return 0
+	}
+	defer output.Close()
+
+	fstat, err := output.Stat()
+	if err != nil {
+		return 0
+	}
+
+	if fstat != nil {
+		return fstat.Size()
+	}
+	return 0
 }
