@@ -137,14 +137,7 @@ func (imgdata Image) saveImage(opts *Config) (size int64) { // To not hold all t
 		return
 	}
 
-	sizestring, prs := response.Header["Content-Length"]
-	if !prs {
-		lErr("Filesize not provided")
-	}
-	expsize, err := strconv.ParseInt(sizestring[0], 10, 64)
-	if err != nil {
-		lErr("Unable to get expected filesize")
-	}
+	expsize := getRemoteSize(response.Header)
 
 	if expsize == fsize {
 		lInfo("Skipping: no-clobber")
@@ -194,4 +187,17 @@ func getFileSize(path string) int64 {
 	}
 	return fstat.Size()
 
+}
+
+func getRemoteSize(head http.Header) (expsize int64) {
+
+	sizestring, ok := head["Content-Length"]
+	if !ok {
+		lErr("Filesize not provided")
+	}
+	expsize, err := strconv.ParseInt(sizestring[0], 10, 64)
+	if err != nil {
+		lErr("Unable to get expected filesize")
+	}
+	return
 }
