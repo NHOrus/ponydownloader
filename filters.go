@@ -13,10 +13,10 @@ func filterInit(opts *FiltOpts, enableLog bool) {
 	}
 	lCondInfo(enableLog, "Filter is on")
 	if opts.ScoreF {
-		filters = append(filters, scoreFilterGenerator(opts.Score, enableLog))
+		filters = append(filters, filterGenerator(func(i Image) bool { return i.Score >= opts.Score }, enableLog))
 	}
 	if opts.FavesF {
-		filters = append(filters, favesFilterGenerator(opts.Faves, enableLog))
+		filters = append(filters, filterGenerator(func(i Image) bool { return i.Faves >= opts.Faves }, enableLog))
 	}
 }
 
@@ -25,13 +25,13 @@ func nopFilter(in ImageCh) ImageCh {
 	return in
 }
 
-func scoreFilterGenerator(score int, enableLog bool) filtrator {
+func filterGenerator(filt func(Image) bool, enableLog bool) filtrator {
 	return func(in ImageCh) ImageCh {
 		out := make(ImageCh)
 		go func() {
 			for imgdata := range in {
 
-				if imgdata.Score >= score { //Capturing score inside lambda, to prevent passing it around each invocation
+				if filt(imgdata) { //Capturing score inside lambda, to prevent passing it around each invocation
 					out <- imgdata
 					continue
 				}
@@ -50,22 +50,4 @@ func FilterChannel(in ImageCh) (out ImageCh) {
 		out = filter(out)
 	}
 	return
-}
-
-func favesFilterGenerator(faves int, enableLog bool) filtrator {
-	return func(in ImageCh) ImageCh {
-		out := make(ImageCh)
-		go func() {
-			for imgdata := range in {
-
-				if imgdata.Faves >= faves { //Capturing score inside lambda, to prevent passing it around each invocation
-					out <- imgdata
-					continue
-				}
-				lCondInfo(enableLog, "Filtering "+imgdata.Filename)
-			}
-			close(out)
-		}()
-		return out
-	}
 }
