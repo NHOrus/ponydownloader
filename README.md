@@ -47,7 +47,7 @@ Full list of flags returned by `--help` command
 At the moment of writing both samples were working, you would get output looking approximately like quote below and images in default directory `img`
 
 ```
-Derpibooru.org Downloader version 0.6.1
+Derpibooru.org Downloader version 0.6.2
 Happened at 2015/11/17 16:08:28 Program start
 Happened at 2015/11/17 16:08:28 Processing tags princess+luna%2C+safe
 Happened at 2015/11/17 16:08:28 Starting worker
