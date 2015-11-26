@@ -16,7 +16,7 @@ type Config struct {
 	ImageDir   string `long:"dir" description:"Target Directory" default:"img" ini-name:"downdir"`
 	QDepth     int    `short:"q" long:"queue" description:"Length of the queue buffer" default:"20" ini-name:"queue_depth"`
 	Key        string `short:"k" long:"key" description:"Derpibooru API key" ini-name:"key"`
-	LogFilters bool   `long:"logfilter" description:"Enable logging of filtered images" ini-name:"logfilter"`
+	LogFilters Bool   `long:"logfilter" optional:" " optional-value:"true" description:"Enable logging of filtered images" ini-name:"logfilter"`
 }
 
 //FlagOpts are runtime boolean flags
@@ -156,6 +156,28 @@ func checkFlagError(err error) {
 		fmt.Println("Use --help to view all available options")
 		os.Exit(0)
 	default:
-		lFatal("Can't parse flags: %s\n", err)
+		lFatal("Can't parse flags: ", err)
 	}
+}
+
+type Bool bool
+
+func (b *Bool) UnmarshalFlag(value string) error {
+    if value == "true" {
+        *b = true
+    } else if value == "false" {
+        *b = false
+    } else {
+        return fmt.Errorf("only `true' and `false' are valid values, not `%s'", value)
+    }
+
+    return nil
+}
+
+func (b Bool) MarshalFlag() string {
+    if b {
+        return "true"
+    }
+
+    return "false"
 }
