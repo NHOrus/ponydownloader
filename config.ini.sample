@@ -1,3 +1,4 @@
 key         = 
 queue_depth = 20
 downdir     = img
+logfilter   = false

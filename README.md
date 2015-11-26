@@ -12,7 +12,7 @@ This app under limited support due to loss of interest into ponies. Sorry for th
 
 Ponydownloader seeks to provide useful command-line tool to download images from [Derpibooru](https://derpibooru.org) using provided API
 
-Currently ponydownloader provides three bits of functionality: download by image id, download by tag and filter images you download by their score.
+Currently ponydownloader provides three bits of functionality: download by image id, download by tag and filter images you download by their score and/or favorites.
 
 Usage
 -----
@@ -25,15 +25,18 @@ To download single image, simply invoke ponydownloader with image id as argument
 
 To download all images with desired flag , invoke `ponydownloader -t <flag>`
 
-One can manipulate start and stop pages for limiting amount of downloaded images or skipping images already present: `-p <star page>` `-n <stop page>` . Due to concurrent design of ponydownloader and insufficient documentation of Derpibooru API, queue may contain more images that response page from site and images ponydownloader currently saves may be from significantly earlier that page program declares as one being processed.
+One can manipulate start and stop pages for limiting amount of downloaded images or skipping images already present: `-p <star page>` `-n <stop page>` . 
 
 Currently filters available are:
 -  filter by score: `--score ` then minimal score to accept.
 -  filter by favorites: `--faves ` then minimal number of people who favored the to accept.
 
-Optional flag `-k` defines API key to use and overrides said key from configuration file. Key in configuration file gets rewritten. Derpibooru provides significant capability to exclude undesirable images server-side and API key allows one to switch from default settings to currently selected personal rule. One of the way to get API key is to look at your [account settings](https://derpibooru.org/users/edit)
+Optional flag `-k` defines API key to use and overrides said key from configuration file. Key in configuration file gets rewritten. Derpibooru provides significant capability to exclude undesirable images server-side and API key allows one to switch from default settings to currently selected personal rule. One of the way to get API key is to look at your [account settings](https://derpibooru.org/users/edit)  
+Optional flag `--logfilter` turns on detailed log of each image discarded before download. It's saved into config file. To turn off, pass `--logfilter=false`
 
 Full list of flags returned by `--help` command
+
+To protect innocent and prevent excessive accumulation of logs, rotation is implemented, currenlty caps at 1 Mb per file and 10 logfiles total
 
 #### Simple usage example:
 ```bash
@@ -42,7 +45,7 @@ Full list of flags returned by `--help` command
 
 #### Complex usage example:
 ```bash
-./ponydownloader --score 50 -p 3 -n 7 -t princess+luna%2C+safe
+./ponydownloader --score 50 -p 3 -n 7 -t princess+luna%2C+safe --logfilter=true
 ```
 At the moment of writing both samples were working, you would get output looking approximately like quote below and images in default directory `img`
 
@@ -72,7 +75,7 @@ There are two way to install this program: definitely working/developer way and 
 
 ##### Path of less resistance.
 
-If you trust me, Github Releases should contain latest release version, [here](https://github.com/NHOrus/ponydownloader/releases) Copy ponydownloader-*your_os*-*your_architecture* in a folder you want to run it from or somewhere in your path. Enjoy. You may need to pass correct values of target directory for downloads and your API key through CLI or config.ini
+If you trust me, Github Releases should contain latest release version, [here](https://github.com/NHOrus/ponydownloader/releases) Copy ponydownloader-**your_os**-**your_architecture** in a folder you want to run it from or somewhere in your path. Enjoy. You may need to pass correct values of target directory for downloads and your API key through CLI or config.ini
 
 Binaries may be outdated. My cross-compilation system may work not as well as intended. Binaries may be malicious, knowingly or unknowingly.
 
@@ -99,10 +102,10 @@ config.ini
 ----------
 
 ```config.ini
-key 		=	  // your derpibooru.org key
-downdir 	= img // in this directory your images would be saved
-queue_depth = 20  // depth of queue of images, waiting for download. 
+key			=		// your derpibooru.org key
+downdir		= img	// in this directory your images would be saved
+queue_depth	= 20	// depth of queue of images, waiting for download
+logfilter	= false	// should app write ID discarded by filters images in log
 ``` 
 
-I feel that optimal depth is around 10-20, else there would be slowdown when parser requests next search page from derpibooru and feeds it's content to worker. It depends upon downloading speed and server response time. Ponydownloader downloads search  pages and images simultaneously, one by one.
-If any line is empty, program would use default, build-in parameters. Empty `key` would end up with no API key being used.
+If any line is empty, program would use default, build-in parameters and overwrites them with defaults, when appropriate. Empty `key` would end up with no API key being used.
