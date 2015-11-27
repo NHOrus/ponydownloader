@@ -25,7 +25,7 @@ func init() {
 	logfile := &lumberjack.Logger{
 		Filename:   "event.log",
 		MaxSize:    1, // megabytes
-		MaxBackups: 3,
+		MaxBackups: 9,
 		MaxAge:     28, //days
 	}
 

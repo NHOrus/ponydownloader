@@ -14,7 +14,7 @@ import (
 //Config are concrete and stored in configuration file
 type Config struct {
 	ImageDir   string `long:"dir" description:"Target Directory" default:"img" ini-name:"downdir"`
-	QDepth     int    `short:"q" long:"queue" description:"Length of the queue buffer" default:"20" ini-name:"queue_depth"`
+	QDepth     int    `short:"q" long:"queue" description:"Length of the queue buffer" default:"50" ini-name:"queue_depth"`
 	Key        string `short:"k" long:"key" description:"Derpibooru API key" ini-name:"key"`
 	LogFilters Bool   `long:"logfilter" optional:" " optional-value:"true" description:"Enable logging of filtered images" ini-name:"logfilter"`
 }

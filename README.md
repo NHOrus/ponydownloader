@@ -104,7 +104,7 @@ config.ini
 ```config.ini
 key			=		// your derpibooru.org key
 downdir		= img	// in this directory your images would be saved
-queue_depth	= 20	// depth of queue of images, waiting for download
+queue_depth	= 50	// depth of queue of images, waiting for download. Default value - one search page
 logfilter	= false	// should app write ID discarded by filters images in log
 ``` 
 
