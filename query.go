@@ -172,6 +172,7 @@ func (imgdata Image) saveImage(opts *Config) (size int64, ok bool) { // To not h
 	timed := time.Since(start).Seconds()
 
 	lInfof("Downloaded %d bytes in %.2fs, speed %s/s\n", size, timed, fmtbytes(float64(size)/timed))
+	ok = true
 
 	if expsize != size {
 		lErr("Unable to download full image")

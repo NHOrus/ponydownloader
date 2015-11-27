@@ -163,21 +163,21 @@ func checkFlagError(err error) {
 type Bool bool
 
 func (b *Bool) UnmarshalFlag(value string) error {
-    if value == "true" {
-        *b = true
-    } else if value == "false" {
-        *b = false
-    } else {
-        return fmt.Errorf("only `true' and `false' are valid values, not `%s'", value)
-    }
+	if value == "true" {
+		*b = true
+	} else if value == "false" {
+		*b = false
+	} else {
+		return fmt.Errorf("only `true' and `false' are valid values, not `%s'", value)
+	}
 
-    return nil
+	return nil
 }
 
 func (b Bool) MarshalFlag() string {
-    if b {
-        return "true"
-    }
+	if b {
+		return "true"
+	}
 
-    return "false"
+	return "false"
 }
