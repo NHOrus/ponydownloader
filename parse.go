@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"path"
 	"strconv"
+	"sync"
 	//	"github.com/davecgh/go-spew/spew"
 )
 
@@ -87,21 +88,32 @@ func (imgchan ImageCh) downloadImages(opts *Config) {
 	lInfo("Worker started; reading channel") //nice notification that we are not forgotten
 	var n int
 	var size int64
-	for imgdata := range imgchan {
+	var l sync.Mutex
+	var wg sync.WaitGroup
+	for k := 0; k < 4; k++ {
+		wg.Add(1)
+		go func() {
+			for imgdata := range imgchan {
 
-		if imgdata.Filename == "" {
-			lErr("Empty filename. Oops?") //something somewhere had gone wrong, not a cause to die, going to the next image
-			continue
-		}
+				if imgdata.Filename == "" {
+					lErr("Empty filename. Oops?") //something somewhere had gone wrong, not a cause to die, going to the next image
+					continue
+				}
 
-		lInfo("Saving as", imgdata.Filename)
+				lInfo("Saving as", imgdata.Filename)
 
-		tsize, ok := imgdata.saveImage(opts)
-		size += tsize
-		if ok {
-			n++
-		}
+				tsize, ok := imgdata.saveImage(opts)
+				l.Lock()
+				size += tsize
+				if ok {
+					n++
+				}
+				l.Unlock()
+			}
+			wg.Done()
+		}()
 	}
+	wg.Wait()
 	lInfof("Downloaded %d images, for a total of %s", n, fmtbytes(float64(size)))
 }
 
