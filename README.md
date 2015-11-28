@@ -52,7 +52,7 @@ To protect innocent and prevent excessive accumulation of logs, rotation is impl
 At the moment of writing both samples were working, you would get output looking approximately like quote below and images in default directory `img`
 
 ```
-Derpibooru.org Downloader version 0.6.2
+Derpibooru.org Downloader version 0.7.0
 Happened at 2015/11/17 16:08:28 Program start
 Happened at 2015/11/17 16:08:28 Processing tags princess+luna%2C+safe
 Happened at 2015/11/17 16:08:28 Starting worker
@@ -111,3 +111,5 @@ logfilter	= false	// should app write ID discarded by filters images in log
 ``` 
 
 If any line is empty, program would use default, build-in parameters and overwrites them with defaults, when appropriate. Empty `key` would end up with no API key being used.
+
+May, if unlikely, suffer undefined behaviour if someone uploads new image so entire list of images gets bumped down one and same image appears as found twice. 
