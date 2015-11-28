@@ -1,42 +1,44 @@
 ponydownloader
 ==============
 
-[![forthebadge](http://forthebadge.com/images/badges/fuck-it-ship-it.svg)](http://forthebadge.com)
+[![forthebadge](http://forthebadge.com/images/badges/fuck-it-ship-it.svg)](http://forthebadge.com) [![forthebadge](http://forthebadge.com/images/badges/oooo-kill-em.svg)](http://forthebadge.com) [![forthebadge](http://forthebadge.com/images/badges/uses-badges.svg)](http://forthebadge.com)
 
 WARNING
 -------
 
-This app under limited support due to loss of interest into ponies. Sorry for those people who may have wanted more.
+This app is under limited support due to loss of interest in ponies. Sorry for those people who may have wanted more.
 
 ---
 
-Ponydownloader seeks to provide useful command-line tool to download images from [Derpibooru](https://derpibooru.org) using provided API
+Ponydownloader seeks to provide useful command-line tool to download images from [Derpibooru](https://derpibooru.org) using provided API.
 
-Currently ponydownloader provides three bits of functionality: download by image id, download by tag and filter images you download by their score and/or favorites.
+Currently ponydownloader provides three units of functionality: download by image ID, download by tag and filter images you download by their score and/or favorites.
 
 Usage
 -----
 
-Currently ponydownloader got two main modes of usage: download single image by id and batch download of images by tag.
+Currently ponydownloader got two main modes of usage: download one or more images by ID and batch download number of images by tag.
 
 After invocation, ponydownloader would read `config.ini` if it exist or write default one in current working directory. Then it would write completed actions in file `event.log` and write image in a directory specified in configuration file.
 
-To download single image, simply invoke ponydownloader with image id as argument.
+To download single image, simply invoke ponydownloader with image ID as argument. For multiple images, separate their IDs by space
 
-To download all images with desired flag , invoke `ponydownloader -t <flag>`
+To download all images with desired flag, invoke `ponydownloader -t <flag>`
 
-One can manipulate start and stop pages for limiting amount of downloaded images or skipping images already present: `-p <star page>` `-n <stop page>` . 
+One can manipulate start and stop pages for tag download for limiting amount of downloaded images or skipping images already present: `-p <star page>` `-n <stop page>`. Derpibooru provides results in fifty per page. 
 
-Currently filters available are:
+Currently available filters are:
 -  filter by score: `--score ` then minimal score to accept.
 -  filter by favorites: `--faves ` then minimal number of people who favored the to accept.
 
-Optional flag `-k` defines API key to use and overrides said key from configuration file. Key in configuration file gets rewritten. Derpibooru provides significant capability to exclude undesirable images server-side and API key allows one to switch from default settings to currently selected personal rule. One of the way to get API key is to look at your [account settings](https://derpibooru.org/users/edit)  
+Optional flag `-k` defines API key to use and overwrites said key from configuration file. You may want to back up your old key in this case. One of the way to get API key is to look at your [account settings](https://derpibooru.org/users/edit)  
+Derpibooru provides significant capability to exclude undesirable images server-side and API key allows one to switch from default settings to currently selected personal rule.
+
 Optional flag `--logfilter` turns on detailed log of each image discarded before download. It's saved into config file. To turn off, pass `--logfilter=false`
 
-Full list of flags returned by `--help` command
+Full list of flags returned by `--help` command.
 
-To protect innocent and prevent excessive accumulation of logs, rotation is implemented, currenlty caps at 1 Mb per file and 10 logfiles total
+To protect innocent and prevent excessive accumulation of logs, rotation is implemented, currenlty caps at 1 Mb per file and 10 logfiles total.
 
 #### Simple usage example:
 ```bash
@@ -75,7 +77,7 @@ There are two way to install this program: definitely working/developer way and 
 
 ##### Path of less resistance.
 
-If you trust me, Github Releases should contain latest release version, [here](https://github.com/NHOrus/ponydownloader/releases) Copy ponydownloader-**your_os**-**your_architecture** in a folder you want to run it from or somewhere in your path. Enjoy. You may need to pass correct values of target directory for downloads and your API key through CLI or config.ini
+If you trust me, Github Releases should contain latest release version, [here](https://github.com/NHOrus/ponydownloader/releases). Copy ponydownloader-**your_os**-**your_architecture** in a folder you want to run it from or somewhere in your path. Enjoy. You may need to pass correct values of target directory for downloads and your API key through CLI or config.ini
 
 Binaries may be outdated. My cross-compilation system may work not as well as intended. Binaries may be malicious, knowingly or unknowingly.
 
