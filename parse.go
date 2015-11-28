@@ -95,11 +95,6 @@ func (imgchan ImageCh) downloadImages(opts *Config) {
 		go func() {
 			for imgdata := range imgchan {
 
-				if imgdata.Filename == "" {
-					lErr("Empty filename. Oops?") //something somewhere had gone wrong, not a cause to die, going to the next image
-					continue
-				}
-
 				lInfo("Saving as", imgdata.Filename)
 
 				tsize, ok := imgdata.saveImage(opts)
