@@ -26,7 +26,7 @@ func init() {
 }
 
 func main() {
-	fmt.Println("Derpibooru.org Downloader version 0.7.0")
+	fmt.Println("Derpibooru.org Downloader version 0.7.1")
 
 	opts, lostArgs := getOptions()
 
