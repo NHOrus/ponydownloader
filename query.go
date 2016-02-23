@@ -195,6 +195,7 @@ func getRemoteSize(head http.Header) (expsize int64) {
 	sizestring, ok := head["Content-Length"]
 	if !ok {
 		lErr("Filesize not provided")
+		return 0
 	}
 	expsize, err := strconv.ParseInt(sizestring[0], 10, 64)
 	if err != nil {
