@@ -28,8 +28,8 @@ type FlagOpts struct {
 //FiltOpts are filtration parameters
 type FiltOpts struct {
 	Score  int  `long:"score" description:"Filter option, minimal score of image for it to be downloaded"`
-	ScoreF bool `no-flag:" "`
 	Faves  int  `long:"faves" description:"Filter option, minimal amount of people who favored image for it to be downloaded"`
+	ScoreF bool `no-flag:" "`
 	FavesF bool `no-flag:" "`
 }
 
