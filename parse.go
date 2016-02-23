@@ -129,7 +129,7 @@ func (imgchan ImageCh) ParseTag(opts *TagOpts, key string) {
 
 		body, err := getRemoteJSON(source + "&page=" + strconv.Itoa(i))
 		if err != nil {
-			lErr("Error while json from page ", i)
+			lErr("Error while getting json from page ", i)
 			lErr(err)
 			continue
 		}
