@@ -85,5 +85,5 @@ func debracket(slice []int) string {
 }
 
 func lWarn(v ...interface{}) {
-	_ = warnLogger.Output(2, fmt.Sprintln(v...)) ////Following log package, ignoring error value
+	_ = warnLogger.Output(2, fmt.Sprintln(v...)) //Following log package, ignoring error value
 }

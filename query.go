@@ -13,6 +13,10 @@ import (
 	"time"
 )
 
+func init() {
+	http.DefaultClient.Timeout = 1 * time.Second
+}
+
 func getRemoteJSON(source string) (body []byte, err error) {
 	response, err := http.Get(source)
 	//Getting our nice http response.
@@ -88,6 +92,7 @@ func makeHTTPSUnsafe() {
 		TLSHandshakeTimeout: 10 * time.Second,
 		TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
 	}
+	http.DefaultClient.Timeout = 1 * time.Second
 }
 
 func checkUserResponse() bool {
