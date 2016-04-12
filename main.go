@@ -81,12 +81,11 @@ func main() {
 }
 
 func setStopParsing(sig <-chan os.Signal, osig chan<- os.Signal) {
-	select {
-	case <-sig:
+	for {
+		<-sig
 		stopParsing = true
 		osig <- os.Interrupt
 	}
-
 }
 
 func (imgchan ImageCh) dispatch(sig <-chan os.Signal) (outch ImageCh) {
@@ -103,15 +102,13 @@ func (imgchan ImageCh) dispatcher(sig <-chan os.Signal, outch ImageCh) {
 			<-sig
 			lDone("Download interrupted by user's command")
 		default:
-			select {
-			case img, ok := <-imgchan:
-				if !ok {
-					close(outch)
-					imgchan = nil
-					return
-				}
-				outch <- img
+			img, ok := <-imgchan
+			if !ok {
+				close(outch)
+				imgchan = nil
+				return
 			}
+			outch <- img
 		}
 	}
 }
