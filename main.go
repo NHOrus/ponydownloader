@@ -6,24 +6,12 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"time"
-
-	"github.com/inconshreveable/mousetrap"
 )
 
 //Default global variables
 var (
 	prefix = "https:"
 )
-
-func init() {
-	if mousetrap.StartedByExplorer() {
-		fmt.Println("Don't double-click ponydownloader")
-		fmt.Println("You need to open cmd.exe and run it from the command line!")
-		time.Sleep(5 * time.Second)
-		os.Exit(1)
-	}
-}
 
 func main() {
 	fmt.Println("Derpibooru.org Downloader version 0.8.0")
