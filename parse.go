@@ -54,6 +54,11 @@ func trim(dat RawImage) Image {
 func (imgchan ImageCh) ParseImg(ids []int, key string) {
 
 	for _, imgid := range ids {
+
+		if stopParsing {
+			break
+		}
+
 		source := prefix + "//derpibooru.org/images/" + strconv.Itoa(imgid) + ".json"
 		if key != "" {
 			source = source + "?key=" + key
@@ -125,6 +130,11 @@ func (imgchan ImageCh) ParseTag(opts *TagOpts, key string) {
 	lInfo("Searching as", source)
 
 	for i := opts.StartPage; opts.StopPage == 0 || i <= opts.StopPage; i++ {
+
+		if stopParsing {
+			break
+		}
+
 		lInfo("Searching page", i)
 
 		body, err := getRemoteJSON(source + "&page=" + strconv.Itoa(i))
