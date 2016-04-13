@@ -6,53 +6,50 @@ func TestFilterNop(t *testing.T) {
 	filterInit(&FiltOpts{}, false)
 	in := make(ImageCh, 1)
 	out := FilterChannel(in)
-	in <- Image{}
+	in <- Image{Score: 1}
 	tval, ok := <-out
 	if !ok {
 		t.Fatal("No-op filter closed unexpectedly")
 	}
-	if tval.Imgid != 0 ||
-		tval.URL != "" ||
-		tval.Filename != "" ||
-		tval.Score != 0 ||
-		tval.Faves != 0 {
+	if (tval != Image{Score: 1}) {
 		t.Error("No-op filter mangles passing image")
 	}
 }
 
-func TestFilterGeneratedTrue(t *testing.T) {
+func TestFilterAlwaysTrue(t *testing.T) {
 	in := make(ImageCh, 1)
 	filter := filterGenerator(func(Image) bool { return true }, false)
 	out := filter(in)
-	in <- Image{}
+	in <- Image{Score: 1}
 	tval, ok := <-out
 
 	if !ok {
-		t.Fatal("Generated filter closed unexpectedly")
+		t.Fatal("Filter closed unexpectedly")
 	}
-	if tval.Imgid != 0 ||
-		tval.URL != "" ||
-		tval.Filename != "" ||
-		tval.Score != 0 ||
-		tval.Faves != 0 {
-		t.Error("Generated filter mangles passing image")
+	if (tval != Image{Score: 1}) {
+		t.Error("Filter mangles passing image")
 	}
 	close(in)
 	_, ok = <-out
 	if ok {
-		t.Error("Generated filter remains unexpectedly open")
+		t.Error("Filter remains unexpectedly open")
 	}
 }
 
-func TestFilterGeneratedFalse(t *testing.T) {
+func TestFilterAlwaysFalse(t *testing.T) {
 	in := make(ImageCh, 1)
 	filter := filterGenerator(func(Image) bool { return false }, false)
 	out := filter(in)
-	in <- Image{}
+	in <- Image{Score: 1}
 
 	close(in)
-	_, ok := <-out
+	pass, ok := <-out
+
+	if (pass == Image{Score: 1}) {
+		t.Error("Filter passes through image it shouldn't")
+	}
+
 	if ok {
-		t.Error("Generated filter remains unexpectedly open")
+		t.Error("Filter remains unexpectedly open")
 	}
 }
