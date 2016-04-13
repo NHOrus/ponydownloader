@@ -11,18 +11,13 @@ func TestDispatcherThrough(t *testing.T) {
 	sig := make(chan os.Signal)
 
 	go in.dispatcher(sig, out)
-	in <- Image{}
+	in <- Image{Score: 1}
 	select {
 	case tval, ok := <-out:
 		if !ok {
 			t.Fatal("Out channel is closed prematurely")
 		}
-		if tval.Imgid == 0 &&
-			tval.URL == "" &&
-			tval.Filename == "" &&
-			tval.Score == 0 &&
-			tval.Faves == 0 {
-		} else {
+		if (tval != Image{Score: 1}) {
 			t.Error("Pass through dispatcher mangles image")
 		}
 	default:
@@ -37,9 +32,9 @@ func TestDispatcherClose(t *testing.T) {
 
 	go in.dispatcher(sig, out)
 
-	close(in)
+	sig <- os.Interrupt
 	_, ok := <-out
 	if ok {
-		t.Error("Channel open and passes data when it should be closed. Or blocking")
+		t.Error("Channel open and passes data when it should be closed")
 	}
 }
