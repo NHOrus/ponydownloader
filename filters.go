@@ -31,7 +31,7 @@ func filterGenerator(filt func(Image) bool, enableLog bool) filtrator {
 					out <- imgdata
 					continue
 				}
-				lCondInfo(enableLog, "Filtering "+imgdata.Filename)
+				lCondInfo(enableLog, "Filtering ", imgdata.Filename)
 			}
 			close(out)
 		}()
