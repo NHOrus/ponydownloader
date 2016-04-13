@@ -1,5 +1,8 @@
 package main
 
+//This is standalone formatter for bytes, in binary magnitudes.
+//Because some things need to be rewritten by yourself.
+
 import (
 	"fmt"
 )

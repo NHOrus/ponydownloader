@@ -1,5 +1,7 @@
 package main
 
+//Windows-only check to prevent... accidents with incorrect use and improve user experience
+//by denying ability to start from explorer by double-click
 import (
 	"fmt"
 	"os"

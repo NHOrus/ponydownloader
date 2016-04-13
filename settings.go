@@ -160,11 +160,10 @@ func checkFlagError(err error) {
 	}
 }
 
-
 //Bool is a bool, because this is suggested method for go-flags to work with a boolean flag that could be flipped both ways
 type Bool bool
 
-//UnmarshalFlag satisfies flags.Unmarshaler interface for Bool
+//UnmarshalFlag implements flags.Unmarshaler interface for Bool
 func (b *Bool) UnmarshalFlag(value string) error {
 	if value == "true" {
 		*b = true
@@ -177,7 +176,7 @@ func (b *Bool) UnmarshalFlag(value string) error {
 	return nil
 }
 
-//MarshalFlag satisfies flags.Marshaler interface for Bool
+//MarshalFlag implements flags.Marshaler interface for Bool
 func (b Bool) MarshalFlag() (string, error) {
 	if b {
 		return "true", nil
