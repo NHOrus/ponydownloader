@@ -2,10 +2,16 @@ package main
 
 import "testing"
 
-func TestFilterNop(t *testing.T) {
-	filterInit(&FiltOpts{}, false)
+func TestFilterInit(t *testing.T) {
+	filterInit(&FiltOpts{ScoreF: true, FavesF: true}, false)
+	if len(filters) != 3 {
+		t.Error("Filter initialization doesn't work as expected")
+	}
+}
+
+func TestFilterNoop(t *testing.T) {
 	in := make(ImageCh, 1)
-	out := FilterChannel(in)
+	out := noopFilter(in)
 	in <- Image{Score: 1}
 	tval, ok := <-out
 	if !ok {

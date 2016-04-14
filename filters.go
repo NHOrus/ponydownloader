@@ -6,7 +6,7 @@ var filters []filtrator
 
 //If filter isn't on, skip. If any of filter parameters is given, filtration is on
 func filterInit(opts *FiltOpts, enableLog bool) {
-	filters = append(filters, nopFilter)
+	filters = append(filters, noopFilter)
 
 	if opts.ScoreF {
 		filters = append(filters, filterGenerator(func(i Image) bool { return i.Score >= opts.Score }, enableLog))
@@ -17,7 +17,7 @@ func filterInit(opts *FiltOpts, enableLog bool) {
 }
 
 //Do nothing
-func nopFilter(in ImageCh) ImageCh {
+func noopFilter(in ImageCh) ImageCh {
 	return in
 }
 
