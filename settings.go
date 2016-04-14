@@ -165,22 +165,17 @@ type Bool bool
 
 //UnmarshalFlag implements flags.Unmarshaler interface for Bool
 func (b *Bool) UnmarshalFlag(value string) error {
-	if value == "true" {
-		*b = true
-	} else if value == "false" {
-		*b = false
-	} else {
-		return fmt.Errorf("only `true' and `false' are valid values, not `%s'", value)
+	t, err := strconv.ParseBool(value)
+
+	if err != nil {
+		return fmt.Errorf("%s: only `true' and `false' are valid values, not `%s'", err, value)
 	}
 
+	*b = Bool(t)
 	return nil
 }
 
 //MarshalFlag implements flags.Marshaler interface for Bool
 func (b Bool) MarshalFlag() (string, error) {
-	if b {
-		return "true", nil
-	}
-
-	return "false", nil
+	return strconv.FormatBool(bool(b)), nil
 }
