@@ -12,7 +12,22 @@ import (
 var (
 	prefix      = "https:"
 	stopParsing bool
+	interruptSig chan os.Signal
 )
+
+func init() {
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt)
+	interruptSig := make(chan os.Signal, 1)
+
+	go func() {
+		for {
+			<-sig
+			stopParsing = true
+			interruptSig <- os.Interrupt
+		}
+	}()
+}
 
 func main() {
 	fmt.Println("Derpibooru.org Downloader version 0.8.0")
@@ -68,24 +83,11 @@ func main() {
 	filterInit(opts.FiltOpts, bool(opts.Config.LogFilters)) //Initiating filters based on our given flags
 	filtimgdat := FilterChannel(imgdat)                     //Actual filtration
 
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt)
 
-	osig := make(chan os.Signal, 1)
-	go setStopParsing(sig, osig)
-
-	filtimgdat.dispatch(osig).downloadImages(opts.Config) // Now that we got asynchronous list of images we want to get done, we can get them.
+	filtimgdat.dispatch(interruptSig).downloadImages(opts.Config) // Now that we got asynchronous list of images we want to get done, we can get them.
 
 	lDone("Finished")
 	//And we are done here! Hooray!
-}
-
-func setStopParsing(sig <-chan os.Signal, osig chan<- os.Signal) {
-	for {
-		<-sig
-		stopParsing = true
-		osig <- os.Interrupt
-	}
 }
 
 func (imgchan ImageCh) dispatch(sig <-chan os.Signal) (outch ImageCh) {
