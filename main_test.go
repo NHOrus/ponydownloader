@@ -1,16 +1,15 @@
 package main
 
 import (
-	"os"
+	"syscall"
 	"testing"
 )
 
-func TestDispatcherThrough(t *testing.T) {
+func TestInterruptThrough(t *testing.T) {
 	in := make(ImageCh)
 	out := make(ImageCh)
-	sig := make(chan os.Signal)
 
-	go in.dispatcher(sig, out)
+	go func() { out = in.interrupt() }()
 	in <- Image{Score: 1}
 	select {
 	case tval, ok := <-out:
@@ -18,21 +17,18 @@ func TestDispatcherThrough(t *testing.T) {
 			t.Fatal("Out channel is closed prematurely")
 		}
 		if (tval != Image{Score: 1}) {
-			t.Error("Pass through dispatcher mangles image")
+			t.Error("Pass through interrupter mangles image")
 		}
 	default:
-		t.Fatal("Dispatcher blocks")
+		t.Fatal("Interrupter blocks")
 	}
 }
 
-func TestDispatcherClose(t *testing.T) {
+func TestInterruptClose(t *testing.T) {
 	in := make(ImageCh)
-	out := make(ImageCh)
-	sig := make(chan os.Signal)
+	out := in.interrupt()
 
-	go in.dispatcher(sig, out)
-
-	sig <- os.Interrupt
+	syscall.Kill(syscall.Getpid(), syscall.SIGINT)
 	_, ok := <-out
 	if ok {
 		t.Error("Channel open and passes data when it should be closed")

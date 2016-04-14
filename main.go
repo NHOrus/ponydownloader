@@ -94,8 +94,8 @@ func (imgchan ImageCh) interrupt() (outch ImageCh) {
 		select {
 		case <-interruptDL:
 			close(outch)
-		default:
-			img, ok := <-imgchan
+			return
+		case img, ok := <-imgchan:
 			if !ok {
 				close(outch)
 				imgchan = nil
