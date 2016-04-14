@@ -10,7 +10,7 @@ import (
 
 //Default global variables
 var (
-	prefix         = "https:"
+	scheme         = "https:"
 	interruptParse = make(chan os.Signal, 1)
 	interruptDL    = make(chan os.Signal, 1)
 )
@@ -44,7 +44,7 @@ func main() {
 	}
 
 	if opts.NoHTTPS {
-		prefix = "http:" //Horrible kludge that must be removed in favor of url.URL.Scheme
+		scheme = "http:" //Horrible kludge that must be removed in favor of url.URL.Scheme
 	}
 
 	if opts.UnsafeHTTPS {

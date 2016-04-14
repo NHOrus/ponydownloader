@@ -44,7 +44,7 @@ func trim(dat RawImage) Image {
 	return Image{
 		Imgid:    dat.Imgid,
 		Filename: tfn,
-		URL:      prefix + "/" + path.Dir(dat.URL) + "/" + tfn,
+		URL:      scheme + "/" + path.Dir(dat.URL) + "/" + tfn,
 		Score:    dat.Score,
 		Faves:    dat.Faves,
 	}
@@ -59,7 +59,7 @@ func (imgchan ImageCh) ParseImg(ids []int, key string) {
 			break
 		}
 
-		source := prefix + "//derpibooru.org/images/" + strconv.Itoa(imgid) + ".json"
+		source := scheme + "//derpibooru.org/images/" + strconv.Itoa(imgid) + ".json"
 		if key != "" {
 			source = source + "?key=" + key
 		}
@@ -121,7 +121,7 @@ func (imgchan ImageCh) downloadImages(opts *Config) {
 func (imgchan ImageCh) ParseTag(opts *TagOpts, key string) {
 
 	//Unlike main, I don't see how I could separate bits out to decrease complexity
-	source := prefix + "//derpibooru.org/search.json?q=" + opts.Tag //yay hardwiring url strings!
+	source := scheme + "//derpibooru.org/search.json?q=" + opts.Tag //yay hardwiring url strings!
 
 	if key != "" {
 		source = source + "&key=" + key
