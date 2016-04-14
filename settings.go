@@ -168,7 +168,7 @@ func (b *Bool) UnmarshalFlag(value string) error {
 	t, err := strconv.ParseBool(value)
 
 	if err != nil {
-		return fmt.Errorf("%s: only `true' and `false' are valid values, not `%s'", err, value)
+		return fmt.Errorf("only `true' and `false' are valid values, not `%s'", value)
 	}
 
 	*b = Bool(t)
