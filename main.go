@@ -10,22 +10,21 @@ import (
 
 //Default global variables
 var (
-	prefix      = "https:"
-	stopParsing bool
-	interruptSig chan os.Signal
+	prefix         = "https:"
+	interruptParse = make(chan os.Signal, 1)
+	interruptDL    = make(chan os.Signal, 1)
 )
 
 func init() {
-	sig := make(chan os.Signal, 1)
+	sig := make(chan os.Signal)
 	signal.Notify(sig, os.Interrupt)
-	interruptSig := make(chan os.Signal, 1)
 
 	go func() {
-		for {
-			<-sig
-			stopParsing = true
-			interruptSig <- os.Interrupt
-		}
+		<-sig
+		interruptParse <- os.Interrupt
+		interruptDL <- os.Interrupt
+		<-sig
+		lDone("Program interrupted by user's command")
 	}()
 }
 
@@ -83,26 +82,18 @@ func main() {
 	filterInit(opts.FiltOpts, bool(opts.Config.LogFilters)) //Initiating filters based on our given flags
 	filtimgdat := FilterChannel(imgdat)                     //Actual filtration
 
-
-	filtimgdat.dispatch(interruptSig).downloadImages(opts.Config) // Now that we got asynchronous list of images we want to get done, we can get them.
+	filtimgdat.interrupt().downloadImages(opts.Config) // Now that we got asynchronous list of images we want to get done, we can get them.
 
 	lDone("Finished")
 	//And we are done here! Hooray!
 }
 
-func (imgchan ImageCh) dispatch(sig <-chan os.Signal) (outch ImageCh) {
+func (imgchan ImageCh) interrupt() (outch ImageCh) {
 	outch = make(ImageCh)
-	go imgchan.dispatcher(sig, outch)
-	return outch
-}
-
-func (imgchan ImageCh) dispatcher(sig <-chan os.Signal, outch ImageCh) {
-	for {
+	go func() {
 		select {
-		case <-sig: //can't test this branch due to lDone killing our test
+		case <-interruptDL:
 			close(outch)
-			<-sig
-			lDone("Download interrupted by user's command")
 		default:
 			img, ok := <-imgchan
 			if !ok {
@@ -112,5 +103,7 @@ func (imgchan ImageCh) dispatcher(sig <-chan os.Signal, outch ImageCh) {
 			}
 			outch <- img
 		}
-	}
+	}()
+
+	return outch
 }
