@@ -7,9 +7,8 @@ import (
 
 func TestInterruptThrough(t *testing.T) {
 	in := make(ImageCh)
-	out := make(ImageCh)
+	out := in.interrupt()
 
-	go func() { out = in.interrupt() }()
 	in <- Image{Score: 1}
 	select {
 	case tval, ok := <-out:
@@ -24,13 +23,24 @@ func TestInterruptThrough(t *testing.T) {
 	}
 }
 
-func TestInterruptClose(t *testing.T) {
+func TestInterruptSignal(t *testing.T) {
 	in := make(ImageCh)
 	out := in.interrupt()
 
 	syscall.Kill(syscall.Getpid(), syscall.SIGINT)
 	_, ok := <-out
 	if ok {
-		t.Error("Channel open and passes data when it should be closed")
+		t.Error("Channel open and passes data when it should be closed by interrupt")
+	}
+}
+
+func TestInterruptClose(t *testing.T) {
+	in := make(ImageCh)
+	out := in.interrupt()
+
+	close(in)
+	_, ok := <-out
+	if ok {
+		t.Error("Channel open and passes data when it should be closed by end of input")
 	}
 }
