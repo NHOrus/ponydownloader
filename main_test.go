@@ -10,7 +10,18 @@ func TestInterruptThrough(t *testing.T) {
 	in := make(ImageCh)
 	out := in.interrupt()
 
-	in <- Image{Score: 1}
+	timeout := make(chan bool, 1)
+	go func() {
+		time.Sleep(1 * time.Second)
+		timeout <- true
+	}()
+
+	select {
+	case in <- Image{Score: 1}:
+	case <-timeout:
+		t.Fatal("Can't image into channel")
+	}
+
 	select {
 	case tval, ok := <-out:
 		if !ok {
@@ -22,7 +33,15 @@ func TestInterruptThrough(t *testing.T) {
 	default:
 		t.Fatal("Interrupter blocks")
 	}
+}
 
+func TestInterruptSequence(t *testing.T) {
+	in := make(ImageCh)
+	out := in.interrupt()
+	
+	in <- Image{Score: 1}
+	<- out
+	
 	timeout := make(chan bool, 1)
 	go func() {
 		time.Sleep(1 * time.Second)
@@ -41,7 +60,7 @@ func TestInterruptThrough(t *testing.T) {
 			t.Fatal("Out channel is closed prematurely")
 		}
 		if (tval != Image{Faves: 1}) {
-			t.Error("Pass through interrupter mangles image")
+			t.Error("Second pass through interrupter mangles image")
 		}
 	default:
 		t.Fatal("Interrupter blocks on second image")
