@@ -3,6 +3,7 @@ package main
 import (
 	"syscall"
 	"testing"
+	"time"
 )
 
 func TestInterruptThrough(t *testing.T) {
@@ -20,6 +21,30 @@ func TestInterruptThrough(t *testing.T) {
 		}
 	default:
 		t.Fatal("Interrupter blocks")
+	}
+
+	timeout := make(chan bool, 1)
+	go func() {
+		time.Sleep(1 * time.Second)
+		timeout <- true
+	}()
+
+	select {
+	case in <- Image{Faves: 1}:
+	case <-timeout:
+		t.Fatal("Can't push second image into channel")
+	}
+
+	select {
+	case tval, ok := <-out:
+		if !ok {
+			t.Fatal("Out channel is closed prematurely")
+		}
+		if (tval != Image{Faves: 1}) {
+			t.Error("Pass through interrupter mangles image")
+		}
+	default:
+		t.Fatal("Interrupter blocks on second image")
 	}
 }
 
