@@ -43,10 +43,6 @@ func main() {
 		lDone("Nothing to download, bye!")
 	}
 
-	if opts.NoHTTPS {
-		scheme = "http:" //Horrible kludge that must be removed in favor of url.URL.Scheme
-	}
-
 	if opts.UnsafeHTTPS {
 		makeHTTPSUnsafe()
 	}
