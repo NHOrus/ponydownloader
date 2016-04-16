@@ -91,17 +91,19 @@ func main() {
 func (imgchan ImageCh) interrupt() (outch ImageCh) {
 	outch = make(ImageCh)
 	go func() {
-		select {
-		case <-interruptDL:
-			close(outch)
-			return
-		case img, ok := <-imgchan:
-			if !ok {
+		for {
+			select {
+			case <-interruptDL:
 				close(outch)
-				imgchan = nil
 				return
+			case img, ok := <-imgchan:
+				if !ok {
+					close(outch)
+					imgchan = nil
+					return
+				}
+				outch <- img
 			}
-			outch <- img
 		}
 	}()
 
