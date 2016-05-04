@@ -10,7 +10,11 @@ func TestParseInterrupt(t *testing.T) {
 		t.Error("Parsing gets interrupted by default")
 	}
 
-	syscall.Kill(syscall.Getpid(), syscall.SIGINT)
+	err := syscall.Kill(syscall.Getpid(), syscall.SIGINT)
+
+	if err != nil {
+		t.Skip("Can't get pid, skipping")
+	}
 
 	if isParseInterrupted() {
 		t.Error("Parsing will continue after user interrupt")
