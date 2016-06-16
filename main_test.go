@@ -67,6 +67,17 @@ func TestInterruptSequence(t *testing.T) {
 	}
 }
 
+func TestInterruptClose(t *testing.T) {
+	in := make(ImageCh)
+	out := in.interrupt()
+
+	close(in)
+	_, ok := <-out
+	if ok {
+		t.Error("Channel open and passes data when it should be closed by end of input")
+	}
+}
+
 func TestInterruptSignal(t *testing.T) {
 	in := make(ImageCh)
 	out := in.interrupt()
@@ -90,16 +101,5 @@ func TestInterruptSignal(t *testing.T) {
 		}
 	case <-timeout:
 		t.Skip("Race issue, timing out")
-	}
-}
-
-func TestInterruptClose(t *testing.T) {
-	in := make(ImageCh)
-	out := in.interrupt()
-
-	close(in)
-	_, ok := <-out
-	if ok {
-		t.Error("Channel open and passes data when it should be closed by end of input")
 	}
 }
