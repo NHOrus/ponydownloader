@@ -22,7 +22,7 @@ func init() {
 	go func() {
 		<-sig
 		interruptParse <- os.Interrupt
-		interruptDL <- os.Interrupt
+		close(interruptDL)
 		<-sig
 		lDone("Program interrupted by user's command")
 	}()
