@@ -10,7 +10,7 @@ import (
 
 //RawImage contains data we got from API that needs to be modified before further usage
 type RawImage struct {
-	Imgid          int    `json:"id_number"`
+	Imgid          string `json:"id"`
 	URL            string `json:"image"`
 	Score          int    `json:"score"`
 	OriginalFormat string `json:"original_format"`
@@ -40,9 +40,14 @@ type ImageCh chan Image
 //would be processed in other places
 func trim(dat RawImage) Image {
 
-	tfn := strconv.Itoa(dat.Imgid) + "." + dat.OriginalFormat
+	tfn := dat.Imgid + "." + dat.OriginalFormat
+	id, ok := strconv.Atoi(dat.Imgid)
+	if ok != nil {
+		lErr(id, ok)
+	}
 	return Image{
-		Imgid:    dat.Imgid,
+
+		Imgid:    id,
 		Filename: tfn,
 		URL:      scheme + "/" + path.Dir(dat.URL) + "/" + tfn,
 		Score:    dat.Score,
