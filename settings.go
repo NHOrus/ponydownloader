@@ -11,9 +11,6 @@ import (
 	flag "github.com/jessevdk/go-flags"
 )
 
-//Bool is a bool, because this is suggested method for go-flags to work with a boolean flag that could be flipped both ways
-type Bool bool
-
 //Config are concrete and stored in configuration file
 type Config struct {
 	ImageDir   string `long:"dir" description:"Target Directory" default:"img" ini-name:"downdir"`
@@ -160,21 +157,4 @@ func checkFlagError(err error) {
 	default:
 		lFatal("Can't parse flags: ", err)
 	}
-}
-
-//UnmarshalFlag implements flags.Unmarshaler interface for Bool
-func (b *Bool) UnmarshalFlag(value string) error {
-	t, err := strconv.ParseBool(value)
-
-	if err != nil {
-		return fmt.Errorf("only `true' and `false' are valid values, not `%s'", value)
-	}
-
-	*b = Bool(t)
-	return nil
-}
-
-//MarshalFlag implements flags.Marshaler interface for Bool
-func (b Bool) MarshalFlag() (string, error) {
-	return strconv.FormatBool(bool(b)), nil
 }
