@@ -101,7 +101,7 @@ func (sets *Config) prettyWriteIni(inifile io.Writer) error {
 	return tb.Flush() //Returns and passes error upstairs
 }
 
-//compareStatic compares only options I want to preserve across launches.
+//isEqual compares only options I want to preserve across launches.
 func (sets *Config) isEqual(b *Config) bool {
 	if b == nil {
 		return false

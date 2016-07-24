@@ -18,7 +18,7 @@ var (
 	warnLogger *log.Logger
 )
 
-//SetLog sets up logfile as I want it to: Copy to event.log, copy to command line
+//Setting up logfile as I want it to: Copy to event.log, copy to command line
 //Sometimes you just looks at available packages and feels that you must roll out your own solution
 func init() {
 
@@ -44,6 +44,7 @@ func lInfo(v ...interface{}) {
 	infoLogger.Println(v...)
 }
 
+//lCondInfo doesn't log when it's disalbed
 func lCondInfo(on bool, v ...interface{}) {
 	if on {
 		infoLogger.Println(v...)
@@ -84,6 +85,7 @@ func debracket(slice []int) string {
 	return strings.Join(stringSlice, ", ")
 }
 
+//lWarn is when there is no noticeable error, but something suspicious still happed
 func lWarn(v ...interface{}) {
 	_ = warnLogger.Output(2, fmt.Sprintln(v...)) //Following log package, ignoring error value
 }
