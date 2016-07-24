@@ -61,11 +61,11 @@ func okHTTPStatus(chk *http.Response) bool {
 		http.StatusNotFound,
 		http.StatusRequestURITooLong,
 		http.StatusExpectationFailed:
-		lErr("Incorrect request to server, error ", chk.Status)
+		lErr("Incorrect request to server, error:", chk.Status)
 		lErr("Possible API changes")
 		return false
 	default:
-		lWarn("Got something weird from server: ", chk.Status)
+		lWarn("Got something weird from server:", chk.Status)
 		lWarn("Continuing anyway")
 		return true
 	}
@@ -111,6 +111,7 @@ func checkUserResponse() bool {
 
 }
 func (imgdata Image) saveImage(opts *Config) (size int64, ok bool) { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
+	ok = false
 
 	filepath := opts.ImageDir + string(os.PathSeparator) + imgdata.Filename
 

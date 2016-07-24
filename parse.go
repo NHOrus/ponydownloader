@@ -121,7 +121,7 @@ func (imgchan ImageCh) downloadImages(opts *Config) {
 func (imgchan ImageCh) ParseTag(opts *TagOpts, key string) {
 
 	//Unlike main, I don't see how I could separate bits out to decrease complexity
-	source := scheme + "//derpibooru.org/search.json?q=" + opts.Tag //yay hardwiring url strings!
+	source := scheme + "//derpibooru.org/search.json?sbq=" + opts.Tag //yay hardwiring url strings!
 
 	if key != "" {
 		source = source + "&key=" + key
