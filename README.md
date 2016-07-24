@@ -25,13 +25,13 @@ To download single image, simply invoke ponydownloader with image ID as argument
 
 To download all images with desired flag, invoke `ponydownloader -t <flag>`
 
-One can manipulate start and stop pages for tag download for limiting amount of downloaded images or skipping images already present: `-p <star page>` `-n <stop page>`. Derpibooru provides results in fifty per page. 
+One can manipulate start and stop pages for tag download for limiting amount of downloaded images or skipping images already present: `-p <star page>` `-n <stop page>`. Derpibooru provides results in fifty per page.
 
 Currently available filters are:
 -  filter by score: `--score ` then minimal score to accept.
 -  filter by favorites: `--faves ` then minimal number of people who favored the to accept.
 
-Optional flag `-k` defines API key to use and overwrites said key from configuration file. You may want to back up your old key in this case. One of the way to get API key is to look at your [account settings](https://derpibooru.org/users/edit)  
+Optional flag `-k` defines API key to use and overwrites said key from configuration file. You may want to back up your old key in this case. One of the way to get API key is to look at your [account settings](https://derpibooru.org/users/edit)
 Derpibooru provides significant capability to exclude undesirable images server-side and API key allows one to switch from default settings to currently selected personal rule.
 
 Optional flag `--logfilter` turns on detailed log of each image discarded before download. It's saved into config file. To turn off, pass `--logfilter=false`
@@ -52,7 +52,7 @@ To protect innocent and prevent excessive accumulation of logs, rotation is impl
 At the moment of writing both samples were working, you would get output looking approximately like quote below and images in default directory `img`
 
 ```
-Derpibooru.org Downloader version 0.9.0
+Derpibooru.org Downloader version 0.9.1
 Happened at 2015/11/17 16:08:28 Program start
 Happened at 2015/11/17 16:08:28 Processing tags princess+luna%2C+safe
 Happened at 2015/11/17 16:08:28 Starting worker
@@ -90,13 +90,13 @@ Binaries may be outdated. My cross-compilation system may work not as well as in
  cp config.ini.sample config.ini
  // edit in your key into config.ini or put it once as command line argument
  // run ponydownloader as explained earlier
-``` 
+```
 
 ###### Explanation:
 
 Make sure your $GOPATH is set and correct and you got git installed and working.
 
-We trust into `go get -d` to get source code of ponydownloader and all dependencies. Also, it updates them. `-d` flag  prevents installation. Alternatively, one can run `go get` to compile all the code and install binary into $GOPATH/bin 
+We trust into `go get -d` to get source code of ponydownloader and all dependencies. Also, it updates them. `-d` flag  prevents installation. Alternatively, one can run `go get` to compile all the code and install binary into $GOPATH/bin
 
 Then we move into directory where source code sleeps endless sleep, compile everything into one binary executable and set it up for running in that same directory with the source. Or we can move it everywhere we want and run locally there.
 
@@ -108,8 +108,8 @@ key			=		// your derpibooru.org key
 downdir		= img	// in this directory your images would be saved
 queue_depth	= 50	// depth of queue of images, waiting for download. Default value - one search page
 logfilter	= false	// should app write ID discarded by filters images in log
-``` 
+```
 
 If any line is empty, program would use default, build-in parameters and overwrites them with defaults, when appropriate. Empty `key` would end up with no API key being used.
 
-May, if unlikely, suffer undefined behaviour if someone uploads new image so entire list of images gets bumped down one and same image appears as found twice. 
+May, if unlikely, suffer undefined behaviour if someone uploads new image so entire list of images gets bumped down one and same image appears as found twice.
