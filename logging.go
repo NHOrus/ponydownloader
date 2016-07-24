@@ -60,7 +60,6 @@ func lInfof(format string, v ...interface{}) {
 //lDone notes that we are finished and there is nothing left to do, sane way
 func lDone(v ...interface{}) {
 	doneLogger.Println(v...)
-	os.Exit(0)
 }
 
 //lErr notes non-fatal error and usually continues trying to crunch on
@@ -73,8 +72,6 @@ func lFatal(v ...interface{}) {
 	_ = errLogger.Output(2, fmt.Sprintln(v...)) //Following log package, ignoring error value
 	os.Exit(1)
 }
-
-//lWarn is when there is no noticeable error, but something suspicious still happed
 
 //prettifying return, so brackets will go away
 func debracket(slice []int) string {

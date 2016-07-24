@@ -25,6 +25,7 @@ func init() {
 		close(interruptDL)
 		<-sig
 		lDone("Program interrupted by user's command")
+		os.Exit(0)
 	}()
 }
 
@@ -41,6 +42,7 @@ func main() {
 	//If no arguments after flags and empty/unchanged tag, what we should download? Sane end of line.
 	if len(opts.Args.IDs) == 0 && opts.Tag == "" {
 		lDone("Nothing to download, bye!")
+		return
 	}
 
 	if opts.UnsafeHTTPS {
@@ -81,6 +83,7 @@ func main() {
 	filtimgdat.interrupt().downloadImages(opts.Config) // Now that we got asynchronous list of images we want to get done, we can get them.
 
 	lDone("Finished")
+	return
 	//And we are done here! Hooray!
 }
 
