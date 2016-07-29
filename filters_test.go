@@ -4,14 +4,14 @@ import "testing"
 
 func TestFilterInit(t *testing.T) {
 	filterInit(&FiltOpts{ScoreF: true, FavesF: true}, false)
-	if len(filters) != 3 {
+	if len(filters) != 2 {
 		t.Error("Filter initialization doesn't work as expected")
 	}
 }
 
-func TestFilterNoop(t *testing.T) {
+func TestFilterNone(t *testing.T) {
 	in := make(ImageCh, 1)
-	out := noopFilter(in)
+	out := FilterChannel(in)
 	in <- Image{Score: 1}
 	tval, ok := <-out
 	if !ok {
@@ -60,15 +60,15 @@ func TestFilterAlwaysFalse(t *testing.T) {
 	}
 }
 
-func TestFilterChannel(t *testing.T) {
+func TestFilterComplex(t *testing.T) {
 	filterInit(&FiltOpts{ScoreF: true, FavesF: true}, false)
 
 	in := make(ImageCh, 3)
-	out := FilterChannel(in)
 	in <- Image{Score: -1}
 	in <- Image{Faves: -1}
 	in <- Image{Imgid: 1}
 
+	out := FilterChannel(in)
 	close(in)
 	pass, _ := <-out
 
