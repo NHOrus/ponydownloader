@@ -5,6 +5,11 @@ import (
 	"os/signal"
 )
 
+var (
+	interruptParse = make(chan os.Signal, 1)
+	interruptDL    = make(chan os.Signal, 1)
+)
+
 func init() {
 	sig := make(chan os.Signal)
 	signal.Notify(sig, os.Interrupt)

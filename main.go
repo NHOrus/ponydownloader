@@ -9,9 +9,7 @@ import (
 
 //Default global variables
 var (
-	scheme         = "https:"
-	interruptParse = make(chan os.Signal, 1)
-	interruptDL    = make(chan os.Signal, 1)
+	scheme = "https:"
 )
 
 func main() {
