@@ -1,13 +1,31 @@
 package main
 
 import (
+	"os"
 	"syscall"
 	"testing"
 	"time"
 )
 
+func TestInitInterrupter(t *testing.T) {
+	if isInterrupted() {
+		t.Error("Parsing gets interrupted by default")
+	}
+
+	err := syscall.Kill(syscall.Getpid(), syscall.SIGINT)
+
+	if err != nil {
+		t.Skip("Can't get pid, skipping")
+	}
+
+	if isInterrupted() {
+		t.Error("Parsing will continue after user interrupt")
+	}
+}
+
 func TestInterruptThrough(t *testing.T) {
 	in := make(ImageCh)
+	interrupter = make(chan os.Signal, 1)
 	out := in.interrupt()
 
 	timeout := make(chan bool, 1)
@@ -37,6 +55,7 @@ func TestInterruptThrough(t *testing.T) {
 
 func TestInterruptSequence(t *testing.T) {
 	in := make(ImageCh)
+	interrupter = make(chan os.Signal, 1)
 	out := in.interrupt()
 
 	in <- Image{Score: 1}
@@ -69,53 +88,12 @@ func TestInterruptSequence(t *testing.T) {
 
 func TestInterruptClose(t *testing.T) {
 	in := make(ImageCh)
+	interrupter = make(chan os.Signal, 1)
 	out := in.interrupt()
 
 	close(in)
 	_, ok := <-out
 	if ok {
 		t.Error("Channel open and passes data when it should be closed by end of input")
-	}
-}
-
-func TestInterruptSignal(t *testing.T) {
-	in := make(ImageCh)
-	out := in.interrupt()
-
-	err := syscall.Kill(syscall.Getpid(), syscall.SIGINT)
-
-	if err != nil {
-		t.Skip("Can't get pid, skipping")
-	}
-
-	timeout := make(chan bool, 1)
-	go func() {
-		time.Sleep(1 * time.Second)
-		timeout <- true
-	}()
-
-	select {
-	case _, ok := <-out:
-		if ok {
-			t.Error("Channel open and passes data when it should be closed by interrupt")
-		}
-	case <-timeout:
-		t.Skip("Race issue, timing out")
-	}
-}
-
-func TestInterruptParse(t *testing.T) {
-	if isInterrupted() {
-		t.Error("Parsing gets interrupted by default")
-	}
-
-	err := syscall.Kill(syscall.Getpid(), syscall.SIGINT)
-
-	if err != nil {
-		t.Skip("Can't get pid, skipping")
-	}
-
-	if !isInterrupted() {
-		t.Error("Parsing will continue after user interrupt")
 	}
 }
