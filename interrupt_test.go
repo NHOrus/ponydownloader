@@ -105,7 +105,7 @@ func TestInterruptSignal(t *testing.T) {
 }
 
 func TestInterruptParse(t *testing.T) {
-	if !isInterrupted() {
+	if isInterrupted() {
 		t.Error("Parsing gets interrupted by default")
 	}
 
@@ -115,7 +115,7 @@ func TestInterruptParse(t *testing.T) {
 		t.Skip("Can't get pid, skipping")
 	}
 
-	if isInterrupted() {
+	if !isInterrupted() {
 		t.Error("Parsing will continue after user interrupt")
 	}
 }
