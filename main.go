@@ -5,7 +5,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/signal"
 )
 
 //Default global variables
@@ -14,20 +13,6 @@ var (
 	interruptParse = make(chan os.Signal, 1)
 	interruptDL    = make(chan os.Signal, 1)
 )
-
-func init() {
-	sig := make(chan os.Signal)
-	signal.Notify(sig, os.Interrupt)
-
-	go func() {
-		<-sig
-		interruptParse <- os.Interrupt
-		close(interruptDL)
-		<-sig
-		lDone("Program interrupted by user's command")
-		os.Exit(0)
-	}()
-}
 
 func main() {
 	fmt.Println("Derpibooru.org Downloader version 0.9.1")
@@ -85,26 +70,4 @@ func main() {
 	lDone("Finished")
 	return
 	//And we are done here! Hooray!
-}
-
-func (imgchan ImageCh) interrupt() (outch ImageCh) {
-	outch = make(ImageCh)
-	go func() {
-		for {
-			select {
-			case <-interruptDL:
-				close(outch)
-				return
-			case img, ok := <-imgchan:
-				if !ok {
-					close(outch)
-					imgchan = nil
-					return
-				}
-				outch <- img
-			}
-		}
-	}()
-
-	return outch
 }

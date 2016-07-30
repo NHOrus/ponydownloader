@@ -175,12 +175,3 @@ func (imgchan ImageCh) ParseTag(opts *TagOpts, key string) {
 
 	close(imgchan)
 }
-
-func isParseInterrupted() bool {
-	select {
-	case <-interruptParse:
-		return true
-	default:
-		return false
-	}
-}
