@@ -60,7 +60,7 @@ func (imgchan ImageCh) ParseImg(ids []int, key string) {
 
 	for _, imgid := range ids {
 
-		if isParseInterrupted() {
+		if isInterrupted() {
 			break
 		}
 
@@ -136,7 +136,7 @@ func (imgchan ImageCh) ParseTag(opts *TagOpts, key string) {
 
 	for i := opts.StartPage; opts.StopPage == 0 || i <= opts.StopPage; i++ {
 
-		if isParseInterrupted() {
+		if isInterrupted() {
 			break
 		}
 
