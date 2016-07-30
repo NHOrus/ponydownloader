@@ -5,6 +5,8 @@ package main
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 )
 
 //Binary byte sizes of common values
@@ -34,4 +36,13 @@ func fmtbytes(b float64) string {
 	default:
 		return fmt.Sprintf("%.0f B", b)
 	}
+}
+
+//prettifying return, so brackets will go away
+func debracket(slice []int) string {
+	stringSlice := make([]string, len(slice))
+	for idx, num := range slice {
+		stringSlice[idx] = strconv.Itoa(num)
+	}
+	return strings.Join(stringSlice, ", ")
 }

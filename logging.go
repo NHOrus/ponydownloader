@@ -5,8 +5,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"strconv"
-	"strings"
 
 	"gopkg.in/natefinch/lumberjack.v2"
 )
@@ -19,7 +17,7 @@ var (
 )
 
 //Setting up logfile as I want it to: Copy to event.log, copy to command line
-//Sometimes you just looks at available packages and feels that you must roll out your own solution
+//Sometimes you just look at available packages and feel that you must roll out your own solution
 func init() {
 
 	logfile := &lumberjack.Logger{
@@ -35,7 +33,7 @@ func init() {
 	doneLogger = log.New(infoLog, "Done at ", log.LstdFlags)
 	infoLogger = log.New(infoLog, "Happened at ", log.LstdFlags)
 	warnLogger = log.New(errLog, "Warning at ", log.LstdFlags|log.Lshortfile)
-	errLogger = log.New(errLog, "Error at ", log.LstdFlags|log.Lshortfile) //Setting stuff for our logging: both errors and events.
+	errLogger = log.New(errLog, "Error at ", log.LstdFlags|log.Lshortfile)
 }
 
 //Wrappers for loggers to simplify invocation and don't suffer premade packages
@@ -71,15 +69,6 @@ func lErr(v ...interface{}) {
 func lFatal(v ...interface{}) {
 	_ = errLogger.Output(2, fmt.Sprintln(v...)) //Following log package, ignoring error value
 	os.Exit(1)
-}
-
-//prettifying return, so brackets will go away
-func debracket(slice []int) string {
-	stringSlice := make([]string, len(slice))
-	for idx, num := range slice {
-		stringSlice[idx] = strconv.Itoa(num)
-	}
-	return strings.Join(stringSlice, ", ")
 }
 
 //lWarn is when there is no noticeable error, but something suspicious still happed

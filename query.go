@@ -110,7 +110,7 @@ func checkUserResponse() bool {
 	return false
 
 }
-func (imgdata Image) saveImage(opts *Config) (size int64, ok bool) { // To not hold all the files open when there is no need. All pointers to files are in the scope of this function.
+func (imgdata Image) saveImage(opts *Config) (size int64, ok bool) { // To not hold all the files open when there is no need. All file descriptors are in the scope of this function.
 	ok = false
 
 	filepath := opts.ImageDir + string(os.PathSeparator) + imgdata.Filename
