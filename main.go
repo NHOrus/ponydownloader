@@ -13,7 +13,7 @@ var (
 )
 
 func main() {
-	fmt.Println("Derpibooru.org Downloader version 0.9.1")
+	fmt.Println("Derpibooru.org Downloader version 0.9.2")
 
 	opts, lostArgs := getOptions()
 
