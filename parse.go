@@ -19,7 +19,7 @@ type RawImage struct {
 
 //Image contains data needed to filter fetch and save image
 type Image struct {
-	Imgid    int
+	Imgid    string
 	URL      string
 	Filename string
 	Score    int
@@ -41,13 +41,10 @@ type ImageCh chan Image
 func trim(dat RawImage) Image {
 
 	tfn := dat.Imgid + "." + dat.OriginalFormat
-	id, ok := strconv.Atoi(dat.Imgid)
-	if ok != nil {
-		lErr(id, ok)
-	}
+
 	return Image{
 
-		Imgid:    id,
+		Imgid:    dat.Imgid,
 		Filename: tfn,
 		URL:      scheme + "/" + path.Dir(dat.URL) + "/" + tfn,
 		Score:    dat.Score,

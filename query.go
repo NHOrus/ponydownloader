@@ -126,7 +126,7 @@ func (imgdata Image) saveImage(opts *Config) (size int64, ok bool) { // To not h
 	response, err := http.Get(imgdata.URL)
 
 	if err != nil {
-		lErr("Error when getting image: ", strconv.Itoa(imgdata.Imgid))
+		lErr("Error when getting image: ", imgdata.Imgid)
 		lErr(err)
 		return
 	}
@@ -150,14 +150,14 @@ func (imgdata Image) saveImage(opts *Config) (size int64, ok bool) { // To not h
 	}
 
 	if err != nil {
-		lErr("Error when getting image: ", strconv.Itoa(imgdata.Imgid))
+		lErr("Error when getting image: ", imgdata.Imgid)
 		lErr(err)
 		return
 	}
 
 	output, err := os.Create(filepath) //And now, THE FILE! New, truncated, ready to write
 	if err != nil {
-		lErr("Error when creating file for image: ", strconv.Itoa(imgdata.Imgid))
+		lErr("Error when creating file for image: ", imgdata.Imgid)
 		lErr(err) //Either we got no permisson or no space, end of line
 		return
 	}
@@ -170,7 +170,7 @@ func (imgdata Image) saveImage(opts *Config) (size int64, ok bool) { // To not h
 
 	size, err = io.Copy(output, response.Body) //Preventing creation of temporary buffer in memory
 	if err != nil {
-		lErr("Unable to write image on disk, id: ", strconv.Itoa(imgdata.Imgid))
+		lErr("Unable to write image on disk, id: ", imgdata.Imgid)
 		lErr(err)
 		return
 	}
