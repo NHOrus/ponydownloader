@@ -27,6 +27,10 @@ func (imgchan ImageCh) interrupt() (outch ImageCh) {
 	go func() {
 		for {
 			select {
+			case <-interrupter:
+				close(outch)
+				return
+
 			case img, ok := <-imgchan:
 				if !ok {
 					close(outch)
@@ -34,11 +38,6 @@ func (imgchan ImageCh) interrupt() (outch ImageCh) {
 					return
 				}
 				outch <- img
-			default:
-				if isInterrupted() {
-					close(outch)
-					return
-				}
 			}
 		}
 	}()
