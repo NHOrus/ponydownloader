@@ -73,7 +73,7 @@ func okHTTPStatus(chk *http.Response) bool {
 
 func makeHTTPSUnsafe() {
 	lWarn("Disabling HTTPS trust check is unsafe and may lead to your data being monitored, stolen or falsified by third party")
-	lWarn("Are you really want to continue? [Yes/No]")
+	lWarn("Do you really wish to continue? [Yes/No]")
 	if !checkUserResponse() {
 		lInfo("Continuing in safe mode")
 		return
@@ -92,7 +92,7 @@ func makeHTTPSUnsafe() {
 
 func checkUserResponse() bool {
 	var response string
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 3; i++ {
 		time.Sleep(3 * time.Second)
 		n, _ := fmt.Scanln(&response)
 		r := strings.ToLower(response)
@@ -105,11 +105,11 @@ func checkUserResponse() bool {
 		if r == "n" || r == "no" {
 			return false
 		}
-
 	}
+	lInfo("Three unparsable responses")
 	return false
-
 }
+
 func (imgdata Image) saveImage(opts *Config) (size int64, ok bool) { // To not hold all the files open when there is no need. All file descriptors are in the scope of this function.
 	ok = false
 
