@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func getRemoteJSON(source string) (body []byte, err error) {
+func getJSON(source string) (body []byte, err error) {
 	response, err := http.Get(source)
 	//Getting our nice http response.
 
@@ -40,6 +40,10 @@ func getRemoteJSON(source string) (body []byte, err error) {
 	}
 
 	return body, nil
+}
+
+func getJSONPage(source string, page int) (body []byte, err error) {
+	return getJSON(source + "&page=" + strconv.Itoa(page))
 }
 
 func okHTTPStatus(chk *http.Response) bool {

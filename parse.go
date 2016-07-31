@@ -71,10 +71,10 @@ func (imgchan ImageCh) ParseImg(ids []int, key string) {
 
 		lInfo("Getting image info at:", source)
 
-		body, err := getRemoteJSON(source)
+		body, err := getJSON(source)
 		if err != nil {
 			lErr(err)
-			continue
+			break
 		}
 		var dat RawImage
 		if err := json.Unmarshal(body, &dat); //transforming json into native map
@@ -134,31 +134,31 @@ func (imgchan ImageCh) ParseTag(opts *TagOpts, key string) {
 
 	lInfo("Searching as", source)
 
-	for i := opts.StartPage; opts.StopPage == 0 || i <= opts.StopPage; i++ {
+	for page := opts.StartPage; opts.StopPage == 0 || page <= opts.StopPage; page++ {
 
 		if isInterrupted() {
 			break
 		}
 
-		lInfo("Searching page", i)
+		lInfo("Searching page", page)
 
-		body, err := getRemoteJSON(source + "&page=" + strconv.Itoa(i))
+		body, err := getJSONPage(source, page)
 		if err != nil {
-			lErr("Error while getting json from page ", i)
+			lErr("Error while getting json from page ", page)
 			lErr(err)
-			continue
+			break
 		}
 
-		var dats Search                   //Because we got array incoming instead of single object, we using a slive of maps!
-		err = json.Unmarshal(body, &dats) //transforming json into native view
+		var dats Search
+		err = json.Unmarshal(body, &dats)
 
 		if err != nil {
-			lErr("Error while parsing search page", i)
+			lErr("Error while parsing search page", page)
 			lErr(err)
 			if serr, ok := err.(*json.SyntaxError); ok { //In case crap was still given, we are looking at it.
 				lErr("Occurred at offset: ", serr.Offset)
 			}
-			continue
+			break
 
 		}
 
