@@ -7,11 +7,6 @@ import (
 	"os"
 )
 
-//Default global variables
-var (
-	scheme = "https:"
-)
-
 func main() {
 	fmt.Println("Derpibooru.org Downloader version 0.9.2")
 
@@ -31,7 +26,10 @@ func main() {
 	if opts.UnsafeHTTPS {
 		makeHTTPSUnsafe()
 	}
-	derpiquery.Add("key", opts.Key)
+	if opts.Key != "" {
+		derpiquery.Add("key", opts.Key)
+	}
+
 	//Creating directory for downloads if it does not yet exist
 	err := os.MkdirAll(opts.ImageDir, 0755)
 

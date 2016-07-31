@@ -2,10 +2,19 @@ package main
 
 import (
 	"encoding/json"
+	"net/url"
 	"path"
 	"strconv"
 	"sync"
 	//	"github.com/davecgh/go-spew/spew"
+)
+
+var (
+	derpiURL = url.URL{
+		Scheme: "https",
+		Host:   "derpibooru.org",
+	}
+	derpiquery url.Values
 )
 
 //RawImage contains data we got from API that needs to be modified before further usage
@@ -40,13 +49,12 @@ type ImageCh chan Image
 //would be processed in other places
 func trim(dat RawImage) Image {
 
-	tfn := dat.Imgid + "." + dat.OriginalFormat
-
+	fn := dat.Imgid + "." + dat.OriginalFormat
 	return Image{
 
 		Imgid:    dat.Imgid,
-		Filename: tfn,
-		URL:      scheme + "/" + path.Dir(dat.URL) + "/" + tfn,
+		Filename: fn,
+		URL:      derpiURL.Scheme + "/" + path.Dir(dat.URL) + "/" + fn,
 		Score:    dat.Score,
 		Faves:    dat.Faves,
 	}
@@ -61,14 +69,12 @@ func (imgchan ImageCh) ParseImg(ids []int, key string) {
 			break
 		}
 
-		source := scheme + "//derpibooru.org/images/" + strconv.Itoa(imgid) + ".json"
-		if key != "" {
-			source = source + "?key=" + key
-		}
+		derpiURL.Path = strconv.Itoa(imgid) + ".json"
+		derpiURL.RawQuery = derpiquery.Encode()
 
-		lInfo("Getting image info at:", source)
+		lInfo("Getting image info at:", derpiURL)
 
-		body, err := getJSON(source)
+		body, err := getJSON(derpiURL.String())
 		if err != nil {
 			lErr(err)
 			break
@@ -123,13 +129,10 @@ func (imgchan ImageCh) downloadImages(opts *Config) {
 func (imgchan ImageCh) ParseTag(opts *TagOpts, key string) {
 
 	//Unlike main, I don't see how I could separate bits out to decrease complexity
-	source := scheme + "//derpibooru.org/search.json?sbq=" + opts.Tag //yay hardwiring url strings!
-
-	if key != "" {
-		source = source + "&key=" + key
-	}
-
-	lInfo("Searching as", source)
+	derpiURL.Path = "search.json"
+	derpiquery.Add("sbq", opts.Tag)
+	derpiURL.RawQuery = derpiquery.Encode()
+	lInfo("Searching as", derpiURL.String())
 
 	for page := opts.StartPage; opts.StopPage == 0 || page <= opts.StopPage; page++ {
 
@@ -138,8 +141,10 @@ func (imgchan ImageCh) ParseTag(opts *TagOpts, key string) {
 		}
 
 		lInfo("Searching page", page)
+		derpiquery.Set("page", strconv.Itoa(page))
+		derpiURL.RawQuery = derpiquery.Encode()
 
-		body, err := getJSONPage(source, page)
+		body, err := getJSON(derpiURL.String())
 		if err != nil {
 			lErr("Error while getting json from page ", page)
 			lErr(err)

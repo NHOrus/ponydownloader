@@ -7,19 +7,11 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"net/url"
+
 	"os"
 	"strconv"
 	"strings"
 	"time"
-)
-
-var (
-	depribase = url.URL{
-		Scheme: "https",
-		Host:   "derpibooru.org",
-	}
-	derpiquery url.Values
 )
 
 func getJSON(source string) (body []byte, err error) {
@@ -49,10 +41,6 @@ func getJSON(source string) (body []byte, err error) {
 	}
 
 	return body, nil
-}
-
-func getJSONPage(source string, page int) (body []byte, err error) {
-	return getJSON(source + "&page=" + strconv.Itoa(page))
 }
 
 func okHTTPStatus(chk *http.Response) bool {
