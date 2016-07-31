@@ -7,10 +7,19 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+)
+
+var (
+	depribase = url.URL{
+		Scheme: "https",
+		Host:   "derpibooru.org",
+	}
+	derpiquery url.Values
 )
 
 func getJSON(source string) (body []byte, err error) {
