@@ -120,7 +120,7 @@ func (imgdata Image) saveImage(opts *Config) (size int64, ok bool) { // To not h
 
 	start := time.Now() //timing download time. We can't begin it sooner, not sure if we can begin it later
 
-	response, err := http.Get(imgdata.URL)
+	response, err := http.Get(imgdata.URL.String())
 
 	if err != nil {
 		lErr("Error when getting image: ", imgdata.Imgid)

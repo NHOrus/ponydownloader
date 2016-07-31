@@ -29,7 +29,7 @@ type RawImage struct {
 //Image contains data needed to filter fetch and save image
 type Image struct {
 	Imgid    string
-	URL      string
+	URL      *url.URL
 	Filename string
 	Score    int
 	Faves    int
@@ -50,11 +50,14 @@ type ImageCh chan Image
 func trim(dat RawImage) Image {
 
 	fn := dat.Imgid + "." + dat.OriginalFormat
+	tu, _ := url.Parse(dat.URL)
+	tu.Scheme = derpiURL.Scheme
+	tu.Path = path.Dir(tu.Path) + "/" + fn
 	return Image{
 
 		Imgid:    dat.Imgid,
 		Filename: fn,
-		URL:      derpiURL.Scheme + "/" + path.Dir(dat.URL) + "/" + fn,
+		URL:      tu,
 		Score:    dat.Score,
 		Faves:    dat.Faves,
 	}
