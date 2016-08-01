@@ -80,6 +80,8 @@ func makeHTTPSUnsafe() {
 		return
 	}
 	lWarn("Continuing in unsafe mode")
+
+	/* #nosec */
 	http.DefaultClient.Transport = &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		Dial: (&net.Dialer{
