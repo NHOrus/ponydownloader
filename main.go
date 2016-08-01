@@ -32,7 +32,7 @@ func main() {
 		makeHTTPSUnsafe()
 	}
 	//Creating directory for downloads if it does not yet exist
-	err := os.MkdirAll(opts.ImageDir, 0755)
+	err := os.MkdirAll(opts.ImageDir, 0644)
 
 	if err != nil { //Execute bit means different thing for directories that for files. And I was stupid.
 		lFatal(err) //We can not create folder for images, end of line.
