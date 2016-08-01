@@ -62,16 +62,16 @@ func lDone(v ...interface{}) {
 
 //lErr notes non-fatal error and usually continues trying to crunch on
 func lErr(v ...interface{}) {
-	_ = errLogger.Output(2, fmt.Sprintln(v...)) //Following log package, ignoring error value
+	errLogger.Output(2, fmt.Sprintln(v...)) //Following log package, ignoring error value
 }
 
 //lFatal happens when suffer some kind of error and we can't recover
 func lFatal(v ...interface{}) {
-	_ = errLogger.Output(2, fmt.Sprintln(v...)) //Following log package, ignoring error value
+	errLogger.Output(2, fmt.Sprintln(v...)) //Following log package, ignoring error value
 	os.Exit(1)
 }
 
 //lWarn is when there is no noticeable error, but something suspicious still happed
 func lWarn(v ...interface{}) {
-	_ = warnLogger.Output(2, fmt.Sprintln(v...)) //Following log package, ignoring error value
+	warnLogger.Output(2, fmt.Sprintln(v...)) //Following log package, ignoring error value
 }
