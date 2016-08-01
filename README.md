@@ -47,18 +47,18 @@ To protect innocent and prevent excessive accumulation of logs, rotation is impl
 
 #### Complex usage example:
 ```bash
-./ponydownloader --score 50 -p 3 -n 7 -t princess+luna%2C+safe --logfilter=true
+./ponydownloader --score 50 -p 3 -n 7 -t "princess luna, safe" --logfilter=true
 ```
 At the moment of writing both samples were working, you would get output looking approximately like quote below and images in default directory `img`
 
 ```
-Derpibooru.org Downloader version 0.9.1
+Derpibooru.org Downloader version 0.10.0-rc1
 Happened at 2015/11/17 16:08:28 Program start
 Happened at 2015/11/17 16:08:28 Processing tags princess+luna%2C+safe
 Happened at 2015/11/17 16:08:28 Starting worker
 Happened at 2015/11/17 16:08:28 Filter is on
 Happened at 2015/11/17 16:08:28 Worker started; reading channel
-Happened at 2015/11/17 16:08:28 Searching as https://derpibooru.org/search.json?q=princess+luna%2C+safe
+Happened at 2015/11/17 16:08:28 Searching as https://derpibooru.org/search.json?sbq=princess+luna%2C+safe
 Happened at 2015/11/17 16:08:28 Searching page 3
 Happened at 2015/11/17 16:08:28 Filtering 1020863.jpeg
 Happened at 2015/11/17 16:08:28 Saving as 1020830.png

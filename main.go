@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	fmt.Println("Derpibooru.org Downloader version 0.9.2")
+	fmt.Println("Derpibooru.org Downloader version 0.10.0-rc1")
 
 	opts, lostArgs := getOptions()
 
