@@ -14,7 +14,7 @@ var (
 		Scheme: "https",
 		Host:   "derpibooru.org",
 	}
-	derpiquery url.Values
+	derpiquery = make(url.Values)
 )
 
 //RawImage contains data we got from API that needs to be modified before further usage
@@ -75,7 +75,7 @@ func (imgchan ImageCh) ParseImg(ids []int, key string) {
 		derpiURL.Path = strconv.Itoa(imgid) + ".json"
 		derpiURL.RawQuery = derpiquery.Encode()
 
-		lInfo("Getting image info at:", derpiURL)
+		lInfo("Getting image info at:", derpiURL.String())
 
 		body, err := getJSON(derpiURL.String())
 		if err != nil {
