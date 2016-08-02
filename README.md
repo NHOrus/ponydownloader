@@ -25,7 +25,7 @@ To download single image, simply invoke ponydownloader with image ID as argument
 
 To download all images with desired tags, invoke `ponydownloader -t "tag A, tag B,.."`
 
-One can manipulate start and stop pages for tag download for limiting amount of downloaded images or skipping images already present: `-p <star page>` `-n <stop page>`. Derpibooru provides results in fifty per page.
+One can manipulate start and stop pages for tag download for limiting amount of downloaded images or skipping images already present: `-p <star page>` `-n <stop page>`. If stop page is less that start page, only images from start page are downloaded. Derpibooru provides results in fifty per page.
 
 Currently available filters are:
 -  filter by score: `--score ` then minimal score to accept.
@@ -111,5 +111,3 @@ logfilter	= false	// should app write ID discarded by filters images in log
 ```
 
 If any line is empty, program would use default, build-in parameters and writes them in config, when appropriate. Empty `key` would end up with no API key being used.
-
-May, if unlikely, suffer undefined behaviour if someone uploads new image so entire list of images gets bumped down one and same image appears as found twice.
