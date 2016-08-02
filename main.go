@@ -26,9 +26,6 @@ func main() {
 	if opts.UnsafeHTTPS {
 		makeHTTPSUnsafe()
 	}
-	if opts.Key != "" {
-		derpiquery.Add("key", opts.Key)
-	}
 
 	//Creating directory for downloads if it does not yet exist
 	err := os.MkdirAll(opts.ImageDir, 0755)

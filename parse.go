@@ -73,10 +73,13 @@ func (imgchan ImageCh) ParseImg(ids []int, key string) {
 		}
 
 		derpiURL.Path = strconv.Itoa(imgid) + ".json"
-		derpiURL.RawQuery = derpiquery.Encode()
+		derpiURL.RawQuery = ""
 
 		lInfo("Getting image info at:", derpiURL.String())
-
+		if key != "" {
+			derpiquery.Add("key", key)
+		}
+		derpiURL.RawQuery = derpiquery.Encode()
 		body, err := getJSON(derpiURL.String())
 		if err != nil {
 			lErr(err)
@@ -136,6 +139,10 @@ func (imgchan ImageCh) ParseTag(opts *TagOpts, key string) {
 	derpiquery.Add("sbq", opts.Tag)
 	derpiURL.RawQuery = derpiquery.Encode()
 	lInfo("Searching as", derpiURL.String())
+
+	if key != "" {
+		derpiquery.Add("key", key)
+	}
 
 	for page := opts.StartPage; opts.StopPage == 0 || page <= opts.StopPage; page++ {
 
