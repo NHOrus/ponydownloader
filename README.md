@@ -17,13 +17,13 @@ Currently ponydownloader provides three units of functionality: download by imag
 Usage
 -----
 
-Currently ponydownloader got two main modes of usage: download image(s) by ID and batch download number of images by tag.
+Currently ponydownloader got two main modes of usage: download images by ID and by tags.
 
 After invocation, ponydownloader would read `config.ini` if it exist or write default one in current working directory. Then it would write completed actions in file `event.log` and write image in a directory specified in configuration file.
 
 To download single image, simply invoke ponydownloader with image ID as argument. For multiple images, separate their IDs by space
 
-To download all images with desired flag, invoke `ponydownloader -t <flag>`
+To download all images with desired tags, invoke `ponydownloader -t "tag A, tag B,.."`
 
 One can manipulate start and stop pages for tag download for limiting amount of downloaded images or skipping images already present: `-p <star page>` `-n <stop page>`. Derpibooru provides results in fifty per page.
 
@@ -110,6 +110,6 @@ queue_depth	= 50	// depth of queue of images, waiting for download. Default valu
 logfilter	= false	// should app write ID discarded by filters images in log
 ```
 
-If any line is empty, program would use default, build-in parameters and overwrites them with defaults, when appropriate. Empty `key` would end up with no API key being used.
+If any line is empty, program would use default, build-in parameters and writes them in config, when appropriate. Empty `key` would end up with no API key being used.
 
 May, if unlikely, suffer undefined behaviour if someone uploads new image so entire list of images gets bumped down one and same image appears as found twice.

@@ -53,8 +53,8 @@ func trim(dat RawImage) Image {
 	tu, _ := url.Parse(dat.URL)
 	tu.Scheme = derpiURL.Scheme
 	tu.Path = path.Dir(tu.Path) + "/" + fn
-	return Image{
 
+	return Image{
 		Imgid:    dat.Imgid,
 		Filename: fn,
 		URL:      tu,
