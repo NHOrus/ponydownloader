@@ -41,6 +41,7 @@ func fmtbytes(b float64) string {
 //prettifying return, so brackets will go away
 func debracket(slice []int) string {
 	stringSlice := make([]string, len(slice))
+	stringSlice = stringSlice[:len(slice)]
 	for idx, num := range slice {
 		stringSlice[idx] = strconv.Itoa(num)
 	}
