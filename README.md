@@ -10,7 +10,8 @@ This app is under limited support due to loss of interest in ponies. Sorry for t
 
 ---
 
-Ponydownloader seeks to provide useful command-line tool to download images from [Derpibooru](https://derpibooru.org) using provided API.
+Ponydownloader seeks to provide useful command-line tool to download images from [Derpibooru](https://derpibooru.org) using provided API. Main API 
+point - trixiebooru.
 
 Currently ponydownloader provides three units of functionality: download by image ID, download by tag and filter images you download by their score and/or favorites.
 
@@ -52,7 +53,7 @@ To protect innocent and prevent excessive accumulation of logs, rotation is impl
 At the moment of writing both samples were working, you would get output looking approximately like quote below and images in default directory `img`
 
 ```
-Derpibooru.org Downloader version 0.10.0-rc1
+Derpibooru.org Downloader version 0.10.1
 Happened at 2015/11/17 16:08:28 Program start
 Happened at 2015/11/17 16:08:28 Processing tags princess+luna%2C+safe
 Happened at 2015/11/17 16:08:28 Starting worker

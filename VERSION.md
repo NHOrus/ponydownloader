@@ -1,7 +1,7 @@
 Ponydownloader
 Beta
 
-Version 0.10.0-rc1
+Version 0.10.1
 
 Author: NHOrus.
 Some code from [Go By Example](https://gobyexample.com)
