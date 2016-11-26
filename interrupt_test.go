@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"syscall"
 	"testing"
 	"time"
@@ -25,7 +24,7 @@ func TestInitInterrupter(t *testing.T) {
 
 func TestInterruptThrough(t *testing.T) {
 	in := make(ImageCh)
-	interrupter = make(chan os.Signal, 1)
+	interrupter = make(chan struct{}, 1)
 	out := in.interrupt()
 
 	timeout := make(chan bool, 1)
@@ -55,7 +54,7 @@ func TestInterruptThrough(t *testing.T) {
 
 func TestInterruptSequence(t *testing.T) {
 	in := make(ImageCh)
-	interrupter = make(chan os.Signal, 1)
+	interrupter = make(chan struct{}, 1)
 	out := in.interrupt()
 
 	in <- Image{Score: 1}
@@ -88,7 +87,7 @@ func TestInterruptSequence(t *testing.T) {
 
 func TestInterruptClose(t *testing.T) {
 	in := make(ImageCh)
-	interrupter = make(chan os.Signal, 1)
+	interrupter = make(chan struct{}, 1)
 	out := in.interrupt()
 
 	close(in)

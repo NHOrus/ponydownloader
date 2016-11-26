@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	interrupter = make(chan os.Signal, 1)
+	interrupter = make(chan struct{}, 1)
 )
 
 func init() {
