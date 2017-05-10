@@ -12,7 +12,7 @@ import (
 var (
 	derpiURL = url.URL{
 		Scheme: "https",
-		Host:   "trixiebooru.org",
+		Host:   "derpibooru.org",
 	}
 	derpiquery = make(url.Values)
 )
