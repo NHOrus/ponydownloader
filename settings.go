@@ -59,7 +59,7 @@ func getOptions() (opts *Options, args []string) {
 
 //checkedWriteIni writes configuration into file without overwriting old one if unchanged
 //As i totally forgot how it does so if configuration file is empty:
-//nil and zero values and emtpy strings get overwritten by defaults when reading command line
+//nil and zero values and empty strings get overwritten by defaults when reading command line
 //as old values are now different, defaults got written into the file
 func (sets *Config) checkedWriteIni(oldsets *Config) {
 	if sets.isEqual(oldsets) { //If nothing to write, no double-writing files

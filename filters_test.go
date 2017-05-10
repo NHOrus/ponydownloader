@@ -60,7 +60,7 @@ func TestFilterComplex(t *testing.T) {
 
 	out := FilterChannel(in)
 	close(in)
-	pass, _ := <-out
+	pass := <-out
 
 	if (pass != Image{Imgid: "1"}) {
 		t.Error("Incorrect work of the filter, passed ", pass, "instead of ", Image{Imgid: "1"})

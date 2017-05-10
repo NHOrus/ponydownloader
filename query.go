@@ -157,7 +157,7 @@ func (imgdata Image) saveImage(opts *Config) (size int64, ok bool) { // To not h
 	output, err := os.Create(filepath) //And now, THE FILE! New, truncated, ready to write
 	if err != nil {
 		lErr("Error when creating file for image: ", imgdata.Imgid)
-		lErr(err) //Either we got no permisson or no space, end of line
+		lErr(err) //Either we got no permission or no space, end of line
 		return
 	}
 	defer func() {
