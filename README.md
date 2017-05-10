@@ -10,8 +10,7 @@ This app is under limited support due to loss of interest in ponies. Sorry for t
 
 ---
 
-Ponydownloader seeks to provide useful command-line tool to download images from [Derpibooru](https://derpibooru.org) using provided API. Main API 
-point - trixiebooru.
+Ponydownloader seeks to provide useful command-line tool to download images from [Derpibooru](https://derpibooru.org) using provided API.
 
 Currently ponydownloader provides three units of functionality: download by image ID, download by tag and filter images you download by their score and/or favorites.
 
