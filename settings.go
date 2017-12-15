@@ -66,7 +66,7 @@ func (sets *Config) checkedWriteIni(oldsets *Config) {
 		return
 	}
 
-	inifile, err := os.OpenFile("config.ini", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	inifile, err := os.OpenFile("config.ini", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0600)
 
 	if err != nil {
 		lFatal("Could  not create configuration file")

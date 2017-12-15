@@ -28,7 +28,7 @@ func main() {
 	}
 
 	//Creating directory for downloads if it does not yet exist
-	err := os.MkdirAll(opts.ImageDir, 0755)
+	err := os.MkdirAll(opts.ImageDir, 0700)
 
 	if err != nil { //Execute bit means different thing for directories that for files. And I was stupid.
 		lFatal(err) //We can not create folder for images, end of line.
@@ -62,6 +62,4 @@ func main() {
 	filtimgdat.interrupt().downloadImages(opts.Config) // Now that we got asynchronous list of images we want to get done, we can get them.
 
 	lDone("Finished")
-	return
-	//And we are done here! Hooray!
 }

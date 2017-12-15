@@ -97,8 +97,6 @@ func (imgchan ImageCh) ParseImg(ids []int, key string) {
 	}
 
 	close(imgchan) //closing channel, we are done here
-
-	return
 }
 
 //DlImg reads image data from channel and downloads specified images to disc
