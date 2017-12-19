@@ -78,21 +78,9 @@ func getOptions() (opts *Options, args []string) {
 			lFatal("Can't parse flags: ", err)
 		}
 	}
-	dirF := false
-	for _, arg := range os.Args {
-		if strings.Contains(arg, "--score") {
-			opts.ScoreF = true
-		}
-		if strings.Contains(arg, "--faves") {
-			opts.FavesF = true
-		}
+	dirF := opts.FiltOpts.flagsPresent(os.Args)
 
-		if strings.Contains(arg, "--dir") {
-			dirF = true
-		}
-	}
-
-	if !dirF {
+	if !dirF && inisets.ImageDir != "" {
 		opts.Config.ImageDir = inisets.ImageDir
 	}
 
@@ -145,4 +133,20 @@ func (sets *Config) isEqual(b *Config) bool {
 		return true
 	}
 	return false
+}
+
+func (opts *FiltOpts) flagsPresent(args []string) bool {
+	dirF := false
+	for _, arg := range args {
+		if strings.Contains(arg, "--score") {
+			opts.ScoreF = true
+		}
+		if strings.Contains(arg, "--faves") {
+			opts.FavesF = true
+		}
+		if strings.Contains(arg, "--dir") {
+			dirF = true
+		}
+	}
+	return dirF
 }
