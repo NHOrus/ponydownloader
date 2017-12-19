@@ -52,7 +52,7 @@ To protect innocent and prevent excessive accumulation of logs, rotation is impl
 At the moment of writing both samples were working, you would get output looking approximately like quote below and images in default directory `img`
 
 ```
-Derpibooru.org Downloader version 0.10.2
+Derpibooru.org Downloader version 0.11.0
 Happened at 2015/11/17 16:08:28 Program start
 Happened at 2015/11/17 16:08:28 Processing tags princess+luna%2C+safe
 Happened at 2015/11/17 16:08:28 Starting worker

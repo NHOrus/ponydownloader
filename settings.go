@@ -11,7 +11,9 @@ import (
 	flag "github.com/jessevdk/go-flags"
 )
 
-//Config are concrete and stored in configuration file
+const version = "0.11.0"
+
+//Config is concrete and stored in configuration file
 type Config struct {
 	ImageDir   string `long:"dir" description:"Target Directory" default:"img" ini-name:"downdir"`
 	QDepth     int    `short:"q" long:"queue" description:"Length of the queue buffer" default:"50" ini-name:"queue_depth"`
