@@ -66,8 +66,19 @@ func getOptions() (opts *Options, args []string) {
 	inisets := *opts.Config //copy value instead of reference - or we will get no results later
 
 	args, err = flag.Parse(opts)
-	checkFlagError(err) //Here we scream if something goes wrong and provide help if something goes meh.
+	if err != nil {
 
+		switch err.(*flag.Error).Type {
+		case flag.ErrHelp:
+			os.Exit(0) //Why fall through when asked for help? Just exit with suggestion
+		case flag.ErrUnknownFlag:
+			fmt.Println("Use --help to view all available options")
+			os.Exit(0)
+		default:
+			lFatal("Can't parse flags: ", err)
+		}
+	}
+	dirF := false
 	for _, arg := range os.Args {
 		if strings.Contains(arg, "--score") {
 			opts.ScoreF = true
@@ -75,7 +86,16 @@ func getOptions() (opts *Options, args []string) {
 		if strings.Contains(arg, "--faves") {
 			opts.FavesF = true
 		}
+
+		if strings.Contains(arg, "--dir") {
+			dirF = true
+		}
 	}
+
+	if !dirF {
+		opts.Config.ImageDir = inisets.ImageDir
+	}
+
 	if opts.Config.isEqual(&inisets) { //If nothing to write, no double-writing files
 		return
 	}
@@ -125,22 +145,4 @@ func (sets *Config) isEqual(b *Config) bool {
 		return true
 	}
 	return false
-}
-
-func checkFlagError(err error) {
-	if err == nil {
-		return
-	}
-
-	flagError := err.(*flag.Error)
-
-	switch flagError.Type {
-	case flag.ErrHelp:
-		os.Exit(0) //Why fall through when asked for help? Just exit with suggestion
-	case flag.ErrUnknownFlag:
-		fmt.Println("Use --help to view all available options")
-		os.Exit(0)
-	default:
-		lFatal("Can't parse flags: ", err)
-	}
 }
