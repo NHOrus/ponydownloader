@@ -66,18 +66,8 @@ func getOptions() (opts *Options, args []string) {
 	inisets := *opts.Config //copy value instead of reference - or we will get no results later
 
 	args, err = flag.Parse(opts)
-	if err != nil {
+	flagsFail(err)
 
-		switch err.(*flag.Error).Type {
-		case flag.ErrHelp:
-			os.Exit(0) //Why fall through when asked for help? Just exit with suggestion
-		case flag.ErrUnknownFlag:
-			fmt.Println("Use --help to view all available options")
-			os.Exit(0)
-		default:
-			lFatal("Can't parse flags: ", err)
-		}
-	}
 	dirF := opts.FiltOpts.flagsPresent(os.Args)
 
 	if !dirF && inisets.ImageDir != "" {
@@ -149,4 +139,18 @@ func (opts *FiltOpts) flagsPresent(args []string) bool {
 		}
 	}
 	return dirF
+}
+
+func flagsFail(err error) {
+	if err != nil {
+		switch err.(*flag.Error).Type {
+		case flag.ErrHelp:
+			os.Exit(0) //Why fall through when asked for help? Just exit with suggestion
+		case flag.ErrUnknownFlag:
+			fmt.Println("Use --help to view all available options")
+			os.Exit(0)
+		default:
+			lFatal("Can't parse flags: ", err)
+		}
+	}
 }

@@ -109,14 +109,13 @@ func checkUserResponse() bool {
 			return false
 		}
 	}
-	lInfo("Three unparsable responses")
+	lInfo("Three unparsable responses, assuming cat on keyboard")
 	return false
 }
 
 func (imgdata Image) saveImage(opts *Config) (size int64, ok bool) { // To not hold all the files open when there is no need. All file descriptors are in the scope of this function.
-	ok = false
-
 	var filepath string
+
 	if opts.ImageDir != "" {
 		filepath = opts.ImageDir + string(os.PathSeparator) + imgdata.Filename
 	} else {
@@ -125,7 +124,7 @@ func (imgdata Image) saveImage(opts *Config) (size int64, ok bool) { // To not h
 
 	fsize := getFileSize(filepath)
 
-	start := time.Now() //timing download time. We can't begin it sooner, not sure if we can begin it later
+	start := time.Now() //Timing download time. We can't begin it sooner, not sure if we can begin it later
 
 	response, err := http.Get(imgdata.URL.String())
 
@@ -136,9 +135,9 @@ func (imgdata Image) saveImage(opts *Config) (size int64, ok bool) { // To not h
 	}
 
 	defer func() {
-		err = response.Body.Close() //Same, we shall not listen to the void when we finished getting image
+		err = response.Body.Close()
 		if err != nil {
-			lFatal("Could  not close server response")
+			lFatal("Could not close server response")
 		}
 	}()
 
@@ -185,7 +184,6 @@ func (imgdata Image) saveImage(opts *Config) (size int64, ok bool) { // To not h
 
 	if expsize != size {
 		lErr("Unable to download full image")
-		return
 	}
 	return
 }
@@ -204,8 +202,8 @@ func getRemoteSize(head http.Header) (expsize int64) {
 	sizestring, ok := head["Content-Length"]
 	if !ok {
 		lErr("Filesize not provided")
-		return 0
 	}
+
 	expsize, err := strconv.ParseInt(sizestring[0], 10, 64)
 	if err != nil {
 		lErr("Unable to get expected filesize")
