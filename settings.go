@@ -54,17 +54,29 @@ type Options struct {
 
 func getOptions() (opts *Options, args []string) {
 	opts = new(Options)
-	args, inisets := opts.Setup()
-	opts.Config.checkedWriteIni(inisets)
-	return
-}
+	err := flag.IniParse("config.ini", opts)
+	if err != nil {
+		switch err.(type) {
+		default:
+			lFatal(err)
+		case *os.PathError:
+			lWarn("config.ini not found, using defaults")
+		}
+	}
+	inisets := *opts.Config //copy value instead of reference - or we will get no results later
 
-//checkedWriteIni writes configuration into file without overwriting old one if unchanged
-//As i totally forgot how it does so if configuration file is empty:
-//nil and zero values and empty strings get overwritten by defaults when reading command line
-//as old values are now different, defaults got written into the file
-func (sets *Config) checkedWriteIni(oldsets *Config) {
-	if sets.isEqual(oldsets) { //If nothing to write, no double-writing files
+	args, err = flag.Parse(opts)
+	checkFlagError(err) //Here we scream if something goes wrong and provide help if something goes meh.
+
+	for _, arg := range os.Args {
+		if strings.Contains(arg, "--score") {
+			opts.ScoreF = true
+		}
+		if strings.Contains(arg, "--faves") {
+			opts.FavesF = true
+		}
+	}
+	if opts.Config.isEqual(&inisets) { //If nothing to write, no double-writing files
 		return
 	}
 
@@ -81,11 +93,12 @@ func (sets *Config) checkedWriteIni(oldsets *Config) {
 		}
 	}()
 
-	err = sets.prettyWriteIni(inifile)
+	err = opts.Config.prettyWriteIni(inifile)
 
 	if err != nil {
 		lFatal("Could  not write in configuration file")
 	}
+	return
 }
 
 //prettyWriteIni Uses tabwriter to make pretty ini file with
@@ -112,35 +125,6 @@ func (sets *Config) isEqual(b *Config) bool {
 		return true
 	}
 	return false
-}
-
-//Setup reads static config from file and runtime options from commandline
-//It also preserves static config for later comparsion with runtime to prevent
-//rewriting it when no changes are made
-func (opts *Options) Setup() ([]string, *Config) {
-	err := flag.IniParse("config.ini", opts)
-	if err != nil {
-		switch err.(type) {
-		default:
-			lFatal(err)
-		case *os.PathError:
-			lWarn("config.ini not found, using defaults")
-		}
-	}
-	inisets := *opts.Config //copy value instead of reference - or we will get no results later
-
-	args, err := flag.Parse(opts)
-	checkFlagError(err) //Here we scream if something goes wrong and provide help if something goes meh.
-
-	for _, arg := range os.Args {
-		if strings.Contains(arg, "--score") {
-			opts.ScoreF = true
-		}
-		if strings.Contains(arg, "--faves") {
-			opts.FavesF = true
-		}
-	}
-	return args, &inisets
 }
 
 func checkFlagError(err error) {
