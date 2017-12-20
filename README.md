@@ -1,4 +1,4 @@
-    ponydownloader
+ponydownloader
 ==============
 
 [![forthebadge](http://forthebadge.com/images/badges/fuck-it-ship-it.svg)](http://forthebadge.com) [![forthebadge](http://forthebadge.com/images/badges/oooo-kill-em.svg)](http://forthebadge.com) [![forthebadge](http://forthebadge.com/images/badges/uses-badges.svg)](http://forthebadge.com)
@@ -10,18 +10,56 @@ This app is under limited support due to loss of interest in ponies. Sorry for t
 
 ---
 
-Ponydownloader seeks to provide useful command-line tool to download images from [Derpibooru](https://derpibooru.org) using provided API.
+Ponydownloader seeks to provide useful command line tool to download images from [Derpibooru](https://derpibooru.org) en-masse.
 
-Currently ponydownloader provides three units of functionality: download by image ID, download by tag and filter images you download by their score and/or favorites.
+Ponydownloader can download by image ID, download by tag and filter out images by their score and/or number of favorites.
 
 Usage
 -----
 
-Currently ponydownloader got two main modes of usage: download images by ID and by tags.
 
-After invocation, ponydownloader would read `config.ini` if it exist or write default one in current working directory. Then it would write completed actions in file `event.log` and write image in a directory specified in configuration file.
+#### Simple usage example:
+```bash
+./ponydownloader 415147
+```
 
-To download single image, simply invoke ponydownloader with image ID as argument. For multiple images, separate their IDs by space
+#### Complex usage example:
+```bash
+./ponydownloader --score 50 -p 3 -n 7 -t "princess luna, safe" --logfilter
+```
+
+Output: 
+
+```
+Derpibooru.org Downloader, version 0.11.0
+
+Happened at 2017/12/20 03:44:27 Program start
+Happened at 2017/12/20 03:44:27 Processing tags princess luna, safe
+Happened at 2017/12/20 03:44:27 Starting worker
+Happened at 2017/12/20 03:44:27 Worker started; reading channel
+Happened at 2017/12/20 03:44:27 Searching as https://derpibooru.org/search.json?sbq=princess+luna%2C+safe
+Happened at 2017/12/20 03:44:27 Searching page 3
+Happened at 2017/12/20 03:44:27 Saving as 1605729.jpeg
+Happened at 2017/12/20 03:44:27 Saving as 1605666.jpeg
+Happened at 2017/12/20 03:44:27 Saving as 1605673.jpeg
+Happened at 2017/12/20 03:44:27 Saving as 1606115.png
+Happened at 2017/12/20 03:44:27 Searching page 4
+Happened at 2017/12/20 03:44:28 Skipping: no-clobber
+Happened at 2017/12/20 03:44:28 Saving as 1605591.png
+Happened at 2017/12/20 03:44:28 Downloaded 1056255 bytes in 0.35s, speed 2.86 MiB/s
+Happened at 2017/12/20 03:44:28 Saving as 1605586.png
+Happened at 2017/12/20 03:44:28 Filtering  1605358.jpeg
+Happened at 2017/12/20 03:44:28 Downloaded 381653 bytes in 0.54s, speed 689.22 KiB/s
+Happened at 2017/12/20 03:44:28 Saving as 1605449.jpeg
+Happened at 2017/12/20 03:44:28 Downloaded 267790 bytes in 0.56s, speed 464.06 KiB/s
+...
+```
+
+With default settings, images are downloaded into directory `img` under current directory
+
+After invocation, ponydownloader would attempt to read `config.ini` in current directory and create default one if it does not exist. Then it would write completed actions in file `event.log` and write image in a directory specified in configuration file. To protect innocent and prevent excessive accumulation of logs, rotation is implemented, currenlty caps at 1 Mb per file and 10 logfiles total.
+
+To download single image, simply invoke ponydownloader with image ID as argument. For multiple images, separate their IDs by space.
 
 To download all images with desired tags, invoke `ponydownloader -t "tag A, tag B,.."`
 
@@ -38,46 +76,15 @@ Optional flag `--logfilter` turns on detailed log of each image discarded before
 
 Full list of flags returned by `--help` command.
 
-To protect innocent and prevent excessive accumulation of logs, rotation is implemented, currenlty caps at 1 Mb per file and 10 logfiles total.
-
-#### Simple usage example:
-```bash
-./ponydownloader 415147
-```
-
-#### Complex usage example:
-```bash
-./ponydownloader --score 50 -p 3 -n 7 -t "princess luna, safe" --logfilter=true
-```
-At the moment of writing both samples were working, you would get output looking approximately like quote below and images in default directory `img`
-
-```
-Derpibooru.org Downloader version 0.11.0
-Happened at 2015/11/17 16:08:28 Program start
-Happened at 2015/11/17 16:08:28 Processing tags princess+luna%2C+safe
-Happened at 2015/11/17 16:08:28 Starting worker
-Happened at 2015/11/17 16:08:28 Filter is on
-Happened at 2015/11/17 16:08:28 Worker started; reading channel
-Happened at 2015/11/17 16:08:28 Searching as https://derpibooru.org/search.json?sbq=princess+luna%2C+safe
-Happened at 2015/11/17 16:08:28 Searching page 3
-Happened at 2015/11/17 16:08:28 Filtering 1020863.jpeg
-Happened at 2015/11/17 16:08:28 Saving as 1020830.png
-Happened at 2015/11/17 16:08:29 Downloaded 1634245 bytes in 0.88s, speed 1.76 MiB/s
-Happened at 2015/11/17 16:08:29 Saving as 1020688.png
-Happened at 2015/11/17 16:08:29 Downloaded 95298 bytes in 0.06s, speed 1.58 MiB/s
-Happened at 2015/11/17 16:08:29 Saving as 1020684.png
-Happened at 2015/11/17 16:08:29 Downloaded 117766 bytes in 0.06s, speed 1.92 MiB/s
-Happened at 2015/11/17 16:08:29 Saving as 1020682.png
-...
-```
-
 ## How to install ponydownloader
 
 There are two way to install this program: definitely working/developer way and most likely working/path of less resistance.
 
 ##### Path of less resistance.
 
-If you trust me, Github Releases should contain latest release version, [here](https://github.com/NHOrus/ponydownloader/releases). Copy ponydownloader-**your_os**-**your_architecture** in a folder you want to run it from or somewhere in your path. Enjoy. You may need to pass correct values of target directory for downloads and your API key through CLI or config.ini
+If you trust me, Github Releases should contain latest release version, [here](https://github.com/NHOrus/ponydownloader/releases). Copy ponydownloader-*your_os*-*your_architecture* in a folder you want to run it from or somewhere in your path. Enjoy. You may need to pass correct values of target directory for downloads and your API key through CLI or config.ini
+
+Ponydownloader needs to run from terminal and does not run interactively.
 
 Binaries may be outdated. My cross-compilation system may work not as well as intended. Binaries may be malicious, knowingly or unknowingly.
 
