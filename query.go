@@ -114,13 +114,8 @@ func checkUserResponse() bool {
 }
 
 func (imgdata Image) saveImage(opts *Config) (size int64, ok bool) { // To not hold all the files open when there is no need. All file descriptors are in the scope of this function.
-	var filepath string
 
-	if opts.ImageDir != "" {
-		filepath = opts.ImageDir + string(os.PathSeparator) + imgdata.Filename
-	} else {
-		filepath = imgdata.Filename
-	}
+	filepath := constructFilepath(imgdata.Filename, opts.ImageDir)
 
 	fsize := getFileSize(filepath)
 
@@ -209,4 +204,11 @@ func getRemoteSize(head http.Header) (expsize int64) {
 		lErr("Unable to get expected filesize")
 	}
 	return
+}
+
+func constructFilepath(filename string, imagedir string) string {
+	if imagedir == "" {
+		return filename
+	}
+	return imagedir + string(os.PathSeparator) + filename
 }
