@@ -54,27 +54,34 @@ Happened at 2017/12/20 03:44:28 Saving as 1605449.jpeg
 Happened at 2017/12/20 03:44:28 Downloaded 267790 bytes in 0.56s, speed 464.06 KiB/s
 ...
 ```
+#### Usage:
 
-With default settings, images are downloaded into directory `img` under current directory
+ - `-t,	--tag`		Tags to search and download images with. Same rules as Depribooru search: Downloaded images must have all tags passed to this flag.
+ - `-k,	--key`		API key to use for Derpibooru access under your account. Can be found in your [account settings](https://derpibooru.org/users/edit). Pass once, better yet put in configuration file. Once passed, gets saved in configuration file.
+ - `--dir`			Target directory to save images. Default directory - `img` under current directory. To explicitely save into current directory, pass `--dir=""`
+ - `-q	--queue`	Queue Depth, how many images should wait to be downloaded. Default - 50, one page of search. Best leave default.  
 
-After invocation, ponydownloader would attempt to read `config.ini` in current directory and create default one if it does not exist. Then it would write completed actions in file `event.log` and write image in a directory specified in configuration file. To protect innocent and prevent excessive accumulation of logs, rotation is implemented, currenlty caps at 1 Mb per file and 10 logfiles total.
+#### Limiting amount of downloaded images:
+ - `-p, --startpage`	Start downloading from p-th page of search, skipping 50*p images.
+ - `-n, --stoppage`	Stop downloading on n-th page, downloading 50*n images at most.
 
-To download single image, simply invoke ponydownloader with image ID as argument. For multiple images, separate their IDs by space.
+Ponydownloader ignores `n` less than `p` and downloads exactly 50 images when `p` is equal `n`.
 
-To download all images with desired tags, invoke `ponydownloader -t "tag A, tag B,.."`
+#### Filtering options
 
-One can manipulate start and stop pages for tag download for limiting amount of downloaded images or skipping images already present: `-p <star page>` `-n <stop page>`. If stop page is less that start page, only images from start page are downloaded. Derpibooru provides results in fifty per page.
+ - `--score` 		Minimal score image must possess to be downloaded
+ - `--faves`		Minimal amount of favorites image must possess to be downloaded
+ - `--logfilter`	Note that images were filtered out from download queue
 
-Currently available filters are:
--  filter by score: `--score ` then minimal score to accept.
--  filter by favorites: `--faves ` then minimal number of people who favored the to accept.
+Those options exists to skip low-quality images. If both present, images must possess both score and number of favorites to be downloaded. `logfilter`, by default set to true, makes a note in `events.log` of all discarded images.
 
-Optional flag `-k` defines API key to use and overwrites said key from configuration file. You may want to back up your old key in this case. One of the way to get API key is to look at your [account settings](https://derpibooru.org/users/edit)
-Derpibooru provides significant capability to exclude undesirable images server-side and API key allows one to switch from default settings to currently selected personal rule.
+#### Notes
 
-Optional flag `--logfilter` turns on detailed log of each image discarded before download. It's saved into config file. To turn off, pass `--logfilter=false`
+Ability to download by tags is not exclusive with bare image IDs: given both, all images with tags and all images with passed IDs would be downloaded.  
+Ponydownloader writes a log into `events.log`, containing errors, ID of downloaded and filtered out images, search pages processed and some other helpful information. This file is automatically rotated, with a hardcoded limit of 1Mb per file and 10 files total. That allow to keep log for about ~15k images downloaded.
 
-Full list of flags returned by `--help` command.
+At start, ponydownloader reads `config.ini`, command line, then writes all set static parameters - `key`, `dir`, `queue` and `logfilter` into it, creating new one if config.ini didn't exist previously.  
+Derpibooru provides significant capability to filter out images server-side, for example spoilers or explicit ones. Passing key allows one to enable them and fine-tune some additional settings, instead of passing tags with each request.
 
 ## How to install ponydownloader
 
@@ -91,7 +98,7 @@ Binaries may be outdated. My cross-compilation system may work not as well as in
 ##### Path of more compilation (any system with Go installed, console)
 
 ```
- go get -d git@github.com:NHOrus/ponydownloader.git
+ go get -d github.com/NHOrus/ponydownloader.git
  cd $GOPATH/src/github.com/NHOrus/ponydownloader
  go build
  cp config.ini.sample config.ini
@@ -107,14 +114,12 @@ We trust into `go get -d` to get source code of ponydownloader and all dependenc
 
 Then we move into directory where source code sleeps endless sleep, compile everything into one binary executable and set it up for running in that same directory with the source. Or we can move it everywhere we want and run locally there.
 
-config.ini
+Sample config.ini
 ----------
 
 ```config.ini
-key			=		// your derpibooru.org key
+key		=	// your derpibooru.org key
 downdir		= img	// in this directory your images would be saved
 queue_depth	= 50	// depth of queue of images, waiting for download. Default value - one search page
 logfilter	= false	// should app write ID discarded by filters images in log
 ```
-
-If any line is empty, program would use default, build-in parameters and writes them in config, when appropriate. Empty `key` would end up with no API key being used.
