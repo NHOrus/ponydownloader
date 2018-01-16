@@ -22,8 +22,8 @@ func init() {
 	}()
 }
 
-func (imgchan ImageCh) interrupt() (outch ImageCh) {
-	outch = make(ImageCh)
+func interrupt(imgchan <-chan Image) (outch chan Image) {
+	outch = make(chan Image)
 	go func() {
 		for {
 			select {

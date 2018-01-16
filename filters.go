@@ -1,6 +1,6 @@
 package main
 
-type filtrator func(ImageCh) ImageCh
+type filtrator func(<-chan Image) <-chan Image
 
 var filters []filtrator
 
@@ -16,8 +16,8 @@ func filterInit(opts *FiltOpts, enableLog bool) {
 }
 
 func filterGenerator(filt func(Image) bool, enableLog bool) filtrator {
-	return func(in ImageCh) ImageCh {
-		out := make(ImageCh)
+	return func(in <-chan Image) <-chan Image {
+		out := make(chan Image)
 		go func() {
 			for imgdata := range in {
 
@@ -34,7 +34,7 @@ func filterGenerator(filt func(Image) bool, enableLog bool) filtrator {
 }
 
 //FilterChannel cuts off unneeded images
-func FilterChannel(in ImageCh) (out ImageCh) {
+func FilterChannel(in <-chan Image) (out <-chan Image) {
 	out = in
 	for _, filter := range filters {
 		out = filter(out)

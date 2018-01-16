@@ -40,11 +40,6 @@ type Search struct {
 	Images []RawImage `json:"search"`
 }
 
-//ImageCh is a channel of image data. You can put images into channel by parsing
-//Derpibooru API by id(s) or  by tags and you can download images that are already
-//in channel
-type ImageCh chan Image
-
 //Push gets unmarchalled JSON info, massages it and plugs it into channel so it
 //would be processed in other places
 func trim(dat RawImage) Image {
@@ -64,7 +59,7 @@ func trim(dat RawImage) Image {
 }
 
 //ParseImg gets image IDs, fetches information about those images from Derpibooru and pushes them into the channel.
-func (imgchan ImageCh) ParseImg(ids []int, key string) {
+func ParseImg(imgchan chan<- Image, ids []int, key string) {
 
 	for _, imgid := range ids {
 
@@ -100,7 +95,7 @@ func (imgchan ImageCh) ParseImg(ids []int, key string) {
 }
 
 //DlImg reads image data from channel and downloads specified images to disc
-func (imgchan ImageCh) downloadImages(opts *Config) {
+func downloadImages(imgchan <-chan Image, opts *Config) {
 
 	lInfo("Worker started; reading channel") //nice notification that we are not forgotten
 	var n int
@@ -130,7 +125,7 @@ func (imgchan ImageCh) downloadImages(opts *Config) {
 }
 
 //ParseTag gets image tags, fetches information about all images it could from Derpibooru and pushes them into the channel.
-func (imgchan ImageCh) ParseTag(opts *TagOpts, key string) {
+func ParseTag(imgchan chan<- Image, opts *TagOpts, key string) {
 
 	//Unlike main, I don't see how I could separate bits out to decrease complexity
 	derpiURL.Path = "search.json"

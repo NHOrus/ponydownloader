@@ -10,7 +10,7 @@ func TestFilterInit(t *testing.T) {
 }
 
 func TestFilterNone(t *testing.T) {
-	in := make(ImageCh, 1)
+	in := make(chan Image, 1)
 	out := FilterChannel(in)
 	in <- Image{}
 	_, ok := <-out
@@ -20,7 +20,7 @@ func TestFilterNone(t *testing.T) {
 }
 
 func TestFilterAlwaysTrue(t *testing.T) {
-	in := make(ImageCh, 1)
+	in := make(chan Image, 1)
 	filter := filterGenerator(func(Image) bool { return true }, false)
 	out := filter(in)
 	in <- Image{}
@@ -37,7 +37,7 @@ func TestFilterAlwaysTrue(t *testing.T) {
 }
 
 func TestFilterAlwaysFalse(t *testing.T) {
-	in := make(ImageCh, 1)
+	in := make(chan Image, 1)
 	filter := filterGenerator(func(Image) bool { return false }, false)
 	out := filter(in)
 	in <- Image{}
@@ -53,7 +53,7 @@ func TestFilterAlwaysFalse(t *testing.T) {
 func TestFilterComplex(t *testing.T) {
 	filterInit(&FiltOpts{ScoreF: true, FavesF: true}, false)
 
-	in := make(ImageCh, 3)
+	in := make(chan Image, 3)
 	in <- Image{Score: -1}
 	in <- Image{Faves: -1}
 	in <- Image{Imgid: "1"}
