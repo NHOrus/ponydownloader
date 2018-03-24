@@ -19,7 +19,7 @@ var (
 
 //RawImage contains data we got from API that needs to be modified before further usage
 type RawImage struct {
-	Imgid          string `json:"id"`
+	Imgid          int    `json:"id"`
 	URL            string `json:"image"`
 	Score          int    `json:"score"`
 	OriginalFormat string `json:"original_format"`
@@ -28,7 +28,7 @@ type RawImage struct {
 
 //Image contains data needed to filter fetch and save image
 type Image struct {
-	Imgid    string
+	Imgid    int
 	URL      *url.URL
 	Filename string
 	Score    int
@@ -44,7 +44,7 @@ type Search struct {
 //would be processed in other places
 func trim(dat RawImage) Image {
 
-	fn := dat.Imgid + "." + dat.OriginalFormat
+	fn := strconv.Itoa(dat.Imgid) + "." + dat.OriginalFormat
 	tu, _ := url.Parse(dat.URL)
 	tu.Scheme = derpiURL.Scheme
 	tu.Path = path.Dir(tu.Path) + "/" + fn
