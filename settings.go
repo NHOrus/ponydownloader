@@ -103,10 +103,12 @@ func getOptions() (opts *Options, args []string) {
 func (sets *Config) prettyWriteIni(inifile io.Writer) error {
 	tb := tabwriter.NewWriter(inifile, 10, 8, 0, ' ', 0) //Tabs! Elastic! Pretty!
 
-	fmt.Fprintf(tb, "key \t= %s\n", sets.Key)
-	fmt.Fprintf(tb, "queue_depth \t= %s\n", strconv.Itoa(sets.QDepth))
-	fmt.Fprintf(tb, "downdir \t= %s\n", sets.ImageDir)
-	fmt.Fprintf(tb, "logfilter \t= %t\n", sets.LogFilters)
+	//Ignoring errors because we write in-memory and fun could be had on return only
+
+	_, _ = fmt.Fprintf(tb, "key \t= %s\n", sets.Key)
+	_, _ = fmt.Fprintf(tb, "queue_depth \t= %s\n", strconv.Itoa(sets.QDepth))
+	_, _ = fmt.Fprintf(tb, "downdir \t= %s\n", sets.ImageDir)
+	_, _ = fmt.Fprintf(tb, "logfilter \t= %t\n", sets.LogFilters)
 
 	return tb.Flush() //Returns and passes error upstairs
 }
