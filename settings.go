@@ -11,7 +11,7 @@ import (
 	flag "github.com/jessevdk/go-flags"
 )
 
-const version = "0.11.0"
+const version = "0.11.1"
 
 //Config is concrete and stored in configuration file
 type Config struct {
@@ -19,11 +19,6 @@ type Config struct {
 	QDepth     int    `short:"q" long:"queue" description:"Length of the queue buffer" default:"50" ini-name:"queue_depth"`
 	Key        string `short:"k" long:"key" description:"Derpibooru API key" ini-name:"key"`
 	LogFilters Bool   `long:"logfilter" optional:" " optional-value:"true" description:"Enable logging of filtered images" ini-name:"logfilter"`
-}
-
-//FlagOpts are runtime boolean flags
-type FlagOpts struct {
-	UnsafeHTTPS bool `long:"unsafe-https" description:"Disable HTTPS security verification"`
 }
 
 //FiltOpts are filtration parameters
@@ -44,7 +39,6 @@ type TagOpts struct {
 //Options provide program-wide options. At maximum, we got one persistent global and one short-living copy for writing in config file
 type Options struct {
 	*Config
-	*FlagOpts
 	*FiltOpts
 	*TagOpts
 	Args struct {

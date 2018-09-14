@@ -23,10 +23,6 @@ func main() {
 		return
 	}
 
-	if opts.UnsafeHTTPS {
-		makeHTTPSUnsafe()
-	}
-
 	//Creating directory for downloads if it does not yet exist. But allow dumping into current directory
 	if opts.ImageDir != "" {
 		err := os.MkdirAll(opts.ImageDir, 0700)

@@ -6,7 +6,7 @@ ponydownloader
 WARNING
 -------
 
-This app is under limited support due to loss of interest in ponies. Sorry for those people who may have wanted more.
+This app is under limited support due to loss of interest in ponies. Sorry for those people who may have wanted more. Somewhat version and new builds now migrated to [GitLab](https://gitlab.com/NHOrus/ponydownloader)
 
 ---
 
@@ -31,7 +31,7 @@ Usage
 Output: 
 
 ```
-Derpibooru.org Downloader, version 0.11.0
+Derpibooru.org Downloader, version 0.11.1
 
 Happened at 2017/12/20 03:44:27 Program start
 Happened at 2017/12/20 03:44:27 Processing tags princess luna, safe

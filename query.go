@@ -1,16 +1,13 @@
 package main
 
 import (
-	"crypto/tls"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net"
 	"net/http"
 
 	"os"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -70,47 +67,6 @@ func okHTTPStatus(chk *http.Response) bool {
 		lWarn("Continuing anyway")
 		return true
 	}
-}
-
-func makeHTTPSUnsafe() {
-	lWarn("Disabling HTTPS trust check is unsafe and may lead to your data being monitored, stolen or falsified by third party")
-	lWarn("Do you really wish to continue? [Yes/No]")
-	if !checkUserResponse() {
-		lInfo("Continuing in safe mode")
-		return
-	}
-	lWarn("Continuing in unsafe mode")
-
-	/* #nosec */
-	http.DefaultClient.Transport = &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
-		Dial: (&net.Dialer{
-			Timeout:   30 * time.Second,
-			KeepAlive: 30 * time.Second,
-		}).Dial,
-		TLSHandshakeTimeout: 10 * time.Second,
-		TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
-	}
-}
-
-func checkUserResponse() bool {
-	var response string
-	for i := 0; i < 3; i++ {
-		time.Sleep(3 * time.Second)
-		n, _ := fmt.Scanln(&response)
-		r := strings.ToLower(response)
-		if n != 1 {
-			continue
-		}
-		if r == "y" || r == "yes" {
-			return true
-		}
-		if r == "n" || r == "no" {
-			return false
-		}
-	}
-	lInfo("Three unparsable responses, assuming cat on keyboard")
-	return false
 }
 
 func (imgdata Image) saveImage(opts *Config) (size int64, ok bool) { // To not hold all the files open when there is no need. All file descriptors are in the scope of this function.
